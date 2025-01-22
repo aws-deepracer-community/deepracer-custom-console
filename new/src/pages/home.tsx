@@ -1,15 +1,25 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import { TextContent, Toggle, RadioGroup } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 
-class HomePage extends Component {
-  state = {
+interface HomeState {
+  showCameraFeed: boolean;
+  cameraFeedType: string;
+  sensorStatus: {
+    camera_status: string;
+    stereo_status: string;
+    lidar_status: string;
+  };
+}
+
+class HomePage extends Component<{}, HomeState> {
+  state: HomeState = {
     showCameraFeed: false,
     cameraFeedType: "mono",
     sensorStatus: {
-      camera_status: "unknown",
-      lidar_status: "unknown",
-      stereo_status: "unknown",
+      camera_status: "not_connected",
+      stereo_status: "not_connected",
+      lidar_status: "not_connected",
     },
   };
 
@@ -35,7 +45,7 @@ class HomePage extends Component {
     }));
   };
 
-  handleCameraFeedTypeChange = ({ detail }) => {
+  handleCameraFeedTypeChange = ({ detail }: { detail: any }) => {
     this.setState({ cameraFeedType: detail.value });
   };
 
