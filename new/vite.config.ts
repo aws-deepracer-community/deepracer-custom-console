@@ -22,6 +22,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/route?topic': {
+        target: 'https://192.168.0.82/',
+        changeOrigin: true,
+        secure: false,
+      }
     },
   },
   build: {
