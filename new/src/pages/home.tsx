@@ -2,6 +2,7 @@ import { Component } from "react";
 import { TextContent, Toggle, RadioGroup,} from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Tabs from "@cloudscape-design/components/tabs";
+import Select from "@cloudscape-design/components/select";
 
 interface HomeState {
   showCameraFeed: boolean;
@@ -112,6 +113,15 @@ class HomePage extends Component<{}, HomeState> {
                   <div>
                   <h2>Models</h2>
                   <p>Choose a model to autonomously drive</p>
+                  <Select
+                    options={[
+                      { label: "Option 1", value: "1" },
+                      { label: "Option 2", value: "2" },
+                      { label: "Option 3", value: "3" },
+                      { label: "Option 4", value: "4" },
+                      { label: "Option 5", value: "5" }
+                    ]}
+                  />
                   </div>
                 },
                 {
