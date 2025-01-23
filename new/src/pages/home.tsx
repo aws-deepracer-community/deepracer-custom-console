@@ -16,7 +16,7 @@ const HomePage = () => {
     lidar_status: "not_connected",
   });
   const [modelOptions, setModelOptions] = useState([]);
-  const [selectedModel, setSelectedModel] = useState(null);
+  const [selectedModel, setSelectedModel] = useState<{ value: string } | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
@@ -69,9 +69,27 @@ const HomePage = () => {
     setIsModalVisible(false);
   };
 
-  const handleLoadModel = () => {
-    // API call to load model will go here
-    setIsModalVisible(false);
+  const handleLoadModelClick = async () => {
+    try {
+        const response = await axios.post('/api/start_stop', {
+            start_stop: 'stop'
+        });
+        console.log('API response:', response.data);
+
+        if (selectedModel) {
+            const modelResponse = await axios.put(`/api/models/${selectedModel.value}/model`);
+            console.log('Model API response:', modelResponse.data);
+        } else {
+            console.error('No model selected');
+        }
+        setIsModalVisible(false);
+    } catch (error) {
+        console.error('Error calling API:', error);
+    }
+  };
+
+  const handleModelChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedModel(event.target.value);
   };
 
   const cameraStatusText = sensorStatus.camera_status === 'connected' ? '(Connected)' : '(Not Connected)';
@@ -150,7 +168,7 @@ const HomePage = () => {
                       <Box float="right">
                       <SpaceBetween direction="horizontal" size="xs">
                         <Button onClick={handleCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={handleLoadModel}>Load Model</Button>
+                        <Button variant="primary" onClick={handleLoadModelClick}>Load Model</Button>
                       </SpaceBetween>
                       </Box>
                     }
