@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { TextContent, Toggle, RadioGroup } from "@cloudscape-design/components";
+import { TextContent, Toggle, RadioGroup, Modal, Button } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Tabs from "@cloudscape-design/components/tabs";
 import Select from "@cloudscape-design/components/select";
+import Box from "@cloudscape-design/components/box";
+import SpaceBetween from "@cloudscape-design/components/space-between";
 import axios from 'axios';
 
 const HomePage = () => {
@@ -14,6 +16,8 @@ const HomePage = () => {
     lidar_status: "not_connected",
   });
   const [modelOptions, setModelOptions] = useState([]);
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     fetchSensorStatus();
@@ -54,6 +58,20 @@ const HomePage = () => {
 
   const handleCameraFeedTypeChange = ({ detail }: { detail: any }) => {
     setCameraFeedType(detail.value);
+  };
+
+  const handleModelSelect = ({ detail }) => {
+    setSelectedModel(detail.selectedOption);
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleLoadModel = () => {
+    // API call to load model will go here
+    setIsModalVisible(false);
   };
 
   const cameraStatusText = sensorStatus.camera_status === 'connected' ? '(Connected)' : '(Not Connected)';
@@ -117,11 +135,31 @@ const HomePage = () => {
                 <p>Choose a model to autonomously drive</p>
                 <Select
                   options={modelOptions}
-                  selectedOption={modelOptions[0]}
-                  onChange={({ detail }) => setModelOptions(detail.selectedOption)}
+                  selectedOption={selectedModel}
+                  onChange={handleModelSelect}
                   placeholder="Select a model"
                 />
                 <p>Sensor and vehicle configuration must match</p>
+                {isModalVisible && (
+                  <Modal
+                    onDismiss={handleCancel}
+                    visible={isModalVisible}
+                    closeAriaLabel="Close modal"
+                    header="Load Model"
+                    footer={
+                      <Box float="right">
+                      <SpaceBetween direction="horizontal" size="xs">
+                        <Button onClick={handleCancel}>Cancel</Button>
+                        <Button variant="primary" onClick={handleLoadModel}>Load Model</Button>
+                      </SpaceBetween>
+                      </Box>
+                    }
+                  >
+                    <TextContent>
+                      <p>Your vehicle will be disabled while the new model is loaded</p>
+                    </TextContent>
+                  </Modal>
+                )}
                 </div>
               },
               {
