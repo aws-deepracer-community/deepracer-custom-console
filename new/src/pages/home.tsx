@@ -1,5 +1,5 @@
-import { Component } from 'react';
-import { TextContent, Toggle, RadioGroup, Button } from "@cloudscape-design/components"; // Import Button from cloudscape-design-components
+import { Component } from "react";
+import { TextContent, Toggle, RadioGroup } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 
 interface HomeState {
@@ -47,19 +47,6 @@ class HomePage extends Component<{}, HomeState> {
 
   handleCameraFeedTypeChange = ({ detail }: { detail: any }) => {
     this.setState({ cameraFeedType: detail.value });
-  };
-
-  handleFullScreen = () => {
-    const iframe = document.querySelector('iframe');
-    if (iframe.requestFullscreen) {
-      iframe.requestFullscreen();
-    } else if (iframe.mozRequestFullScreen) { // Firefox
-      iframe.mozRequestFullScreen();
-    } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari and Opera
-      iframe.webkitRequestFullscreen();
-    } else if (iframe.msRequestFullscreen) { // IE/Edge
-      iframe.msRequestFullscreen();
-    }
   };
 
   render() {
@@ -119,7 +106,6 @@ class HomePage extends Component<{}, HomeState> {
             >
               {showCameraFeed ? "Turn Off Camera" : "Turn On Camera"}
             </Toggle>
-            <Button onClick={this.handleFullScreen}>Full screen</Button> {/* Add Full screen button */}
             <RadioGroup
               onChange={this.handleCameraFeedTypeChange}
               value={cameraFeedType}
