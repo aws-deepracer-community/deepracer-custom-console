@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TextContent, Toggle, RadioGroup,} from "@cloudscape-design/components";
+import { TextContent, Toggle, RadioGroup } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Tabs from "@cloudscape-design/components/tabs";
 import Select from "@cloudscape-design/components/select";
@@ -38,7 +38,9 @@ const HomePage = () => {
       const models = response.data.models;
       const options = models.map(model => ({
         label: model.model_folder_name,
-        value: model.model_folder_name
+        value: model.model_folder_name,
+        description: model.model_sensors.join(', '),
+        disabled: model.is_select_disabled
       }));
       setModelOptions(options);
     } catch (error) {
@@ -115,6 +117,9 @@ const HomePage = () => {
                 <p>Choose a model to autonomously drive</p>
                 <Select
                   options={modelOptions}
+                  selectedOption={modelOptions[0]}
+                  onChange={({ detail }) => setModelOptions(detail.selectedOption)}
+                  placeholder="Select a model"
                 />
                 </div>
               },
