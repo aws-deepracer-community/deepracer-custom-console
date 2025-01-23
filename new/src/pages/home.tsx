@@ -121,6 +121,7 @@ const HomePage = () => {
                   onChange={({ detail }) => setModelOptions(detail.selectedOption)}
                   placeholder="Select a model"
                 />
+                <p>Sensor and vehicle configuration must match</p>
                 </div>
               },
               {
