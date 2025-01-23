@@ -1,6 +1,7 @@
 import { Component } from "react";
-import { TextContent, Toggle, RadioGroup } from "@cloudscape-design/components";
+import { TextContent, Toggle, RadioGroup,} from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
+import Tabs from "@cloudscape-design/components/tabs";
 
 interface HomeState {
   showCameraFeed: boolean;
@@ -71,42 +72,64 @@ class HomePage extends Component<{}, HomeState> {
     return (
       <BaseAppLayout
         content={
-          <TextContent>
-            <h1>Control Vehicle</h1>
-            <h2>Sensor</h2>
-            <div
-              style={{
-                width: "482px",
-                height: "362px",
-                border: "1px solid #ccc",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#f0f0f0",
-                overflow: "hidden",
-              }}
-            >
-              {showCameraFeed ? (
-                <iframe
-                  src={cameraFeedSrc}
-                  width="482"
-                  height="362"
-                  frameBorder="0"
-                  allowFullScreen={true}
-                  title="Video Feed"
-                  style={{ border: "none" }}
-                ></iframe>
-              ) : (
-                <p>Camera feed is off</p>
-              )}
-            </div>
-            <Toggle
-              onChange={this.toggleCameraFeed}
-              checked={showCameraFeed}
-            >
-              {showCameraFeed ? "Turn Off Camera" : "Turn On Camera"}
-            </Toggle>
-            <RadioGroup
+          <div>
+            <Tabs
+              tabs={[
+                {
+                  label: "Autonomous Mode",
+                  id: "first",
+                  content: 
+                  <div>
+                  <h2>Models</h2>
+                  <p>Choose a model to autonomously drive</p>
+                  </div>
+                },
+                {
+                  label: "Manual Model",
+                  id: "second",
+                  content:
+                  <div>
+                  <h2>Drive</h2>
+                  <p>Drive the vehicle manually using the joystick</p>
+                  </div>
+                }
+              ]}
+            />
+            <TextContent>
+              <h1>Control Vehicle</h1>
+              <h2>Sensor</h2>
+              <div
+                style={{
+                  width: "482px",
+                  height: "362px",
+                  border: "1px solid #ccc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#f0f0f0",
+                  overflow: "hidden",
+                }}
+              >
+                {showCameraFeed ? (
+                  <iframe
+                    src={cameraFeedSrc}
+                    width="482"
+                    height="362"
+                    frameBorder="0"
+                    allowFullScreen={true}
+                    title="Video Feed"
+                    style={{ border: "none" }}
+                  ></iframe>
+                ) : (
+                  <p>Camera feed is off</p>
+                )}
+              </div>
+              <Toggle
+                onChange={this.toggleCameraFeed}
+                checked={showCameraFeed}
+              >
+                {showCameraFeed ? "Turn Off Camera" : "Turn On Camera"}
+              </Toggle>            <RadioGroup
               onChange={this.handleCameraFeedTypeChange}
               value={cameraFeedType}
               items={[
@@ -126,8 +149,9 @@ class HomePage extends Component<{}, HomeState> {
                   disabled: sensorStatus.lidar_status === "not_connected",
                 },
               ]}
-            />
-          </TextContent>
+              />
+            </TextContent>
+          </div>
         }
       />
     );
