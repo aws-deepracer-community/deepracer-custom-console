@@ -73,31 +73,10 @@ class HomePage extends Component<{}, HomeState> {
       <BaseAppLayout
         content={
           <div>
-            <Tabs
-              tabs={[
-                {
-                  label: "Autonomous Mode",
-                  id: "first",
-                  content: 
-                  <div>
-                  <h2>Models</h2>
-                  <p>Choose a model to autonomously drive</p>
-                  </div>
-                },
-                {
-                  label: "Manual Model",
-                  id: "second",
-                  content:
-                  <div>
-                  <h2>Drive</h2>
-                  <p>Drive the vehicle manually using the joystick</p>
-                  </div>
-                }
-              ]}
-            />
             <TextContent>
               <h1>Control Vehicle</h1>
               <h2>Sensor</h2>
+              <div style={{ display: 'flex', alignItems: 'right', justifyContent: 'space-between' }}>
               <div
                 style={{
                   width: "482px",
@@ -123,6 +102,30 @@ class HomePage extends Component<{}, HomeState> {
                 ) : (
                   <p>Camera feed is off</p>
                 )}
+              </div>
+              <Tabs 
+              tabs={[
+                {
+                  label: "Autonomous Mode",
+                  id: "first",
+                  content: 
+                  <div>
+                  <h2>Models</h2>
+                  <p>Choose a model to autonomously drive</p>
+                  </div>
+                },
+                {
+                  label: "Manual Model",
+                  id: "second",
+                  content:
+                  <div>
+                  <h2>Drive</h2>
+                  <p>Drive the vehicle manually using the joystick</p>
+                  </div>
+                }
+              ]}
+              variant="container"
+            />
               </div>
               <Toggle
                 onChange={this.toggleCameraFeed}
