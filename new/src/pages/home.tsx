@@ -21,6 +21,7 @@ const HomePage = () => {
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [progressStatus, setProgressStatus] = useState<'in-progress' | 'success'>('in-progress');
   const [progressValue, setProgressValue] = useState<number>(0)
+  const [throttle, setThrottle] = useState(50);
   let currentProgress = 0;
 
   useEffect(() => {
@@ -73,12 +74,50 @@ const HomePage = () => {
     setIsModalVisible(false);
   };
 
+  const handleStart = async () => {
+    try {
+      const response = await axios.post('/api/start_stop', { start_stop: 'start' });
+      console.log('Vehicle started:', response.data);
+    } catch (error) {
+      console.error('Error starting vehicle:', error);
+    }
+  };
+
+  const handleStop = async () => {
+    try {
+      const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
+      console.log('Vehicle stopped:', response.data);
+    } catch (error) {
+      console.error('Error stopping vehicle:', error);
+    }
+  };
+
+  const handleThrottle = (direction: 'up' | 'down') => {
+    setThrottle(prevThrottle => {
+      if (direction === 'up') {
+        try {
+          const response = axios.post('/api/max_nav_throttle', { throttle: prevThrottle + 1 });
+          console.log('Vehicle stopped:', response);
+        } catch (error) {
+          console.error('Error stopping vehicle:', error);
+        }
+        return prevThrottle + 1;
+      } else if (direction === 'down') {
+        try {
+          const response = axios.post('/api/max_nav_throttle', { throttle: prevThrottle - 1 });
+          console.log('Vehicle stopped:', response);
+        } catch (error) {
+          console.error('Error stopping vehicle:', error);
+        }
+        return prevThrottle - 1;
+      }
+      return prevThrottle;
+    });
+  };
+
   const handleLoadModelClick = async () => {
     try {
-        const response = await axios.post('/api/start_stop', {
-            start_stop: 'stop'
-        });
-        console.log('API response:', response.data);
+        handleStop();
 
         if (selectedModel) {
             const modelResponse = await axios.put(`/api/models/${selectedModel.value}/model`);
@@ -212,14 +251,14 @@ const HomePage = () => {
                   />
                 )}
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <Button variant="primary">Start vehicle</Button>
-                  <Button variant="primary">Stop vehicle</Button>
+                  <Button variant="primary" onClick={handleStart}>Start vehicle</Button>
+                  <Button variant="primary" onClick={handleStop}>Stop vehicle</Button>
                 </div>
                 <h2>Speed</h2>
-                <p>Adjust maximum speed</p>
+                <p>Adjust maximum speed {throttle}%</p>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                <Button variant="primary" iconName="angle-down">-</Button>
-                <Button variant="primary" iconName="angle-up">+</Button>
+                <Button variant="primary" onClick={() => handleThrottle('down')} iconName="angle-down">-</Button>
+                <Button variant="primary" onClick={() => handleThrottle('up')} iconName="angle-up">+</Button>
                 </div>
                 </div>
               },
