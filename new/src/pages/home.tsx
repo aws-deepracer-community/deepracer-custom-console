@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TextContent, Toggle, RadioGroup, Modal, Button } from "@cloudscape-design/components";
+import { TextContent, Toggle, RadioGroup, Modal, Button, ProgressBar } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Tabs from "@cloudscape-design/components/tabs";
 import Select from "@cloudscape-design/components/select";
@@ -18,6 +18,10 @@ const HomePage = () => {
   const [modelOptions, setModelOptions] = useState([]);
   const [selectedModel, setSelectedModel] = useState<{ value: string } | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [progressStatus, setProgressStatus] = useState<'in-progress' | 'success'>('in-progress');
+  const [progressValue, setProgressValue] = useState<number>(0)
+  let currentProgress = 0;
 
   useEffect(() => {
     fetchSensorStatus();
@@ -79,17 +83,38 @@ const HomePage = () => {
         if (selectedModel) {
             const modelResponse = await axios.put(`/api/models/${selectedModel.value}/model`);
             console.log('Model API response:', modelResponse.data);
+            setIsModalVisible(false);
+            setIsModelLoading(true);
+            pollModelLoadingStatus();
         } else {
             console.error('No model selected');
         }
-        setIsModalVisible(false);
     } catch (error) {
         console.error('Error calling API:', error);
     }
   };
 
-  const handleModelChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedModel(event.target.value);
+  const pollModelLoadingStatus = async () => {
+    try {
+       setProgressStatus('in-progress');
+       setProgressValue(currentProgress);
+        const response = await axios.get('api/isModelLoading');
+        if (response.data.isModelLoading === 'loaded' && response.data.success) {
+            setProgressStatus('success');
+            setIsModelLoading(false);
+        } else {
+            if (currentProgress<90) {
+              currentProgress+=10;
+            } else {
+              currentProgress = 99;
+            }
+            setProgressValue(currentProgress)
+            setTimeout(pollModelLoadingStatus, 1000);
+        }
+    } catch (error) {
+        console.error('Error polling model loading status:', error);
+        setTimeout(pollModelLoadingStatus, 1000);
+    }
   };
 
   const cameraStatusText = sensorStatus.camera_status === 'connected' ? '(Connected)' : '(Not Connected)';
@@ -177,6 +202,14 @@ const HomePage = () => {
                       <p>Your vehicle will be disabled while the new model is loaded</p>
                     </TextContent>
                   </Modal>
+                )}
+                {isModelLoading && (
+                  <ProgressBar
+                    status={progressStatus}
+                    value={progressValue}
+                    label="Loading model..."
+                    description="Can take 5-45s depending on model optimization"
+                  />
                 )}
                 </div>
               },
