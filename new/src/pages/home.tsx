@@ -211,6 +211,16 @@ const HomePage = () => {
                     description="Can take 5-45s depending on model optimization"
                   />
                 )}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <Button variant="primary">Start vehicle</Button>
+                  <Button variant="primary">Stop vehicle</Button>
+                </div>
+                <h2>Speed</h2>
+                <p>Adjust maximum speed</p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                <Button variant="primary" iconName="angle-down">-</Button>
+                <Button variant="primary" iconName="angle-up">+</Button>
+                </div>
                 </div>
               },
               {
