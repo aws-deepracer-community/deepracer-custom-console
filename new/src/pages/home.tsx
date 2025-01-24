@@ -27,7 +27,25 @@ const HomePage = () => {
   useEffect(() => {
     fetchSensorStatus();
     fetchModels();
+    setDriveMode('auto');
   }, []);
+
+  const setDriveMode = async (mode: 'auto' | 'manual') => {
+    try {
+      const response = await axios.post('/api/drive_mode', { drive_mode: mode });
+      console.log(`Drive mode set to ${mode}:`, response.data);
+    } catch (error) {
+      console.error(`Error setting drive mode to ${mode}:`, error);
+    }
+  };
+
+  const handleTabChange = (selectedTab: string) => {
+    if (selectedTab === 'autonomous') {
+      setDriveMode('auto');
+    } else if (selectedTab === 'manual') {
+      setDriveMode('manual');
+    }
+  };
 
   const fetchSensorStatus = async () => {
     try {
@@ -207,10 +225,11 @@ const HomePage = () => {
               )}
             </div>
             <Tabs 
+            onChange={({ detail }) => handleTabChange(detail.activeTabId)}
             tabs={[
               {
                 label: "Autonomous Mode",
-                id: "first",
+                id: "autonomous",
                 content: 
                 <div>
                 <h2>Models</h2>
@@ -264,7 +283,7 @@ const HomePage = () => {
               },
               {
                 label: "Manual Model",
-                id: "second",
+                id: "manual",
                 content:
                 <div>
                 <h2>Drive</h2>
