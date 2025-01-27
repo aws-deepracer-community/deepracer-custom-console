@@ -1,0 +1,6 @@
+/// <reference types="react" />
+import { StepsProps } from './interfaces';
+export { StepsProps };
+declare const Steps: ({ steps, ...props }: StepsProps) => JSX.Element;
+export default Steps;
+//# sourceMappingURL=index.d.ts.map

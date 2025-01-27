@@ -1,0 +1,13 @@
+import React from 'react';
+import { ButtonDropdownProps } from '../button-dropdown/interfaces';
+import { CancelableEventHandler } from '../internal/events';
+import { ButtonGroupProps } from './interfaces';
+interface MenuDropdownItemProps {
+    item: ButtonGroupProps.MenuDropdown;
+    showTooltip: boolean;
+    onItemClick?: CancelableEventHandler<ButtonGroupProps.ItemClickDetails>;
+    expandToViewport?: boolean;
+}
+declare const MenuDropdownItem: React.ForwardRefExoticComponent<MenuDropdownItemProps & React.RefAttributes<ButtonDropdownProps.Ref>>;
+export default MenuDropdownItem;
+//# sourceMappingURL=menu-dropdown-item.d.ts.map

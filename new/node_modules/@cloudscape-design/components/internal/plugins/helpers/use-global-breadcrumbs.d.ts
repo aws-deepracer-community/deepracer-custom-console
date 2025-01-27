@@ -1,0 +1,4 @@
+import { BreadcrumbGroupProps } from '../../../breadcrumb-group/interfaces';
+export declare function useSetGlobalBreadcrumbs<T extends BreadcrumbGroupProps.Item>(props: BreadcrumbGroupProps<T>): boolean;
+export declare function useGetGlobalBreadcrumbs(enabled: boolean): BreadcrumbGroupProps<any> | null;
+//# sourceMappingURL=use-global-breadcrumbs.d.ts.map

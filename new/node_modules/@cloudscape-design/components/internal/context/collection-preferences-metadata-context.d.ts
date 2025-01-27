@@ -1,0 +1,10 @@
+/// <reference types="react" />
+interface CollectionPreferencesMetadataInterface {
+    tableHasStripedRows?: boolean;
+    tableHasHiddenColumns?: boolean;
+    tableHasStickyColumns?: boolean;
+    tableContentDensity?: string;
+}
+export declare const CollectionPreferencesMetadata: import("react").Context<CollectionPreferencesMetadataInterface>;
+export {};
+//# sourceMappingURL=collection-preferences-metadata-context.d.ts.map

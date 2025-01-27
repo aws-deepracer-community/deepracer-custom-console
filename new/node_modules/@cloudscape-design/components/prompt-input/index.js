@@ -1,0 +1,27 @@
+import { __rest } from "tslib";
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+import React from 'react';
+import useBaseComponent from '../internal/hooks/use-base-component';
+import { applyDisplayName } from '../internal/utils/apply-display-name';
+import InternalPromptInput from './internal';
+const PromptInput = React.forwardRef((_a, ref) => {
+    var { autoComplete, autoFocus, disableBrowserAutocorrect, disableActionButton, spellcheck, readOnly, actionButtonIconName, minRows, maxRows } = _a, props = __rest(_a, ["autoComplete", "autoFocus", "disableBrowserAutocorrect", "disableActionButton", "spellcheck", "readOnly", "actionButtonIconName", "minRows", "maxRows"]);
+    const baseComponentProps = useBaseComponent('PromptInput', {
+        props: {
+            readOnly,
+            autoComplete,
+            autoFocus,
+            disableBrowserAutocorrect,
+            disableActionButton,
+            spellcheck,
+            actionButtonIconName,
+            minRows,
+            maxRows,
+        },
+    });
+    return (React.createElement(InternalPromptInput, Object.assign({ readOnly: readOnly, autoComplete: autoComplete, autoFocus: autoFocus, disableBrowserAutocorrect: disableBrowserAutocorrect, disableActionButton: disableActionButton, spellcheck: spellcheck, actionButtonIconName: actionButtonIconName, minRows: minRows, maxRows: maxRows }, props, baseComponentProps, { ref: ref })));
+});
+applyDisplayName(PromptInput, 'PromptInput');
+export default PromptInput;
+//# sourceMappingURL=index.js.map

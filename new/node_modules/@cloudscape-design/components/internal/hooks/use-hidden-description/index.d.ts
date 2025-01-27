@@ -1,0 +1,9 @@
+/// <reference types="react" />
+export default function useHiddenDescription(description?: string): {
+    targetProps: {
+        'aria-describedby': string | undefined;
+    };
+    descriptionEl: JSX.Element | null;
+    descriptionId: string;
+};
+//# sourceMappingURL=index.d.ts.map

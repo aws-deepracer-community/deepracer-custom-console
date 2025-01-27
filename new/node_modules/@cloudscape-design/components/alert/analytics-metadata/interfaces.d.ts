@@ -1,0 +1,20 @@
+export interface GeneratedAnalyticsMetadataAlertDismiss {
+    action: 'dismiss';
+    detail: {
+        label: string;
+    };
+}
+export interface GeneratedAnalyticsMetadataAlertButtonClick {
+    action: 'buttonClick';
+    detail: {
+        label: string;
+    };
+}
+export interface GeneratedAnalyticsMetadataAlertComponent {
+    name: 'awsui.Alert';
+    label: string;
+    properties: {
+        type: string;
+    };
+}
+//# sourceMappingURL=interfaces.d.ts.map

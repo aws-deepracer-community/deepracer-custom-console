@@ -1,0 +1,6 @@
+import React from 'react';
+import { ToggleButtonProps } from './interfaces';
+export { ToggleButtonProps };
+declare const ToggleButton: React.ForwardRefExoticComponent<ToggleButtonProps & React.RefAttributes<ToggleButtonProps.Ref>>;
+export default ToggleButton;
+//# sourceMappingURL=index.d.ts.map

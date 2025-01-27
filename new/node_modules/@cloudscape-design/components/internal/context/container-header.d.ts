@@ -1,0 +1,6 @@
+import React from 'react';
+export declare const ContainerHeaderContextProvider: ({ children }: {
+    children?: React.ReactNode;
+}) => JSX.Element;
+export declare const useContainerHeader: () => boolean;
+//# sourceMappingURL=container-header.d.ts.map

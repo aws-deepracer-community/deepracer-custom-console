@@ -1,0 +1,5 @@
+import React from 'react';
+import { KeyValuePairsProps } from './interfaces';
+declare const InternalKeyValuePairs: React.ForwardRefExoticComponent<KeyValuePairsProps & Required<Pick<KeyValuePairsProps, "columns">> & React.RefAttributes<HTMLDivElement>>;
+export default InternalKeyValuePairs;
+//# sourceMappingURL=internal.d.ts.map

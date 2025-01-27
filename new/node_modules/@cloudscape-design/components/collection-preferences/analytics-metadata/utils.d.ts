@@ -1,0 +1,9 @@
+import { CollectionPreferencesProps } from '../interfaces';
+import { GeneratedAnalyticsMetadataCollectionPreferencesComponent } from './interfaces';
+export declare const getComponentAnalyticsMetadata: (disabled: boolean, preferences?: CollectionPreferencesProps['preferences']) => GeneratedAnalyticsMetadataCollectionPreferencesComponent;
+export declare const getAnalyticsInnerContextAttribute: (preference: string) => {
+    "data-awsui-analytics": string;
+} | {
+    "data-awsui-analytics"?: undefined;
+};
+//# sourceMappingURL=utils.d.ts.map
