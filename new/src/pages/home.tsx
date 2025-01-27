@@ -177,8 +177,15 @@ const HomePage = () => {
 
   const handleJoystickMove = (event: any) => {
     const { x, y } = event;
+    const steering = x;
+    const throttle = y;
     console.log(`Joystick moved to x: ${x}, y: ${y}`);
-    // Add logic to handle joystick movement
+    try {
+      const modelResponse = axios.put(`/api/manual_drive`, { angle: steering, throttle: throttle, max_speed: 0.5 });
+      console.log('Model API response:', modelResponse);
+  } catch (error) {
+      console.error('Error calling API:', error);
+  }
   };
 
   const cameraStatusText = sensorStatus.camera_status === 'connected' ? '(Connected)' : '(Not Connected)';
