@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const car_ip = 'https://192.168.0.82/';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -8,22 +10,22 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/login': {
-        target: 'https://192.168.0.82/',
+        target: car_ip,
         changeOrigin: true,
         secure: false,
       },
       '/logout': {
-        target: 'https://192.168.0.82/',
+        target: car_ip,
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'https://192.168.0.82/',
+        target: car_ip,
         changeOrigin: true,
         secure: false,
       },
       '/route?topic': {
-        target: 'https://192.168.0.82/',
+        target: car_ip,
         changeOrigin: true,
         secure: false,
       }
