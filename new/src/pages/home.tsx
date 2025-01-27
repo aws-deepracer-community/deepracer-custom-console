@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { TextContent, Toggle, RadioGroup, Modal, Button, ProgressBar } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Tabs from "@cloudscape-design/components/tabs";
@@ -24,6 +24,7 @@ const HomePage = () => {
   const [progressValue, setProgressValue] = useState<number>(0)
   const [throttle, setThrottle] = useState(50);
   let currentProgress = 0;
+  const lastJoystickMoveTime = useRef<number>(0);
 
   useEffect(() => {
     fetchSensorStatus();
@@ -176,6 +177,11 @@ const HomePage = () => {
   };
 
   const handleJoystickMove = (event: any) => {
+    const now = Date.now();
+    //prevent joystick spamming the API and causing lag
+    if (now - lastJoystickMoveTime.current < 200) return;
+
+    lastJoystickMoveTime.current = now;
     const { x, y } = event;
     const steering = x;
     const throttle = y;
@@ -183,9 +189,9 @@ const HomePage = () => {
     try {
       const modelResponse = axios.put(`/api/manual_drive`, { angle: steering, throttle: throttle, max_speed: 0.5 });
       console.log('Model API response:', modelResponse);
-  } catch (error) {
+    } catch (error) {
       console.error('Error calling API:', error);
-  }
+    }
   };
 
   const cameraStatusText = sensorStatus.camera_status === 'connected' ? '(Connected)' : '(Not Connected)';
@@ -306,7 +312,9 @@ const HomePage = () => {
                   size={100}
                   baseColor="gray"
                   stickColor="black"
+                  start={handleStart}
                   move={handleJoystickMove}
+                  stop={handleStop}
                 />
                 <h2>Speed</h2>
                 <p>Adjust maximum speed {throttle}%</p>
