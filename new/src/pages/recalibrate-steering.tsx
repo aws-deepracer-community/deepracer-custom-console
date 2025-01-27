@@ -5,6 +5,7 @@ import axios from 'axios';
 import AnchorNavigation from "@cloudscape-design/components/anchor-navigation";
 import Alert from "@cloudscape-design/components/alert";
 import { useNavigate } from 'react-router-dom';
+import Slider from "@cloudscape-design/components/slider";
 
 const handleStart = async () => {
   try {
@@ -39,16 +40,6 @@ const getCalibrationAngle = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching calibration angle:', error);
-    return null;
-  }
-};
-
-const getCalibrationThrottle = async () => {
-  try {
-    const response = await axios.get('/api/get_calibration/throttle');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching calibration throttle:', error);
     return null;
   }
 };
@@ -106,6 +97,10 @@ export default function RecalibrateSteeringPage() {
     }
   };
 
+  const [centerValue, setCenterValue] = useState(0);
+  const [leftValue, setLeftValue] = useState(0);
+  const [rightValue, setRightValue] = useState(0);
+
   return (
     <BaseAppLayout
       content={
@@ -141,11 +136,19 @@ export default function RecalibrateSteeringPage() {
                   <h2>Center steering</h2>
                   <p>Increase or decrease the Center value to center your vehicle. It is centered when any of the wheels points forward. Use a ruler or straight edge to ensure it is aligned with the rear wheel.</p>
                   <p>Center value</p>
+                  <Slider
+                    onChange={({ detail }) => setCenterValue(detail.value)}
+                    value={centerValue}
+                    max={30}
+                    min={-30}
+                    referenceValues={[-20, -10, 0, 10, 20]}
+                  />
                   <Alert
                     statusIconAriaLabel="Info"
                   >
                     The front wheels may not be perfectly aligned to each other -- it is important for one front wheel to be facing forward. DeepRacer uses Ackermann steering.
                   </Alert>
+                  <p></p>
                 </TextContent>
               </div>
               <div>
@@ -161,6 +164,14 @@ export default function RecalibrateSteeringPage() {
                   <h2>Maximum left steering</h2>
                   <p>Increase the Value to turn the front wheels to the left until they stop turning.</p>
                   <p>Value</p>
+                  <Slider
+                    onChange={({ detail }) => setLeftValue(detail.value)}
+                    value={leftValue}
+                    valueFormatter={value => value > 0 ? -value : Math.abs(value)}
+                    max={10}
+                    min={-50}
+                    referenceValues={[-40, -30, -20, -10, 0]}
+                  />
                   <p>Estimated angle:</p>
                 </TextContent>
               </div>
@@ -177,6 +188,14 @@ export default function RecalibrateSteeringPage() {
                   <h2>Maximum right steering</h2>
                   <p>Increase the Value to turn the front wheels to the right until they stop turning.</p>
                   <p>Value</p>
+                  <Slider
+                    onChange={({ detail }) => setLeftValue(detail.value)}
+                    value={leftValue}
+                    valueFormatter={value => value > 0 ? -value : Math.abs(value)}
+                    max={50}
+                    min={-10}
+                    referenceValues={[0, 10, 20, 30, 40]}
+                  />
                   <p>Estimated angle:</p>
                 </TextContent>
               </div>
