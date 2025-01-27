@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { TextContent, Container, Grid, ColumnLayout } from "@cloudscape-design/components";
+import { TextContent, Container, Grid, ColumnLayout, Button, SpaceBetween } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import axios from 'axios';
 import AnchorNavigation from "@cloudscape-design/components/anchor-navigation";
 import Alert from "@cloudscape-design/components/alert";
+import { useNavigate } from 'react-router-dom';
 
 const handleStart = async () => {
   try {
@@ -54,6 +55,7 @@ const getCalibrationThrottle = async () => {
 
 export default function RecalibrateSteeringPage() {
   const [activeAnchor, setActiveAnchor] = useState('#ground');
+  const navigate = useNavigate();
 
   useEffect(() => {
     setCalibration();
@@ -94,6 +96,15 @@ export default function RecalibrateSteeringPage() {
       level: 1
     }
   ];
+
+  const handleNavigation = (direction) => {
+    const currentIndex = anchors.findIndex(anchor => anchor.href === activeAnchor);
+    if (direction === 'next' && currentIndex < anchors.length - 1) {
+      window.location.hash = anchors[currentIndex + 1].href;
+    } else if (direction === 'previous' && currentIndex > 0) {
+      window.location.hash = anchors[currentIndex - 1].href;
+    }
+  };
 
   return (
     <BaseAppLayout
@@ -174,6 +185,18 @@ export default function RecalibrateSteeringPage() {
               </div>
             </ColumnLayout>
             )}
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button onClick={() => navigate('/calibration')}>Cancel</Button>
+              {activeAnchor !== '#ground' && (
+                <Button onClick={() => handleNavigation('previous')}>Previous</Button>
+              )}
+              {activeAnchor !== '#right' && (
+                <Button variant="primary" onClick={() => handleNavigation('next')}>Next</Button>
+              )}
+              {activeAnchor === '#right' && (
+                <Button variant="primary" onClick={() => navigate('/calibration')}>Done</Button>
+              )}
+            </SpaceBetween>
           </Container>
         </Grid>
       }
