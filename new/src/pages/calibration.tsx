@@ -1,13 +1,73 @@
+import { useEffect, useState } from 'react';
 import { TextContent } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
-import * as React from "react";
 import Container from "@cloudscape-design/components/container";
 import Header from "@cloudscape-design/components/header";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Button from "@cloudscape-design/components/button";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
+import axios from 'axios';
+
+const handleStart = async () => {
+  try {
+    const response = await axios.post('/api/start_stop', { start_stop: 'start' });
+    console.log('Vehicle started:', response.data);
+  } catch (error) {
+    console.error('Error starting vehicle:', error);
+  }
+};
+
+const handleStop = async () => {
+  try {
+    const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
+    console.log('Vehicle stopped:', response.data);
+  } catch (error) {
+    console.error('Error stopping vehicle:', error);
+  }
+};
+
+const setCalibration = async () => {
+  try {
+    const response = await axios.get('/api/set_calibration_mode');
+    console.log('Set calibration:', response.data);
+  } catch (error) {
+    console.error('Error setting calibration mode:', error);
+  }
+};
+
+const getCalibrationAngle = async () => {
+  try {
+    const response = await axios.get('/api/get_calibration/angle');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching calibration angle:', error);
+    return null;
+  }
+};
+
+const getCalibrationThrottle = async () => {
+  try {
+    const response = await axios.get('/api/get_calibration/throttle');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching calibration throttle:', error);
+    return null;
+  }
+};
 
 const SteeringContainer = () => {
+  const [calibrationData, setCalibrationData] = useState({ mid: 'Value', max: 'Value', min: 'Value' });
+
+  useEffect(() => {
+    const fetchCalibrationData = async () => {
+      const data = await getCalibrationAngle();
+      if (data && data.success) {
+        setCalibrationData({ mid: data.mid, max: data.max, min: data.min });
+      }
+    };
+    fetchCalibrationData();
+  }, []);
+
   return (
     <Container
       header={
@@ -28,9 +88,9 @@ const SteeringContainer = () => {
         <KeyValuePairs
           columns={3}
           items={[
-            { label: "Center", value: "Value" },
-            { label: "Maximum left steering angle", value: "Value" },
-            { label: "Maximum right steering angle", value: "Value" }
+            { label: "Center", value: calibrationData.mid },
+            { label: "Maximum left steering angle", value: calibrationData.max },
+            { label: "Maximum right steering angle", value: calibrationData.min }
           ]}
         />
     </Container>
@@ -38,6 +98,18 @@ const SteeringContainer = () => {
 }
 
 const SpeedContainer = () => {
+  const [calibrationData, setCalibrationData] = useState({ mid: 'Value', max: 'Value', min: 'Value' });
+
+  useEffect(() => {
+    const fetchCalibrationData = async () => {
+      const data = await getCalibrationThrottle();
+      if (data && data.success) {
+        setCalibrationData({ mid: data.mid, max: data.max, min: data.min });
+      }
+    };
+    fetchCalibrationData();
+  }, []);
+
   return (
     <Container
       header={
@@ -58,9 +130,9 @@ const SpeedContainer = () => {
         <KeyValuePairs
           columns={3}
           items={[
-            { label: "Stopped", value: "Value" },
-            { label: "Maximum forward speed", value: "Value" },
-            { label: "Maximum backward speed", value: "Value" }
+            { label: "Stopped", value: calibrationData.mid },
+            { label: "Maximum forward speed", value: calibrationData.min },
+            { label: "Maximum backward speed", value: calibrationData.max }
           ]}
         />
     </Container>
@@ -68,14 +140,21 @@ const SpeedContainer = () => {
 }
 
 export default function CalibrationPage() {
+  useEffect(() => {
+    setCalibration();
+    handleStop();
+  }, []);
+
   return (
     <BaseAppLayout
       content={
         <TextContent>
-          <h1>Calibration</h1>
-          <p>Calibrate your vehicle to improve its accuracy, reliability and driving behaviors using the <a href="https://docs.aws.amazon.com/deepracer/latest/developerguide/deepracer-calibrate-vehicle.html?icmpid=docs_deepracer_console" target="_blank">Calibration Guide</a></p>
-          <SteeringContainer />
-          <SpeedContainer />
+          <SpaceBetween size="l">
+            <h1>Calibration</h1>
+            <p>Calibrate your vehicle to improve its accuracy, reliability and driving behaviors using the <a href="https://docs.aws.amazon.com/deepracer/latest/developerguide/deepracer-calibrate-vehicle.html?icmpid=docs_deepracer_console" target="_blank" rel="noopener noreferrer">Calibration Guide</a></p>
+            <SteeringContainer />
+            <SpeedContainer />
+          </SpaceBetween>
         </TextContent>
       }
     />
