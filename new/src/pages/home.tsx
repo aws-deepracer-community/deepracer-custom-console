@@ -6,6 +6,7 @@ import Select from "@cloudscape-design/components/select";
 import Box from "@cloudscape-design/components/box";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import axios from 'axios';
+import { Joystick } from 'react-joystick-component';
 
 const HomePage = () => {
   const [showCameraFeed, setShowCameraFeed] = useState(false);
@@ -63,7 +64,7 @@ const HomePage = () => {
     try {
       const response = await axios.get('/api/models');
       const models = response.data.models;
-      const options = models.map(model => ({
+      const options = models.map((model: any) => ({
         label: model.model_folder_name,
         value: model.model_folder_name,
         description: model.model_sensors.join(', '),
@@ -83,7 +84,7 @@ const HomePage = () => {
     setCameraFeedType(detail.value);
   };
 
-  const handleModelSelect = ({ detail }) => {
+  const handleModelSelect = ({ detail }: { detail: any }) => {
     setSelectedModel(detail.selectedOption);
     setIsModalVisible(true);
   };
@@ -172,6 +173,12 @@ const HomePage = () => {
         console.error('Error polling model loading status:', error);
         setTimeout(pollModelLoadingStatus, 1000);
     }
+  };
+
+  const handleJoystickMove = (event: any) => {
+    const { x, y } = event;
+    console.log(`Joystick moved to x: ${x}, y: ${y}`);
+    // Add logic to handle joystick movement
   };
 
   const cameraStatusText = sensorStatus.camera_status === 'connected' ? '(Connected)' : '(Not Connected)';
@@ -282,12 +289,18 @@ const HomePage = () => {
                 </div>
               },
               {
-                label: "Manual Model",
+                label: "Manual Mode",
                 id: "manual",
                 content:
                 <div>
                 <h2>Drive</h2>
                 <p>Drive the vehicle manually using the joystick</p>
+                <Joystick
+                  size={100}
+                  baseColor="gray"
+                  stickColor="black"
+                  move={handleJoystickMove}
+                />
                 <h2>Speed</h2>
                 <p>Adjust maximum speed {throttle}%</p>
                 <div style={{ display: 'flex', gap: '10px' }}>
