@@ -7,6 +7,7 @@ import SpaceBetween from "@cloudscape-design/components/space-between";
 import Button from "@cloudscape-design/components/button";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const handleStart = async () => {
   try {
@@ -57,6 +58,7 @@ const getCalibrationThrottle = async () => {
 
 const SteeringContainer = () => {
   const [calibrationData, setCalibrationData] = useState({ mid: 'Value', max: 'Value', min: 'Value' });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCalibrationData = async () => {
@@ -77,7 +79,7 @@ const SteeringContainer = () => {
               direction="horizontal"
               size="xs"
             >
-              <Button>Calibrate</Button>
+              <Button onClick={() => navigate('/recalibrate-steering')}>Calibrate</Button>
             </SpaceBetween>
           }
         >
@@ -99,7 +101,8 @@ const SteeringContainer = () => {
 
 const SpeedContainer = () => {
   const [calibrationData, setCalibrationData] = useState({ mid: 'Value', max: 'Value', min: 'Value' });
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const fetchCalibrationData = async () => {
       const data = await getCalibrationThrottle();
@@ -119,7 +122,7 @@ const SpeedContainer = () => {
               direction="horizontal"
               size="xs"
             >
-              <Button>Calibrate</Button>
+              <Button onClick={() => navigate('/recalibrate-speed')}>Calibrate</Button>
             </SpaceBetween>
           }
         >

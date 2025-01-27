@@ -8,6 +8,8 @@ import ModelsPage from "./pages/models";
 import CalibrationPage from "./pages/calibration";
 import SettingsPage from "./pages/settings";
 import LogsPage from "./pages/logs";
+import RecalibrateSteeringPage from "./pages/recalibrate-steering";
+import RecalibrateSpeedPage from "./pages/recalibrate-speed";
 
 export default function App() {
   const Router = USE_BROWSER_ROUTER ? BrowserRouter : HashRouter;
@@ -22,6 +24,8 @@ export default function App() {
             <Route index path="/logs" element={<LogsPage />} />
             <Route index path="/settings" element={<SettingsPage />} />
             <Route index path="/calibration" element={<CalibrationPage />} />
+            <Route index path="/recalibrate-steering" element={<RecalibrateSteeringPage />} />
+            <Route index path="/recalibrate-speed" element={<RecalibrateSpeedPage />} />
             <Route index path="/models" element={<ModelsPage />} />
             <Route index path="/home" element={<HomePage />} />
             <Route index path="/" element={<HomePage />} />
