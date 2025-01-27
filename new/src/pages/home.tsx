@@ -288,6 +288,12 @@ const HomePage = () => {
                 <div>
                 <h2>Drive</h2>
                 <p>Drive the vehicle manually using the joystick</p>
+                <h2>Speed</h2>
+                <p>Adjust maximum speed {throttle}%</p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                <Button variant="primary" onClick={() => handleThrottle('down')} iconName="angle-down">-</Button>
+                <Button variant="primary" onClick={() => handleThrottle('up')} iconName="angle-up">+</Button>
+                </div>
                 </div>
               }
             ]}
