@@ -25,6 +25,15 @@ const handleStop = async () => {
   }
 };
 
+const setSteeringAngle = async (angle) => {
+  try {
+    const response = await axios.put('api/adjust_calibrating_wheels/angle', { pwm: angle });
+    console.log('Vehicle stopped:', response.data);
+  } catch (error) {
+    console.error('Error stopping vehicle:', error);
+  }
+};
+
 const setCalibration = async () => {
   try {
     const response = await axios.get('/api/set_calibration_mode');
@@ -46,11 +55,48 @@ const getCalibrationAngle = async () => {
 
 export default function RecalibrateSteeringPage() {
   const [activeAnchor, setActiveAnchor] = useState('#ground');
+  const [centerValue, setCenterValue] = useState(0);
+  const [leftValue, setLeftValue] = useState(0);
+  const [rightValue, setRightValue] = useState(0);
   const navigate = useNavigate();
 
+  const [originalCenter, setOriginalCenter] = useState(0);
+  const [originalLeft, setOriginalLeft] = useState(0);
+  const [originalRight, setOriginalRight] = useState(0);
+
+  const handleCenterSliderChange = ({ detail }) => {
+    setCenterValue(detail.value);
+    setSteeringAngle(detail.value);
+  };
+
+  const handleLeftSliderChange = ({ detail }) => {
+    const invertedValue = detail.value > 0 ? -detail.value : Math.abs(detail.value);
+    setLeftValue(detail.value);
+    setSteeringAngle(invertedValue);
+  };
+
+  const handleRightSliderChange = ({ detail }) => {
+    const invertedValue = detail.value > 0 ? -detail.value : Math.abs(detail.value);
+    setRightValue(detail.value);
+    setSteeringAngle(invertedValue);
+  };
+
   useEffect(() => {
+    const fetchCalibrationValues = async () => {
+      const calibrationData = await getCalibrationAngle();
+      if (calibrationData) {
+        setCenterValue(calibrationData.mid);
+        setLeftValue(calibrationData.max);
+        setRightValue(calibrationData.min);
+        setOriginalCenter(calibrationData.mid);
+        setOriginalLeft(calibrationData.max);
+        setOriginalRight(calibrationData.min);
+      }
+    };
+
     setCalibration();
     handleStop();
+    fetchCalibrationValues();
     window.location.hash = '#ground';
     setActiveAnchor('#ground');
   }, []);
@@ -58,12 +104,23 @@ export default function RecalibrateSteeringPage() {
   useEffect(() => {
     const handleHashChange = () => {
       setActiveAnchor(window.location.hash);
+      if (window.location.hash === '#center') {
+        setSteeringAngle(centerValue);
+      } else if (window.location.hash === '#left') {
+        const invertedLeftValue = leftValue > 0 ? -leftValue : Math.abs(leftValue);
+        setLeftValue(invertedLeftValue);
+        setSteeringAngle(invertedLeftValue);
+      } else if (window.location.hash === '#right') {
+        const invertedRightValue = rightValue > 0 ? -rightValue : Math.abs(rightValue);
+        setRightValue(invertedRightValue);
+        setSteeringAngle(invertedRightValue);
+      }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
-  }, []);
+  }, [centerValue, leftValue, rightValue]);
 
   const anchors = [
     {
@@ -93,13 +150,28 @@ export default function RecalibrateSteeringPage() {
     if (direction === 'next' && currentIndex < anchors.length - 1) {
       window.location.hash = anchors[currentIndex + 1].href;
     } else if (direction === 'previous' && currentIndex > 0) {
+      if (activeAnchor === '#left') {
+        setSteeringAngle(originalLeft);
+      } else if (activeAnchor === '#right') {
+        setSteeringAngle(originalRight);
+      }
       window.location.hash = anchors[currentIndex - 1].href;
     }
   };
 
-  const [centerValue, setCenterValue] = useState(0);
-  const [leftValue, setLeftValue] = useState(0);
-  const [rightValue, setRightValue] = useState(0);
+  const handleCancel = () => {
+    if (activeAnchor === '#center') {
+      setSteeringAngle(originalCenter);
+    } else if (activeAnchor === '#left') {
+      setSteeringAngle(originalCenter);
+      setSteeringAngle(originalLeft);
+    } else if (activeAnchor === '#right') {
+      setSteeringAngle(originalCenter);
+      setSteeringAngle(originalLeft);
+      setSteeringAngle(originalRight);
+    }
+    navigate('/calibration');
+  };
 
   return (
     <BaseAppLayout
@@ -135,9 +207,9 @@ export default function RecalibrateSteeringPage() {
                   <h1>Vehicle Steering Recalibration</h1>
                   <h2>Center steering</h2>
                   <p>Increase or decrease the Center value to center your vehicle. It is centered when any of the wheels points forward. Use a ruler or straight edge to ensure it is aligned with the rear wheel.</p>
-                  <p>Center value</p>
+                  <p>Center value = {centerValue}</p>
                   <Slider
-                    onChange={({ detail }) => setCenterValue(detail.value)}
+                    onChange={handleCenterSliderChange}
                     value={centerValue}
                     max={30}
                     min={-30}
@@ -163,9 +235,9 @@ export default function RecalibrateSteeringPage() {
                   <h1>Vehicle Steering Recalibration</h1>
                   <h2>Maximum left steering</h2>
                   <p>Increase the Value to turn the front wheels to the left until they stop turning.</p>
-                  <p>Value</p>
+                  <p>Value = {leftValue > 0 ? -leftValue : Math.abs(leftValue)}</p>
                   <Slider
-                    onChange={({ detail }) => setLeftValue(detail.value)}
+                    onChange={handleLeftSliderChange}
                     value={leftValue}
                     valueFormatter={value => value > 0 ? -value : Math.abs(value)}
                     max={10}
@@ -187,10 +259,10 @@ export default function RecalibrateSteeringPage() {
                   <h1>Vehicle Steering Recalibration</h1>
                   <h2>Maximum right steering</h2>
                   <p>Increase the Value to turn the front wheels to the right until they stop turning.</p>
-                  <p>Value</p>
+                  <p>Value = {rightValue > 0 ? -rightValue : Math.abs(rightValue)}</p>
                   <Slider
-                    onChange={({ detail }) => setLeftValue(detail.value)}
-                    value={leftValue}
+                    onChange={handleRightSliderChange}
+                    value={rightValue}
                     valueFormatter={value => value > 0 ? -value : Math.abs(value)}
                     max={50}
                     min={-10}
@@ -205,7 +277,7 @@ export default function RecalibrateSteeringPage() {
             </ColumnLayout>
             )}
             <SpaceBetween direction="horizontal" size="xs">
-              <Button onClick={() => navigate('/calibration')}>Cancel</Button>
+              <Button onClick={handleCancel}>Cancel</Button>
               {activeAnchor !== '#ground' && (
                 <Button onClick={() => handleNavigation('previous')}>Previous</Button>
               )}
