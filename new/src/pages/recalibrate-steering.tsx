@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { TextContent, Container, Grid, ColumnLayout, Button, SpaceBetween } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import axios from 'axios';
@@ -64,18 +64,32 @@ export default function RecalibrateSteeringPage() {
   const [originalLeft, setOriginalLeft] = useState(0);
   const [originalRight, setOriginalRight] = useState(0);
 
+  const lastUpdateTime = useRef<number>(0);
+
   const handleCenterSliderChange = ({ detail }) => {
+    const now = Date.now();
+    if (now - lastUpdateTime.current < 200) return;
+    lastUpdateTime.current = now;
+
     setCenterValue(detail.value);
     setSteeringAngle(detail.value);
   };
 
   const handleLeftSliderChange = ({ detail }) => {
+    const now = Date.now();
+    if (now - lastUpdateTime.current < 200) return;
+    lastUpdateTime.current = now;
+
     const invertedValue = detail.value > 0 ? -detail.value : Math.abs(detail.value);
     setLeftValue(detail.value);
     setSteeringAngle(invertedValue);
   };
 
   const handleRightSliderChange = ({ detail }) => {
+    const now = Date.now();
+    if (now - lastUpdateTime.current < 200) return;
+    lastUpdateTime.current = now;
+
     const invertedValue = detail.value > 0 ? -detail.value : Math.abs(detail.value);
     setRightValue(detail.value);
     setSteeringAngle(invertedValue);
