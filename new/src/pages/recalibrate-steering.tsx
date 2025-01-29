@@ -105,6 +105,58 @@ export default function RecalibrateSteeringPage() {
     setSteeringAngle(invertedValue);
   };
 
+  const handleCenterSliderLeft = () => {
+    setCenterValue(prev => {
+      const newValue = Math.max(prev - 1, -30);
+      setSteeringAngle(newValue);
+      return newValue;
+    });
+  };
+
+  const handleCenterSliderRight = () => {
+    setCenterValue(prev => {
+      const newValue = Math.min(prev + 1, 30);
+      setSteeringAngle(newValue);
+      return newValue;
+    });
+  };
+
+  const handleLeftSliderLeft = () => {
+    setLeftValue(prev => {
+      const newValue = Math.max(prev - 1, -50);
+      const invertedValue = newValue > 0 ? -newValue : Math.abs(newValue);
+      setSteeringAngle(invertedValue);
+      return newValue;
+    });
+  };
+
+  const handleLeftSliderRight = () => {
+    setLeftValue(prev => {
+      const newValue = Math.min(prev + 1, 10);
+      const invertedValue = newValue > 0 ? -newValue : Math.abs(newValue);
+      setSteeringAngle(invertedValue);
+      return newValue;
+    });
+  };
+
+  const handleRightSliderLeft = () => {
+    setRightValue(prev => {
+      const newValue = Math.max(prev - 1, -10);
+      const invertedValue = newValue > 0 ? -newValue : Math.abs(newValue);
+      setSteeringAngle(invertedValue);
+      return newValue;
+    });
+  };
+
+  const handleRightSliderRight = () => {
+    setRightValue(prev => {
+      const newValue = Math.min(prev + 1, 50);
+      const invertedValue = newValue > 0 ? -newValue : Math.abs(newValue);
+      setSteeringAngle(invertedValue);
+      return newValue;
+    });
+  };
+
   useEffect(() => {
     const fetchCalibrationValues = async () => {
       const calibrationData = await getCalibrationAngle();
@@ -236,13 +288,17 @@ export default function RecalibrateSteeringPage() {
                   <h2>Center steering</h2>
                   <p>Increase or decrease the Center value to center your vehicle. It is centered when any of the wheels points forward. Use a ruler or straight edge to ensure it is aligned with the rear wheel.</p>
                   <p>Center value = {centerValue}</p>
-                  <Slider
-                    onChange={handleCenterSliderChange}
-                    value={centerValue}
-                    max={30}
-                    min={-30}
-                    referenceValues={[-20, -10, 0, 10, 20]}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button onClick={handleCenterSliderLeft}>{'<'}</Button>
+                    <Slider
+                      onChange={handleCenterSliderChange}
+                      value={centerValue}
+                      max={30}
+                      min={-30}
+                      referenceValues={[-20, -10, 0, 10, 20]}
+                    />
+                    <Button onClick={handleCenterSliderRight}>{'>'}</Button>
+                  </div>
                   <Alert
                     statusIconAriaLabel="Info"
                   >
@@ -264,14 +320,18 @@ export default function RecalibrateSteeringPage() {
                   <h2>Maximum left steering</h2>
                   <p>Increase the Value to turn the front wheels to the left until they stop turning.</p>
                   <p>Value = {leftValue > 0 ? -leftValue : Math.abs(leftValue)}</p>
-                  <Slider
-                    onChange={handleLeftSliderChange}
-                    value={leftValue}
-                    valueFormatter={value => value > 0 ? -value : Math.abs(value)}
-                    max={10}
-                    min={-50}
-                    referenceValues={[-40, -30, -20, -10, 0]}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button onClick={handleLeftSliderLeft}>{'<'}</Button>
+                    <Slider
+                      onChange={handleLeftSliderChange}
+                      value={leftValue}
+                      valueFormatter={value => value > 0 ? -value : Math.abs(value)}
+                      max={10}
+                      min={-50}
+                      referenceValues={[-40, -30, -20, -10, 0]}
+                    />
+                    <Button onClick={handleLeftSliderRight}>{'>'}</Button>
+                  </div>
                   <p>Estimated angle:</p>
                 </TextContent>
               </div>
@@ -288,14 +348,18 @@ export default function RecalibrateSteeringPage() {
                   <h2>Maximum right steering</h2>
                   <p>Increase the Value to turn the front wheels to the right until they stop turning.</p>
                   <p>Value = {rightValue > 0 ? -rightValue : Math.abs(rightValue)}</p>
-                  <Slider
-                    onChange={handleRightSliderChange}
-                    value={rightValue}
-                    valueFormatter={value => value > 0 ? -value : Math.abs(value)}
-                    max={50}
-                    min={-10}
-                    referenceValues={[0, 10, 20, 30, 40]}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button onClick={handleRightSliderLeft}>{'<'}</Button>
+                    <Slider
+                      onChange={handleRightSliderChange}
+                      value={rightValue}
+                      valueFormatter={value => value > 0 ? -value : Math.abs(value)}
+                      max={50}
+                      min={-10}
+                      referenceValues={[0, 10, 20, 30, 40]}
+                    />
+                    <Button onClick={handleRightSliderRight}>{'>'}</Button>
+                  </div>
                   <p>Estimated angle:</p>
                 </TextContent>
               </div>

@@ -97,6 +97,38 @@ export default function RecalibrateSpeedPage() {
     setBackwardValue(detail.value);
   };
 
+  const handleStoppedSliderLeft = () => {
+    setStoppedValue(prev => Math.max(prev - 1, -30));
+  };
+
+  const handleStoppedSliderRight = () => {
+    setStoppedValue(prev => Math.min(prev + 1, 30));
+  };
+
+  const handleForwardSliderLeft = () => {
+    setForwardValue(prev => Math.max(prev - 1, 0));
+  };
+
+  const handleForwardSliderRight = () => {
+    setForwardValue(prev => Math.min(prev + 1, 50));
+  };
+
+  const handleBackwardSliderLeft = () => {
+    setBackwardValue(prev => Math.max(prev - 1, -50));
+  };
+
+  const handleBackwardSliderRight = () => {
+    setBackwardValue(prev => Math.min(prev + 1, 0));
+  };
+
+  const handleDirectionSliderLeft = () => {
+    setStoppedValue(prev => Math.max(prev - 1, 0));
+  };
+
+  const handleDirectionSliderRight = () => {
+    setStoppedValue(prev => Math.min(prev + 1, 50));
+  };
+
   useEffect(() => {
     const fetchCalibrationValues = async () => {
       const calibrationData = await getCalibrationThrottle();
@@ -193,8 +225,8 @@ export default function RecalibrateSpeedPage() {
                 <div>
                   <TextContent>
                     <h1>Vehicle Speed Recalibration</h1>
-                    <h2>Raise your vehicle</h2>
-                    <p>Ensure your vehicle is raised off the ground to prevent it from moving during calibration.</p>
+                    <h2>Raise vehicle</h2>
+                    <p>Raise your vehicle to keep wheels from touching the ground and to key them moving freely.</p>
                     <Alert
                     statusIconAriaLabel="Warning"
                     type="warning"
@@ -214,16 +246,20 @@ export default function RecalibrateSpeedPage() {
               <div>
                 <TextContent>
                   <h1>Vehicle Speed Recalibration</h1>
-                  <h2>Calibrate stopped speed</h2>
-                  <p>Adjust the stopped speed value to ensure your vehicle remains stationary when no throttle is applied.</p>
-                  <p>Stopped speed value = {stoppedValue}</p>
-                  <Slider
-                    onChange={handleStoppedSliderChange}
-                    value={stoppedValue}
-                    max={30}
-                    min={-30}
-                    referenceValues={[-20, -10, 0, 10, 20]}
-                  />
+                  <h2>Stopped speed</h2>
+                  <p>With the vehicle’s wheels free to spin, increase or decrease the Stopped value below until the wheels stop spinning.</p>
+                  <p>Stopped value = {stoppedValue}</p>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button onClick={handleStoppedSliderLeft}>{'<'}</Button>
+                    <Slider
+                      onChange={handleStoppedSliderChange}
+                      value={stoppedValue}
+                      max={30}
+                      min={-30}
+                      referenceValues={[-20, -10, 0, 10, 20]}
+                    />
+                    <Button onClick={handleStoppedSliderRight}>{'>'}</Button>
+                  </div>
                 </TextContent>
               </div>
               <div>
@@ -237,15 +273,19 @@ export default function RecalibrateSpeedPage() {
                 <TextContent>
                   <h1>Vehicle Speed Recalibration</h1>
                   <h2>Set forward direction</h2>
-                  <p>Ensure the vehicle moves forward when the forward throttle is applied.</p>
-                  <Slider
-                    onChange={handleStoppedSliderChange}
-                    value={stoppedValue}
-                    max={50}
-                    min={0}
-                    referenceValues={[10, 20, 30, 40]}
-                  />
-                                    <Alert
+                  <p>Point the vehicle’s front to the right as shown in the diagram. Push the left or right arrow to make the wheels turn. The vehicle will drive forward if the wheels turns clock-wise.</p>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button onClick={handleDirectionSliderLeft}>{'<'}</Button>
+                    <Slider
+                      onChange={handleStoppedSliderChange}
+                      value={stoppedValue}
+                      max={50}
+                      min={0}
+                      referenceValues={[10, 20, 30, 40]}
+                    />
+                    <Button onClick={handleDirectionSliderRight}>{'>'}</Button>
+                  </div>
+                  <Alert
                     statusIconAriaLabel="Warning"
                     type="warning"
                   >
@@ -271,16 +311,20 @@ export default function RecalibrateSpeedPage() {
               <div>
                 <TextContent>
                   <h1>Vehicle Speed Recalibration</h1>
-                  <h2>Calibrate maximum forward speed</h2>
-                  <p>Adjust the maximum forward speed value to set the top speed of your vehicle when moving forward.</p>
+                  <h2>Maximum forward speed</h2>
+                  <p>Move the slider to set the maximum forward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
                   <p>Maximum forward speed value = {forwardValue}</p>
-                  <Slider
-                    onChange={handleForwardSliderChange}
-                    value={forwardValue}
-                    max={50}
-                    min={0}
-                    referenceValues={[10, 20, 30, 40]}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button onClick={handleForwardSliderLeft}>{'<'}</Button>
+                    <Slider
+                      onChange={handleForwardSliderChange}
+                      value={forwardValue}
+                      max={50}
+                      min={0}
+                      referenceValues={[10, 20, 30, 40]}
+                    />
+                    <Button onClick={handleForwardSliderRight}>{'>'}</Button>
+                  </div>
                 </TextContent>
               </div>
               <div>
@@ -293,16 +337,20 @@ export default function RecalibrateSpeedPage() {
               <div>
                 <TextContent>
                   <h1>Vehicle Speed Recalibration</h1>
-                  <h2>Calibrate maximum backward speed</h2>
-                  <p>Adjust the maximum backward speed value to set the top speed of your vehicle when moving backward.</p>
+                  <h2>Maximum backward speed</h2>
+                  <p>Move the slider to set the maximum backward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
                   <p>Maximum backward speed value = {backwardValue}</p>
-                  <Slider
-                    onChange={handleBackwardSliderChange}
-                    value={backwardValue}
-                    max={0}
-                    min={-50}
-                    referenceValues={[-40, -30, -20, -10]}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button onClick={handleBackwardSliderLeft}>{'<'}</Button>
+                    <Slider
+                      onChange={handleBackwardSliderChange}
+                      value={backwardValue}
+                      max={0}
+                      min={-50}
+                      referenceValues={[-40, -30, -20, -10]}
+                    />
+                    <Button onClick={handleBackwardSliderRight}>{'>'}</Button>
+                  </div>
                 </TextContent>
               </div>
               <div>
