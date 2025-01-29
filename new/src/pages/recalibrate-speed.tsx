@@ -45,9 +45,9 @@ const getCalibrationThrottle = async () => {
   }
 };
 
-const setCalibrationThrottle = async (stopped: number, forward: number, backward: number) => {
+const setCalibrationThrottle = async (stopped: number, forward: number, backward: number, polarity: number) => {
   try {
-    const response = await axios.put('/api/set_calibration/throttle', { stopped, forward, backward });
+    const response = await axios.put('/api/set_calibration/throttle', { stopped, forward, backward, polarity });
     console.log('Set calibration throttle:', response.data);
   } catch (error) {
     console.error('Error setting calibration throttle:', error);
@@ -59,6 +59,7 @@ export default function RecalibrateSpeedPage() {
   const [stoppedValue, setStoppedValue] = useState(0);
   const [forwardValue, setForwardValue] = useState(0);
   const [backwardValue, setBackwardValue] = useState(0);
+  const [polarity, setPolarity] = useState(0);
   const navigate = useNavigate();
 
   const [originalStopped, setOriginalStopped] = useState(0);
@@ -136,6 +137,7 @@ export default function RecalibrateSpeedPage() {
         setStoppedValue(calibrationData.stopped);
         setForwardValue(calibrationData.forward);
         setBackwardValue(calibrationData.backward);
+        setPolarity(calibrationData.polarity);
         setOriginalStopped(calibrationData.stopped);
         setOriginalForward(calibrationData.forward);
         setOriginalBackward(calibrationData.backward);
@@ -202,7 +204,7 @@ export default function RecalibrateSpeedPage() {
 
   const handleDone = async () => {
     await setCalibration();
-    await setCalibrationThrottle(stoppedValue, forwardValue, backwardValue);
+    await setCalibrationThrottle(stoppedValue, forwardValue, backwardValue, polarity);
     navigate('/calibration');
   };
 
