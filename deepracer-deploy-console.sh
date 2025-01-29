@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#sudo cp /opt/aws/deepracer/lib/device_console /opt/aws/deepracer/lib/device_console_old -r
 unzip deepracer-console-new.zip -d temp_website
 sudo cp -a temp_website/static/. /opt/aws/deepracer/lib/device_console/static/ -r
 sudo cp temp_website/index.html /opt/aws/deepracer/lib/device_console/templates -f
