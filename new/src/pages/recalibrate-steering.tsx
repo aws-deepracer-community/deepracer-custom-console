@@ -53,11 +53,21 @@ const getCalibrationAngle = async () => {
   }
 };
 
+const setCalibrationAngle = async (center: number, left: number, right: number, polar: number) => {
+  try {
+    const response = await axios.put('/api/set_calibration/angle', { mid: center, min: left, max: right, polarity: polar });
+    console.log('Set calibration angle:', response.data);
+  } catch (error) {
+    console.error('Error setting calibration angle:', error);
+  }
+};
+
 export default function RecalibrateSteeringPage() {
   const [activeAnchor, setActiveAnchor] = useState('#ground');
   const [centerValue, setCenterValue] = useState(0);
   const [leftValue, setLeftValue] = useState(0);
   const [rightValue, setRightValue] = useState(0);
+  const [polarity, setPolarity] = useState(0);
   const navigate = useNavigate();
 
   const [originalCenter, setOriginalCenter] = useState(0);
@@ -68,7 +78,7 @@ export default function RecalibrateSteeringPage() {
 
   const handleCenterSliderChange = ({ detail }) => {
     const now = Date.now();
-    if (now - lastUpdateTime.current < 200) return;
+    if (now - lastUpdateTime.current < 100) return;
     lastUpdateTime.current = now;
 
     setCenterValue(detail.value);
@@ -77,7 +87,7 @@ export default function RecalibrateSteeringPage() {
 
   const handleLeftSliderChange = ({ detail }) => {
     const now = Date.now();
-    if (now - lastUpdateTime.current < 200) return;
+    if (now - lastUpdateTime.current < 100) return;
     lastUpdateTime.current = now;
 
     const invertedValue = detail.value > 0 ? -detail.value : Math.abs(detail.value);
@@ -87,7 +97,7 @@ export default function RecalibrateSteeringPage() {
 
   const handleRightSliderChange = ({ detail }) => {
     const now = Date.now();
-    if (now - lastUpdateTime.current < 200) return;
+    if (now - lastUpdateTime.current < 100) return;
     lastUpdateTime.current = now;
 
     const invertedValue = detail.value > 0 ? -detail.value : Math.abs(detail.value);
@@ -102,6 +112,7 @@ export default function RecalibrateSteeringPage() {
         setCenterValue(calibrationData.mid);
         setLeftValue(calibrationData.max);
         setRightValue(calibrationData.min);
+        setPolarity(calibrationData.polarity);
         setOriginalCenter(calibrationData.mid);
         setOriginalLeft(calibrationData.max);
         setOriginalRight(calibrationData.min);
@@ -121,13 +132,9 @@ export default function RecalibrateSteeringPage() {
       if (window.location.hash === '#center') {
         setSteeringAngle(centerValue);
       } else if (window.location.hash === '#left') {
-        const invertedLeftValue = leftValue > 0 ? -leftValue : Math.abs(leftValue);
-        setLeftValue(invertedLeftValue);
-        setSteeringAngle(invertedLeftValue);
+        setSteeringAngle(leftValue);
       } else if (window.location.hash === '#right') {
-        const invertedRightValue = rightValue > 0 ? -rightValue : Math.abs(rightValue);
-        setRightValue(invertedRightValue);
-        setSteeringAngle(invertedRightValue);
+        setSteeringAngle(rightValue);
       }
     };
     window.addEventListener('hashchange', handleHashChange);
@@ -184,6 +191,13 @@ export default function RecalibrateSteeringPage() {
       setSteeringAngle(originalLeft);
       setSteeringAngle(originalRight);
     }
+    navigate('/calibration');
+  };
+
+  const handleDone = async () => {
+    await setCalibration();
+    await setCalibrationAngle(centerValue, leftValue, rightValue, polarity);
+    setSteeringAngle(centerValue);
     navigate('/calibration');
   };
 
@@ -299,7 +313,7 @@ export default function RecalibrateSteeringPage() {
                 <Button variant="primary" onClick={() => handleNavigation('next')}>Next</Button>
               )}
               {activeAnchor === '#right' && (
-                <Button variant="primary" onClick={() => navigate('/calibration')}>Done</Button>
+                <Button variant="primary" onClick={handleDone}>Done</Button>
               )}
             </SpaceBetween>
           </Container>
