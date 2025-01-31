@@ -45,12 +45,21 @@ const getCalibrationThrottle = async () => {
   }
 };
 
-const setCalibrationThrottle = async (stopped: number, forward: number, backward: number, polarity: number) => {
+const setCalibrationThrottle = async (stopped: number, forward: number, backward: number, polar: number) => {
   try {
-    const response = await axios.put('/api/set_calibration/throttle', { stopped, forward, backward, polarity });
+    const response = await axios.put('/api/set_calibration/throttle', { mid: stopped, min: forward, max: backward, polarity: polar });
     console.log('Set calibration throttle:', response.data);
   } catch (error) {
     console.error('Error setting calibration throttle:', error);
+  }
+};
+
+const adjustCalibratingWheelsThrottle = async (throttleValue: number) => {
+  try {
+    const response = await axios.post('/api/adjust_calibrating_wheels/throttle', { pwm: throttleValue });
+    console.log('Adjusted calibrating wheels throttle:', response.data);
+  } catch (error) {
+    console.error('Error adjusting calibrating wheels throttle:', error);
   }
 };
 
@@ -74,6 +83,7 @@ export default function RecalibrateSpeedPage() {
     lastUpdateTime.current = now;
 
     setStoppedValue(detail.value);
+    adjustCalibratingWheelsThrottle(detail.value);
   };
 
   const handleDirectionSliderChange = ({ detail }) => {
@@ -88,6 +98,7 @@ export default function RecalibrateSpeedPage() {
     lastUpdateTime.current = now;
 
     setForwardValue(detail.value);
+    adjustCalibratingWheelsThrottle(detail.value);
   };
 
   const handleBackwardSliderChange = ({ detail }) => {
@@ -96,51 +107,61 @@ export default function RecalibrateSpeedPage() {
     lastUpdateTime.current = now;
 
     setBackwardValue(detail.value);
+    adjustCalibratingWheelsThrottle(detail.value);
   };
 
   const handleStoppedSliderLeft = () => {
     setStoppedValue(prev => Math.max(prev - 1, -30));
+    adjustCalibratingWheelsThrottle(prev => Math.max(prev - 1, -30));
   };
 
   const handleStoppedSliderRight = () => {
     setStoppedValue(prev => Math.min(prev + 1, 30));
+    adjustCalibratingWheelsThrottle(prev => Math.min(prev + 1, 30));
   };
 
   const handleForwardSliderLeft = () => {
     setForwardValue(prev => Math.max(prev - 1, 0));
+    adjustCalibratingWheelsThrottle(prev => Math.max(prev - 1, 0));
   };
 
   const handleForwardSliderRight = () => {
     setForwardValue(prev => Math.min(prev + 1, 50));
+    adjustCalibratingWheelsThrottle(prev => Math.min(prev + 1, 50));
   };
 
   const handleBackwardSliderLeft = () => {
     setBackwardValue(prev => Math.max(prev - 1, -50));
+    adjustCalibratingWheelsThrottle(prev => Math.max(prev - 1, -50));
   };
 
   const handleBackwardSliderRight = () => {
     setBackwardValue(prev => Math.min(prev + 1, 0));
+    adjustCalibratingWheelsThrottle(prev => Math.min(prev + 1, 0));
   };
 
   const handleDirectionSliderLeft = () => {
     setStoppedValue(prev => Math.max(prev - 1, 0));
+    adjustCalibratingWheelsThrottle(prev => Math.max(prev - 1, 0));
   };
 
   const handleDirectionSliderRight = () => {
     setStoppedValue(prev => Math.min(prev + 1, 50));
+    adjustCalibratingWheelsThrottle(prev => Math.min(prev + 1, 50));
   };
 
   useEffect(() => {
     const fetchCalibrationValues = async () => {
       const calibrationData = await getCalibrationThrottle();
       if (calibrationData) {
-        setStoppedValue(calibrationData.stopped);
-        setForwardValue(calibrationData.forward);
-        setBackwardValue(calibrationData.backward);
+        setStoppedValue(calibrationData.mid);
+        setForwardValue(calibrationData.min);
+        setBackwardValue(calibrationData.max);
         setPolarity(calibrationData.polarity);
-        setOriginalStopped(calibrationData.stopped);
-        setOriginalForward(calibrationData.forward);
-        setOriginalBackward(calibrationData.backward);
+        setOriginalStopped(calibrationData.mid);
+        setOriginalForward(calibrationData.min);
+        setOriginalBackward(calibrationData.max);
+        setChecked(calibrationData.polarity === -1);
       }
     };
 
@@ -154,12 +175,15 @@ export default function RecalibrateSpeedPage() {
   useEffect(() => {
     const handleHashChange = () => {
       setActiveAnchor(window.location.hash);
+      if (window.location.hash === '#stopped') {
+        adjustCalibratingWheelsThrottle(stoppedValue);
+      }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
-  }, []);
+  }, [stoppedValue]);
 
   const anchors = [
     {
@@ -199,6 +223,8 @@ export default function RecalibrateSpeedPage() {
   };
 
   const handleCancel = () => {
+    handleStop();
+    adjustCalibratingWheelsThrottle(originalStopped);
     navigate('/calibration');
   };
 
@@ -209,6 +235,12 @@ export default function RecalibrateSpeedPage() {
   };
 
   const [checked, setChecked] = useState(false);
+
+  const handleToggleChange = ({ detail }) => {
+    setChecked(detail.checked);
+    setPolarity(detail.checked ? -1 : 1);
+  };
+
   return (
     <BaseAppLayout
       content={
@@ -293,9 +325,7 @@ export default function RecalibrateSpeedPage() {
                   >
                     If the wheels turn counter clock-wise, toggle on Reverse direction.
                     <Toggle
-                      onChange={({ detail }) =>
-                        setChecked(detail.checked)
-                      }
+                      onChange={handleToggleChange}
                       checked={checked}
                     >
                       Reverse direction
