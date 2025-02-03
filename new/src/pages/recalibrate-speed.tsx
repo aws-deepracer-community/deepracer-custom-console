@@ -72,6 +72,7 @@ export default function RecalibrateSpeedPage() {
   const navigate = useNavigate();
 
   const [originalStopped, setOriginalStopped] = useState(0);
+  const [originalPolarity, setOriginalPolarity] = useState(0);
   const [originalForward, setOriginalForward] = useState(0);
   const [originalBackward, setOriginalBackward] = useState(0);
 
@@ -161,6 +162,7 @@ export default function RecalibrateSpeedPage() {
         setOriginalStopped(calibrationData.mid);
         setOriginalForward(calibrationData.min);
         setOriginalBackward(calibrationData.max);
+        setOriginalPolarity(calibrationData.polarity);
         setChecked(calibrationData.polarity === -1);
       }
     };
@@ -239,6 +241,15 @@ export default function RecalibrateSpeedPage() {
   const handleToggleChange = ({ detail }) => {
     setChecked(detail.checked);
     setPolarity(detail.checked ? -1 : 1);
+  };
+
+  const getAdjustedRange = (baseValue) => {
+    return checked ? baseValue - stoppedValue : baseValue + stoppedValue;
+  };
+
+  const getReferenceValues = (min, max) => {
+    const step = (max - min) / 5;
+    return [min + step, min + 2 * step, min + 3 * step, min + 4 * step];
   };
 
   return (
@@ -351,9 +362,9 @@ export default function RecalibrateSpeedPage() {
                     <Slider
                       onChange={handleForwardSliderChange}
                       value={forwardValue}
-                      max={50}
-                      min={0}
-                      referenceValues={[10, 20, 30, 40]}
+                      max={getAdjustedRange(50)}
+                      min={getAdjustedRange(0)}
+                      referenceValues={getReferenceValues(getAdjustedRange(0), getAdjustedRange(50))}
                     />
                     <Button onClick={handleForwardSliderRight}>{'>'}</Button>
                   </div>
@@ -377,9 +388,9 @@ export default function RecalibrateSpeedPage() {
                     <Slider
                       onChange={handleBackwardSliderChange}
                       value={backwardValue}
-                      max={0}
-                      min={-50}
-                      referenceValues={[-40, -30, -20, -10]}
+                      max={getAdjustedRange(0)}
+                      min={getAdjustedRange(-50)}
+                      referenceValues={getReferenceValues(getAdjustedRange(-50), getAdjustedRange(0))}
                     />
                     <Button onClick={handleBackwardSliderRight}>{'>'}</Button>
                   </div>
