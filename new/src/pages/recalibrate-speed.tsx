@@ -156,8 +156,8 @@ export default function RecalibrateSpeedPage() {
       const calibrationData = await getCalibrationThrottle();
       if (calibrationData) {
         setStoppedValue(calibrationData.mid);
-        setForwardValue(calibrationData.min);
-        setBackwardValue(calibrationData.max);
+        setForwardValue(Math.abs(calibrationData.min)); // Show absolute value initially
+        setBackwardValue(-Math.abs(calibrationData.max)); // Show negative value initially
         setPolarity(calibrationData.polarity);
         setOriginalStopped(calibrationData.mid);
         setOriginalForward(calibrationData.min);
