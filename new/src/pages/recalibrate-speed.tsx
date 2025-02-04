@@ -208,13 +208,19 @@ export default function RecalibrateSpeedPage() {
       setActiveAnchor(window.location.hash);
       if (window.location.hash === '#stopped') {
         adjustCalibratingWheelsThrottle(stoppedValue);
+      } else if (window.location.hash === '#direction') {
+        adjustCalibratingWheelsThrottle(forwardDirectionSpeed);
+      } else if (window.location.hash === '#forward') {
+        adjustCalibratingWheelsThrottle(forwardValue);
+      } else if (window.location.hash === '#backward') {
+        adjustCalibratingWheelsThrottle(backwardValue);
       }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
-  }, [stoppedValue]);
+  }, [stoppedValue, forwardDirectionSpeed, forwardValue, backwardValue]);
 
   const anchors = [
     {
@@ -344,92 +350,92 @@ export default function RecalibrateSpeedPage() {
             )}
             {activeAnchor === '#direction' && (
               <ColumnLayout columns={2} variant="text-grid">
-              <div>
-                <TextContent>
-                  <h1>Vehicle Speed Recalibration</h1>
-                  <h2>Set forward direction</h2>
-                  <p>Point the vehicle’s front to the right as shown in the diagram. Push the left or right arrow to make the wheels turn. The vehicle will drive forward if the wheels turns clock-wise.</p>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Button onClick={handleDirectionSliderLeft}>{'<'}</Button>
-                    <Slider
-                      onChange={handleDirectionSliderChange}
-                      value={forwardDirectionSpeed}
-                      max={50}
-                      min={0}
-                      referenceValues={[10, 20, 30, 40]}
-                    />
-                    <Button onClick={handleDirectionSliderRight}>{'>'}</Button>
-                  </div>
-                  <Alert
-                    statusIconAriaLabel="Warning"
-                    type="warning"
-                  >
-                    If the wheels turn counter clock-wise, toggle on Reverse direction.
-                    <Toggle
-                      onChange={handleToggleChange}
-                      checked={checked}
+                <div>
+                  <TextContent>
+                    <h1>Vehicle Speed Recalibration</h1>
+                    <h2>Set forward direction</h2>
+                    <p>Point the vehicle’s front to the right as shown in the diagram. Push the left or right arrow to make the wheels turn. The vehicle will drive forward if the wheels turns clock-wise.</p>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Button onClick={handleDirectionSliderLeft}>{'<'}</Button>
+                      <Slider
+                        onChange={handleDirectionSliderChange}
+                        value={forwardDirectionSpeed}
+                        max={50}
+                        min={0}
+                        referenceValues={[10, 20, 30, 40]}
+                      />
+                      <Button onClick={handleDirectionSliderRight}>{'>'}</Button>
+                    </div>
+                    <Alert
+                      statusIconAriaLabel="Warning"
+                      type="warning"
                     >
-                      Reverse direction
-                    </Toggle>
-                  </Alert>
-                </TextContent>
-              </div>
-              <div>
-                <img src="static/calibrate_forward.svg" alt="Set Forward Direction" />
-              </div>
-            </ColumnLayout>
+                      If the wheels turn counter clock-wise, toggle on Reverse direction.
+                      <Toggle
+                        onChange={handleToggleChange}
+                        checked={checked}
+                      >
+                        Reverse direction
+                      </Toggle>
+                    </Alert>
+                  </TextContent>
+                </div>
+                <div>
+                  <img src="static/calibrate_forward.svg" alt="Set Forward Direction" />
+                </div>
+              </ColumnLayout>
             )}
             {activeAnchor === '#forward' && (
               <ColumnLayout columns={2} variant="text-grid">
-              <div>
-                <TextContent>
-                  <h1>Vehicle Speed Recalibration</h1>
-                  <h2>Maximum forward speed</h2>
-                  <p>Move the slider to set the maximum forward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
-                  <p>Maximum forward speed value = {forwardValue}</p>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Button onClick={handleForwardSliderLeft}>{'<'}</Button>
-                    <Slider
-                      onChange={handleForwardSliderChange}
-                      value={forwardValue}
-                      max={getAdjustedRange(50)}
-                      min={getAdjustedRange(0)}
-                      referenceValues={getReferenceValues(getAdjustedRange(0), getAdjustedRange(50))}
-                    />
-                    <Button onClick={handleForwardSliderRight}>{'>'}</Button>
-                  </div>
-                </TextContent>
-              </div>
-              <div>
-                <img src="static/calibrate_max_forward.svg" alt="Calibrate Forward Speed" />
-              </div>
-            </ColumnLayout>
+                <div>
+                  <TextContent>
+                    <h1>Vehicle Speed Recalibration</h1>
+                    <h2>Maximum forward speed</h2>
+                    <p>Move the slider to set the maximum forward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
+                    <p>Maximum forward speed value = {forwardValue}</p>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Button onClick={handleForwardSliderLeft}>{'<'}</Button>
+                      <Slider
+                        onChange={handleForwardSliderChange}
+                        value={forwardValue}
+                        max={getAdjustedRange(50)}
+                        min={getAdjustedRange(0)}
+                        referenceValues={getReferenceValues(getAdjustedRange(0), getAdjustedRange(50))}
+                      />
+                      <Button onClick={handleForwardSliderRight}>{'>'}</Button>
+                    </div>
+                  </TextContent>
+                </div>
+                <div>
+                  <img src="static/calibrate_max_forward.svg" alt="Calibrate Forward Speed" />
+                </div>
+              </ColumnLayout>
             )}
             {activeAnchor === '#backward' && (
               <ColumnLayout columns={2} variant="text-grid">
-              <div>
-                <TextContent>
-                  <h1>Vehicle Speed Recalibration</h1>
-                  <h2>Maximum backward speed</h2>
-                  <p>Move the slider to set the maximum backward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
-                  <p>Maximum backward speed value = {backwardValue}</p>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Button onClick={handleBackwardSliderLeft}>{'<'}</Button>
-                    <Slider
-                      onChange={handleBackwardSliderChange}
-                      value={backwardValue}
-                      max={getAdjustedRange(0)}
-                      min={getAdjustedRange(-50)}
-                      referenceValues={getReferenceValues(getAdjustedRange(-50), getAdjustedRange(0))}
-                    />
-                    <Button onClick={handleBackwardSliderRight}>{'>'}</Button>
-                  </div>
-                </TextContent>
-              </div>
-              <div>
-                <img src="static/calibrate_max_backward.svg" alt="Calibrate Backward Speed" />
-              </div>
-            </ColumnLayout>
+                <div>
+                  <TextContent>
+                    <h1>Vehicle Speed Recalibration</h1>
+                    <h2>Maximum backward speed</h2>
+                    <p>Move the slider to set the maximum backward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
+                    <p>Maximum backward speed value = {backwardValue}</p>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Button onClick={handleBackwardSliderLeft}>{'<'}</Button>
+                      <Slider
+                        onChange={handleBackwardSliderChange}
+                        value={backwardValue}
+                        max={getAdjustedRange(0)}
+                        min={getAdjustedRange(-50)}
+                        referenceValues={getReferenceValues(getAdjustedRange(-50), getAdjustedRange(0))}
+                      />
+                      <Button onClick={handleBackwardSliderRight}>{'>'}</Button>
+                    </div>
+                  </TextContent>
+                </div>
+                <div>
+                  <img src="static/calibrate_max_backward.svg" alt="Calibrate Backward Speed" />
+                </div>
+              </ColumnLayout>
             )}
             <SpaceBetween direction="horizontal" size="xs">
               <Button onClick={handleCancel}>Cancel</Button>
