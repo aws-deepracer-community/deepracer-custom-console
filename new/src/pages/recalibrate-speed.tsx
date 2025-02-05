@@ -8,15 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import Alert from "@cloudscape-design/components/alert";
 import Toggle from "@cloudscape-design/components/toggle";
 
-const handleStart = async () => {
-  try {
-    const response = await axios.post('/api/start_stop', { start_stop: 'start' });
-    console.log('Vehicle started:', response.data);
-  } catch (error) {
-    console.error('Error starting vehicle:', error);
-  }
-};
-
 const handleStop = async () => {
   try {
     const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
@@ -72,15 +63,12 @@ export default function RecalibrateSpeedPage() {
   const navigate = useNavigate();
 
   const [originalStopped, setOriginalStopped] = useState(0);
-  const [originalPolarity, setOriginalPolarity] = useState(0);
-  const [originalForward, setOriginalForward] = useState(0);
-  const [originalBackward, setOriginalBackward] = useState(0);
 
   const lastUpdateTime = useRef<number>(0);
 
   const [forwardDirectionSpeed, setForwardDirectionSpeed] = useState(20);
 
-  const handleStoppedSliderChange = ({ detail }) => {
+  const handleStoppedSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
     if (now - lastUpdateTime.current < 200) return;
     lastUpdateTime.current = now;
@@ -89,7 +77,7 @@ export default function RecalibrateSpeedPage() {
     adjustCalibratingWheelsThrottle(detail.value);
   };
 
-  const handleDirectionSliderChange = ({ detail }) => {
+  const handleDirectionSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
     if (now - lastUpdateTime.current < 200) return;
     lastUpdateTime.current = now;
@@ -98,7 +86,7 @@ export default function RecalibrateSpeedPage() {
     adjustCalibratingWheelsThrottle(detail.value);
   };
 
-  const handleForwardSliderChange = ({ detail }) => {
+  const handleForwardSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
     if (now - lastUpdateTime.current < 200) return;
     lastUpdateTime.current = now;
@@ -107,7 +95,7 @@ export default function RecalibrateSpeedPage() {
     adjustCalibratingWheelsThrottle(detail.value);
   };
 
-  const handleBackwardSliderChange = ({ detail }) => {
+  const handleBackwardSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
     if (now - lastUpdateTime.current < 200) return;
     lastUpdateTime.current = now;
@@ -158,7 +146,7 @@ export default function RecalibrateSpeedPage() {
 
   const handleBackwardSliderRight = () => {
     setBackwardValue(prev => {
-      const newValue = Math.max(prev + 1, -30);
+      const newValue = Math.max(prev - 1, -30);
       adjustCalibratingWheelsThrottle(newValue);
       return newValue;
     });
@@ -189,9 +177,6 @@ export default function RecalibrateSpeedPage() {
         setBackwardValue(-Math.abs(calibrationData.max)); // Show negative value initially
         setPolarity(calibrationData.polarity);
         setOriginalStopped(calibrationData.mid);
-        setOriginalForward(calibrationData.min);
-        setOriginalBackward(calibrationData.max);
-        setOriginalPolarity(calibrationData.polarity);
         setChecked(calibrationData.polarity === -1);
       }
     };
@@ -250,7 +235,7 @@ export default function RecalibrateSpeedPage() {
     }
   ];
 
-  const handleNavigation = (direction) => {
+  const handleNavigation = (direction: string) => {
     const currentIndex = anchors.findIndex(anchor => anchor.href === activeAnchor);
     if (direction === 'next' && currentIndex < anchors.length - 1) {
       window.location.hash = anchors[currentIndex + 1].href;
@@ -274,16 +259,16 @@ export default function RecalibrateSpeedPage() {
 
   const [checked, setChecked] = useState(false);
 
-  const handleToggleChange = ({ detail }) => {
+  const handleToggleChange = ({ detail }: { detail: { checked: boolean } }) => {
     setChecked(detail.checked);
     setPolarity(detail.checked ? -1 : 1);
   };
 
-  const getAdjustedRange = (baseValue) => {
+  const getAdjustedRange = (baseValue: number) => {
     return checked ? baseValue - stoppedValue : baseValue + stoppedValue;
   };
 
-  const getReferenceValues = (min, max) => {
+  const getReferenceValues = (min: number, max: number) => {
     const step = (max - min) / 5;
     return [min + step, min + 2 * step, min + 3 * step, min + 4 * step];
   };

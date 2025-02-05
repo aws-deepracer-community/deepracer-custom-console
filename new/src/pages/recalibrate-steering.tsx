@@ -7,15 +7,6 @@ import Alert from "@cloudscape-design/components/alert";
 import { useNavigate } from 'react-router-dom';
 import Slider from "@cloudscape-design/components/slider";
 
-const handleStart = async () => {
-  try {
-    const response = await axios.post('/api/start_stop', { start_stop: 'start' });
-    console.log('Vehicle started:', response.data);
-  } catch (error) {
-    console.error('Error starting vehicle:', error);
-  }
-};
-
 const handleStop = async () => {
   try {
     const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
@@ -25,7 +16,7 @@ const handleStop = async () => {
   }
 };
 
-const setSteeringAngle = async (angle) => {
+const setSteeringAngle = async (angle: number) => {
   try {
     const response = await axios.put('api/adjust_calibrating_wheels/angle', { pwm: angle });
     console.log('Vehicle stopped:', response.data);
@@ -76,7 +67,7 @@ export default function RecalibrateSteeringPage() {
 
   const lastUpdateTime = useRef<number>(0);
 
-  const handleCenterSliderChange = ({ detail }) => {
+  const handleCenterSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
     if (now - lastUpdateTime.current < 100) return;
     lastUpdateTime.current = now;
@@ -85,7 +76,7 @@ export default function RecalibrateSteeringPage() {
     setSteeringAngle(detail.value);
   };
 
-  const handleLeftSliderChange = ({ detail }) => {
+  const handleLeftSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
     if (now - lastUpdateTime.current < 100) return;
     lastUpdateTime.current = now;
@@ -95,7 +86,7 @@ export default function RecalibrateSteeringPage() {
     setSteeringAngle(invertedValue);
   };
 
-  const handleRightSliderChange = ({ detail }) => {
+  const handleRightSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
     if (now - lastUpdateTime.current < 100) return;
     lastUpdateTime.current = now;
@@ -218,7 +209,7 @@ export default function RecalibrateSteeringPage() {
     }
   ];
 
-  const handleNavigation = (direction) => {
+  const handleNavigation = (direction: string) => {
     const currentIndex = anchors.findIndex(anchor => anchor.href === activeAnchor);
     if (direction === 'next' && currentIndex < anchors.length - 1) {
       window.location.hash = anchors[currentIndex + 1].href;
@@ -251,6 +242,11 @@ export default function RecalibrateSteeringPage() {
     await setCalibrationAngle(centerValue, leftValue, rightValue, polarity);
     setSteeringAngle(centerValue);
     navigate('/calibration');
+  };
+
+  // Fix valueFormatter type error
+  const valueFormatter = (value: number): string => {
+    return (value > 0 ? -value : Math.abs(value)).toString();
   };
 
   return (
@@ -325,7 +321,7 @@ export default function RecalibrateSteeringPage() {
                     <Slider
                       onChange={handleLeftSliderChange}
                       value={leftValue}
-                      valueFormatter={value => value > 0 ? -value : Math.abs(value)}
+                      valueFormatter={valueFormatter}
                       max={10}
                       min={-50}
                       referenceValues={[-40, -30, -20, -10, 0]}
@@ -353,7 +349,7 @@ export default function RecalibrateSteeringPage() {
                     <Slider
                       onChange={handleRightSliderChange}
                       value={rightValue}
-                      valueFormatter={value => value > 0 ? -value : Math.abs(value)}
+                      valueFormatter={valueFormatter}
                       max={50}
                       min={-10}
                       referenceValues={[0, 10, 20, 30, 40]}

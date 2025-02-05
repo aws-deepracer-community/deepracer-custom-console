@@ -9,15 +9,6 @@ import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const handleStart = async () => {
-  try {
-    const response = await axios.post('/api/start_stop', { start_stop: 'start' });
-    console.log('Vehicle started:', response.data);
-  } catch (error) {
-    console.error('Error starting vehicle:', error);
-  }
-};
-
 const handleStop = async () => {
   try {
     const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
