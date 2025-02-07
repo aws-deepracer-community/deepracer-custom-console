@@ -127,7 +127,7 @@ export default function RecalibrateSpeedPage() {
 
   const handleForwardSliderLeft = () => {
     setForwardValue(prev => {
-      const newValue = Math.max(prev - 1, -30);
+      const newValue = Math.max(prev - 1, getAdjustedRange(0));
       adjustCalibratingWheelsThrottle(newValue);
       return newValue;
     });
@@ -135,7 +135,7 @@ export default function RecalibrateSpeedPage() {
 
   const handleForwardSliderRight = () => {
     setForwardValue(prev => {
-      const newValue = Math.max(prev + 1, -30);
+      const newValue = Math.min(prev + 1, getAdjustedRange(50));
       adjustCalibratingWheelsThrottle(newValue);
       return newValue;
     });
@@ -143,7 +143,7 @@ export default function RecalibrateSpeedPage() {
 
   const handleBackwardSliderLeft = () => {
     setBackwardValue(prev => {
-      const newValue = Math.max(prev - 1, -30);
+      const newValue = Math.max(prev - 1, getAdjustedRange(-50));
       adjustCalibratingWheelsThrottle(newValue);
       return newValue;
     });
@@ -151,7 +151,7 @@ export default function RecalibrateSpeedPage() {
 
   const handleBackwardSliderRight = () => {
     setBackwardValue(prev => {
-      const newValue = Math.max(prev - 1, -30);
+      const newValue = Math.min(prev + 1, getAdjustedRange(0));
       adjustCalibratingWheelsThrottle(newValue);
       return newValue;
     });
