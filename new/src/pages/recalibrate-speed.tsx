@@ -382,12 +382,12 @@ export default function RecalibrateSpeedPage() {
                     <h1>Vehicle Speed Recalibration</h1>
                     <h2>Maximum forward speed</h2>
                     <p>Move the slider to set the maximum forward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
-                    <p>Maximum forward speed value = {forwardValue}</p>
+                    <p>Maximum forward speed value = {forwardValue > getAdjustedRange(50) ? getAdjustedRange(50) : (forwardValue) < getAdjustedRange(0) ? getAdjustedRange(0) : (forwardValue)}</p>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <Button onClick={handleForwardSliderLeft}>{'<'}</Button>
                       <Slider
                         onChange={handleForwardSliderChange}
-                        value={forwardValue}
+                        value={forwardValue > getAdjustedRange(50) ? getAdjustedRange(50) : (forwardValue) < getAdjustedRange(0) ? getAdjustedRange(0) : (forwardValue)}
                         max={getAdjustedRange(50)}
                         min={getAdjustedRange(0)}
                         referenceValues={getReferenceValues(getAdjustedRange(0), getAdjustedRange(50))}
@@ -408,12 +408,12 @@ export default function RecalibrateSpeedPage() {
                     <h1>Vehicle Speed Recalibration</h1>
                     <h2>Maximum backward speed</h2>
                     <p>Move the slider to set the maximum backward speed on the vehicle so that the Estimated speed value matches, precisely or approximately, the value specified in training the model that is or will be loaded to the vehicle’s inference engine.</p>
-                    <p>Maximum backward speed value = {backwardValue}</p>
+                    <p>Maximum backward speed value = {backwardValue > getAdjustedRange(0) ? getAdjustedRange(0) : (backwardValue) < getAdjustedRange(-50) ? getAdjustedRange(-50) : (backwardValue)}</p>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <Button onClick={handleBackwardSliderLeft}>{'<'}</Button>
                       <Slider
                         onChange={handleBackwardSliderChange}
-                        value={backwardValue}
+                        value={backwardValue > getAdjustedRange(0) ? getAdjustedRange(0) : (backwardValue) < getAdjustedRange(-50) ? getAdjustedRange(-50) : (backwardValue)}
                         max={getAdjustedRange(0)}
                         min={getAdjustedRange(-50)}
                         referenceValues={getReferenceValues(getAdjustedRange(-50), getAdjustedRange(0))}
