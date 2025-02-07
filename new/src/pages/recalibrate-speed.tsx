@@ -119,7 +119,7 @@ export default function RecalibrateSpeedPage() {
 
   const handleStoppedSliderRight = () => {
     setStoppedValue(prev => {
-      const newValue = Math.max(prev + 1, -30);
+      const newValue = Math.min(prev + 1, 30);
       adjustCalibratingWheelsThrottle(newValue);
       return newValue;
     });
