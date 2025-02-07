@@ -46,7 +46,12 @@ const getCalibrationAngle = async () => {
 
 const setCalibrationAngle = async (center: number, left: number, right: number, polar: number) => {
   try {
-    const response = await axios.put('/api/set_calibration/angle', { mid: center, min: left, max: right, polarity: polar });
+    const response = await axios.post('/api/set_calibration/angle', { 
+      mid: center, 
+      min: right, 
+      max: left, 
+      polarity: polar 
+    });
     console.log('Set calibration angle:', response.data);
   } catch (error) {
     console.error('Error setting calibration angle:', error);
@@ -175,8 +180,10 @@ export default function RecalibrateSteeringPage() {
       if (window.location.hash === '#center') {
         setSteeringAngle(centerValue);
       } else if (window.location.hash === '#left') {
+        setLeftValue(prev => -Math.abs(prev));
         setSteeringAngle(leftValue);
       } else if (window.location.hash === '#right') {
+        setRightValue(prev => Math.abs(prev));
         setSteeringAngle(rightValue);
       }
     };
@@ -241,7 +248,10 @@ export default function RecalibrateSteeringPage() {
     await setCalibration();
     await setCalibrationAngle(centerValue, leftValue, rightValue, polarity);
     setSteeringAngle(centerValue);
-    navigate('/calibration');
+    //add a delay to allow the calibration to be set before navigating
+    setTimeout(() => {
+      navigate('/calibration');
+    }, 1000);
   };
 
   // Fix valueFormatter type error
@@ -328,7 +338,7 @@ export default function RecalibrateSteeringPage() {
                     />
                     <Button onClick={handleLeftSliderRight}>{'>'}</Button>
                   </div>
-                  <p>Estimated angle:</p>
+                  <p>Estimated angle: 26-32 degrees</p>
                 </TextContent>
               </div>
               <div>
@@ -356,7 +366,7 @@ export default function RecalibrateSteeringPage() {
                     />
                     <Button onClick={handleRightSliderRight}>{'>'}</Button>
                   </div>
-                  <p>Estimated angle:</p>
+                  <p>Estimated angle: 26-32 degrees</p>
                 </TextContent>
               </div>
               <div>
