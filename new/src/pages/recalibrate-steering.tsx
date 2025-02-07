@@ -48,8 +48,8 @@ const setCalibrationAngle = async (center: number, left: number, right: number, 
   try {
     const response = await axios.post('/api/set_calibration/angle', { 
       mid: center, 
-      min: right, 
-      max: left, 
+      min: left, 
+      max: right, 
       polarity: polar 
     });
     console.log('Set calibration angle:', response.data);
