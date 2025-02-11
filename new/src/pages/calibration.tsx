@@ -91,14 +91,14 @@ const SteeringContainer = () => {
 }
 
 const SpeedContainer = () => {
-  const [calibrationData, setCalibrationData] = useState({ mid: 'Value', max: 'Value', min: 'Value' });
+  const [calibrationData, setCalibrationData] = useState({ mid: 'Value', max: 'Value', min: 'Value', polarity: 'Value' });
   const navigate = useNavigate();
   
   useEffect(() => {
     const fetchCalibrationData = async () => {
       const data = await getCalibrationThrottle();
       if (data && data.success) {
-        setCalibrationData({ mid: data.mid, max: data.max, min: data.min });
+        setCalibrationData({ mid: data.mid, max: data.max, min: data.min, polarity: data.polarity });
       }
     };
     fetchCalibrationData();
@@ -125,8 +125,8 @@ const SpeedContainer = () => {
           columns={3}
           items={[
             { label: "Stopped", value: calibrationData.mid },
-            { label: "Maximum forward speed", value: calibrationData.min },
-            { label: "Maximum backward speed", value: calibrationData.max }
+            { label: "Maximum forward speed", value: calibrationData.polarity == '-1' ? calibrationData.min : calibrationData.max },
+            { label: "Maximum backward speed", value: calibrationData.polarity == '-1' ? calibrationData.max : calibrationData.min }
           ]}
         />
     </Container>

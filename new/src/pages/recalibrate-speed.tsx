@@ -40,8 +40,8 @@ const setCalibrationThrottle = async (stopped: number, forward: number, backward
   try {
     const response = await axios.post('/api/set_calibration/throttle', { 
       mid: stopped, 
-      min: polar == 1 ? backward : forward, 
-      max: polar == 1 ? forward : backward,  
+      min: polar == 1 ? backward : -forward, 
+      max: polar == 1 ? forward : -backward,  
       polarity: polar 
     });
     console.log('Set calibration throttle:', response.data);
