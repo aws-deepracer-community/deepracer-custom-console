@@ -10,6 +10,7 @@ import SettingsPage from "./pages/settings";
 import LogsPage from "./pages/logs";
 import RecalibrateSteeringPage from "./pages/recalibrate-steering";
 import RecalibrateSpeedPage from "./pages/recalibrate-speed";
+import LoginPage from "./pages/login";
 
 export default function App() {
   const Router = USE_BROWSER_ROUTER ? BrowserRouter : HashRouter;
@@ -21,6 +22,8 @@ export default function App() {
         <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
         <div>
           <Routes>
+            <Route index path="/login" element={<LoginPage />} />
+            <Route index path="/logout" element={<LoginPage />} />
             <Route index path="/logs" element={<LogsPage />} />
             <Route index path="/settings" element={<SettingsPage />} />
             <Route index path="/calibration" element={<CalibrationPage />} />
