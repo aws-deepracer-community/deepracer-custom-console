@@ -7,37 +7,69 @@ import { useNavigate } from 'react-router-dom';
 export default () => {
   const [value, setValue] = React.useState("");
   const [checked, setChecked] = React.useState(false);
+  const [csrfToken, setCsrfToken] = React.useState("");
   const navigate = useNavigate();
 
-  // Set up axios defaults for CSRF
+  // Generate and set up CSRF token on component mount
   React.useEffect(() => {
-    // Get CSRF token from meta tag
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    
-    // Set up axios defaults to include CSRF token in headers
-    if (token) {
-      axios.defaults.headers.common['X-CSRFToken'] = token;
-    }
+    const generateCsrfToken = async () => {
+      try {
+        // Make a request to your backend endpoint that generates a CSRF token
+        const response = await axios.get('/generate-csrf');
+        const token = response.data.csrf_token;
+        
+        // Set the token in state
+        setCsrfToken(token);
+        
+        // Set up axios defaults
+        axios.defaults.headers.common['X-CSRFToken'] = token;
+        axios.defaults.withCredentials = true;
 
-    // Set up axios to include credentials in requests
-    axios.defaults.withCredentials = true;
-    console.log('csrf token:', token); //for troubleshooting
+        // Add the token to the document head as a meta tag
+        const meta = document.createElement('meta');
+        meta.name = 'csrf-token';
+        meta.content = token;
+        document.head.appendChild(meta);
+
+        console.log('CSRF token generated:', token); //for troubleshooting
+      } catch (error) {
+        console.error('Error generating CSRF token:', error);
+      }
+    };
+
+    generateCsrfToken();
   }, []);
 
+  // Modified submitLogin to explicitly include the CSRF token
   const submitLogin = async () => {
-    console.log('Logging in with password:', value);  //for troubleshooting
+    console.log('Attempting login...');
+    
+    if (!value) {
+      console.error('Password cannot be empty');
+      return;
+    }
+  
     try {
-      const response = await axios.post('/login', {
-        password: value
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
+      // Create FormData object
+      const formData = new FormData();
+      formData.append('password', value);
+  
+      const response = await axios.post('/login', 
+        formData,  // Send as FormData
+        {
+          headers: {
+            'X-CSRFToken': csrfToken,
+            // Don't set Content-Type - axios will set it automatically with boundary for FormData
+          },
+          withCredentials: true
         }
-      });
-
+      );
+  
       if (response.data === "failure") {
+        console.log('Login failed - invalid credentials');
         navigate('/login');
       } else {
+        console.log('Login successful');
         navigate('/home');
       }
     } catch (error) {

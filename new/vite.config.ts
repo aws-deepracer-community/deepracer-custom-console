@@ -9,16 +9,16 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      //'/login': {
-      //  target: car_ip,
-      //  changeOrigin: true,
-      //  secure: false,
-      //},
-      '/logout': {
+      '/login': {
         target: car_ip,
         changeOrigin: true,
         secure: false,
       },
+      //'/logout': {
+      // target: car_ip,
+      //  changeOrigin: true,
+      // secure: false,
+      //},
       '/api': {
         target: car_ip,
         changeOrigin: true,
