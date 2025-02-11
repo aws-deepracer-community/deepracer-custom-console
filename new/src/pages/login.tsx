@@ -25,7 +25,7 @@ export default () => {
   }, []);
 
   const submitLogin = async () => {
-    //console.log('Logging in with password:', value);  //for troubleshooting
+    console.log('Logging in with password:', value);  //for troubleshooting
     try {
       const response = await axios.post('/login', {
         password: value
@@ -54,21 +54,30 @@ export default () => {
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
-        width: '100%'
+        width: '100%',
       }}>
-        <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo"></img>
+        <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo" style={{ marginTop: '8px' }}></img>
         <h2>Unlock your AWS DeepRacer vehicle</h2>
         <p>The default AWS DeepRacer password can be found printed on the bottom of your vehicle.</p>
         <p>If you've recently flashed your car the password may have been reset to deepracer</p>
         <p><strong>Password</strong></p>
         <Textarea
-          onChange={({ detail }) => setValue(detail.value)}
+            onChange={({ detail }) => {
+              // Remove any newline characters from the input
+              const cleanValue = detail.value.replace(/\n/g, '');
+              setValue(cleanValue);
+            }}
           value={value}
           disableBrowserAutocorrect
           autoFocus={true}
           spellcheck
           placeholder="Enter your password"
           rows={1}
+          onKeyDown={({ detail }) => {
+            if (detail.keyCode === 13) { // 13 is the key code for Enter
+              submitLogin();
+            }
+          }}
         />
         <Checkbox
           onChange={({ detail }) => setChecked(detail.checked)}
