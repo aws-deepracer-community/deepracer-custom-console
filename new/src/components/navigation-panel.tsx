@@ -3,13 +3,15 @@ import {
   SideNavigationProps,
 } from "@cloudscape-design/components";
 import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useOnFollow } from "../common/hooks/use-on-follow";
 import { APP_NAME } from "../common/constants";
 import { useLocation } from "react-router-dom";
 import Button from "@cloudscape-design/components/button";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import ProgressBar from "@cloudscape-design/components/progress-bar";
+import Flashbar from "@cloudscape-design/components/flashbar";
 
 export default function NavigationPanel() {
   const location = useLocation();
@@ -17,6 +19,8 @@ export default function NavigationPanel() {
   const [navigationPanelState, setNavigationPanelState] =
     useNavigationPanelState();
   const navigate = useNavigate();
+  const [batteryLevel, setBatteryLevel] = useState<number>(0);
+  const [batteryError, setBatteryError] = useState<boolean>(false);
 
   const handleLogout = async () => {
     try {
@@ -27,6 +31,36 @@ export default function NavigationPanel() {
     }
     navigate('/login');
   };
+
+  const updateBatteryStatus = async () => {
+    const batteryData = await getBatteryStatus();
+    if (batteryData && batteryData.success) {
+      if (batteryData.battery_level === -1) {
+        setBatteryError(true);
+        setBatteryLevel(0);
+      } else {
+        setBatteryError(false);
+        // Convert battery level to percentage (assuming max level is 10)
+        setBatteryLevel((batteryData.battery_level / 10) * 100);
+      }
+    }
+  };
+
+  const getBatteryStatus = async () => {
+    try {
+      const response = await axios.get('/api/get_battery_level');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching battery status:', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    updateBatteryStatus();
+    const interval = setInterval(updateBatteryStatus, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const [items] = useState<SideNavigationProps.Item[]>(() => {
     const items: SideNavigationProps.Item[] = [
@@ -113,6 +147,15 @@ export default function NavigationPanel() {
         })}
       />
       <div style={{ marginLeft: "20px" }}>
+        <ProgressBar
+          value={batteryLevel}
+          description="Current Battery Charge"
+          label="Battery Status"
+          status={batteryError ? "error" : "in-progress"}
+          additionalInfo={
+            batteryError ? "Vehicle battery is not connected" : undefined
+          }
+        />
         <Button onClick={handleLogout}>Logout</Button>
       </div>
     </>
