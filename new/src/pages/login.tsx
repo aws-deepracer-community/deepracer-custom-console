@@ -16,6 +16,7 @@ const handleLogout = async () => {
 
 export default () => {
   const [value, setValue] = React.useState("");
+  const [obsfuscatedValue, setObsfuscatedValue] = React.useState("");
   const [checked, setChecked] = React.useState(false);
   const [csrfToken, setCsrfToken] = React.useState("");
   const navigate = useNavigate();
@@ -109,9 +110,16 @@ export default () => {
             onChange={({ detail }) => {
               // Remove any newline characters from the input
               const cleanValue = detail.value.replace(/\n/g, '');
-              setValue(cleanValue);
+              //set the value to append the character to the end of the string, unless the delete key is press then remove the last character from value
+              if (detail.value.length > value.length) {
+                setValue(value + cleanValue.slice(-1));
+                setObsfuscatedValue(obsfuscatedValue + '*');
+              } else {
+                setValue(value.slice(0, -1));
+                setObsfuscatedValue(obsfuscatedValue.slice(0, -1));
+              }
             }}
-          value={value}
+          value={checked ? value : obsfuscatedValue} // This line masks the password
           disableBrowserAutocorrect
           autoFocus={true}
           spellcheck
