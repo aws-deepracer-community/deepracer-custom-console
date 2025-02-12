@@ -110,17 +110,23 @@ export default () => {
             onChange={({ detail }) => {
               // Remove any newline characters from the input
               const cleanValue = detail.value.replace(/\n/g, '');
-              // If new value is longer, append the new character
-              if (detail.value.length > value.length) {
-                setValue(value + cleanValue.slice(-1));
-                setObsfuscatedValue(obsfuscatedValue + '*');
-              } else if (detail.value.length < value.length) {
+              // If new value is longer (character added)
+              if (cleanValue.length > value.length) {
                 // Find where the change occurred by comparing the strings
                 let index = 0;
-                while (index < detail.value.length && detail.value[index] === value[index]) {
+                while (index < value.length && cleanValue[index] === value[index]) {
                   index++;
                 }
-                // Remove character at the correct position
+                // Insert the new character at the correct position
+                const newValue = value.slice(0, index) + cleanValue[index] + value.slice(index);
+                setValue(newValue);
+                setObsfuscatedValue('*'.repeat(newValue.length));
+              } else if (cleanValue.length < value.length) {
+                // Deletion logic (keeping what we fixed before)
+                let index = 0;
+                while (index < cleanValue.length && cleanValue[index] === value[index]) {
+                  index++;
+                }
                 const newValue = value.slice(0, index) + value.slice(index + 1);
                 setValue(newValue);
                 setObsfuscatedValue('*'.repeat(newValue.length));
