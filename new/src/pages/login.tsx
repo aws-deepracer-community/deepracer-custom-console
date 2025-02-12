@@ -4,11 +4,23 @@ import Checkbox from "@cloudscape-design/components/checkbox";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const handleLogout = async () => {
+  try {
+    const response = await axios.get('/redirect_login');
+    console.log('Vehicle Logged Out:', response.data);
+  } catch (error) {
+    console.error('Error logging out vehicle:', error);
+  }
+};
+
+
 export default () => {
   const [value, setValue] = React.useState("");
   const [checked, setChecked] = React.useState(false);
   const [csrfToken, setCsrfToken] = React.useState("");
   const navigate = useNavigate();
+  
+  handleLogout();
 
   // Generate and set up CSRF token on component mount
   React.useEffect(() => {
@@ -67,7 +79,7 @@ export default () => {
   
       if (response.data === "failure") {
         console.log('Login failed - invalid credentials');
-        navigate('/login');
+        window.location.reload();
       } else {
         console.log('Login successful');
         navigate('/home');

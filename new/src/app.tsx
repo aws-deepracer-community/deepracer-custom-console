@@ -22,8 +22,9 @@ export default function App() {
         <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
         <div>
           <Routes>
-            <Route index path="/test" element={<LoginPage />} />
+            <Route index path="/test_login" element={<LoginPage />} />
             <Route index path="/logout" element={<LoginPage />} />
+            <Route index path="/login" element={<LoginPage />} />
             <Route index path="/logs" element={<LogsPage />} />
             <Route index path="/settings" element={<SettingsPage />} />
             <Route index path="/calibration" element={<CalibrationPage />} />
