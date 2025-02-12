@@ -11,6 +11,7 @@ import Button from "@cloudscape-design/components/button";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from "@cloudscape-design/components/progress-bar";
+import TextContent from "@cloudscape-design/components/text-content";
 
 export default function NavigationPanel() {
   const location = useLocation();
@@ -20,6 +21,7 @@ export default function NavigationPanel() {
   const navigate = useNavigate();
   const [batteryLevel, setBatteryLevel] = useState<number>(0);
   const [batteryError, setBatteryError] = useState<boolean>(false);
+  const [ssid, setSsid] = useState<string>('');
 
   const handleLogout = async () => {
     try {
@@ -57,9 +59,12 @@ export default function NavigationPanel() {
   const getNetworkStatus = async () => {
     try {
       const response = await axios.get('/api/get_network_details');
+      if (response.data && response.data.success) {
+        setSsid(response.data.SSID);
+      }
       return response.data;
     } catch (error) {
-      console.error('Error fetching battery status:', error);
+      console.error('Error fetching network status:', error);
       return null;
     }
   };
@@ -121,12 +126,6 @@ export default function NavigationPanel() {
         external: true,
       },
       { type: "divider" },
-      {
-        type: "link",
-        text: "IP:",
-        href: "https://",
-        external: true,
-      },
     );
     return items;
   });
@@ -162,6 +161,9 @@ export default function NavigationPanel() {
         })}
       />
       <div style={{ marginLeft: "20px" }}>
+        <TextContent>
+          <p>SSID: {ssid}</p>
+        </TextContent>
         <ProgressBar
           value={batteryLevel}
           description="Current Battery Charge"
