@@ -1,4 +1,4 @@
-import { HashRouter, BrowserRouter, Routes, Route} from "react-router-dom";
+import { HashRouter, BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { USE_BROWSER_ROUTER } from "./common/constants";
 import GlobalHeader from "./components/global-header";
 import HomePage from "./pages/home";
@@ -12,6 +12,23 @@ import RecalibrateSteeringPage from "./pages/recalibrate-steering";
 import RecalibrateSpeedPage from "./pages/recalibrate-speed";
 import LoginPage from "./pages/login";
 
+// Protected Route wrapper component
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const isAuthenticated = () => {
+    const cookies = document.cookie.split(';');
+    return cookies.some(cookie => 
+      cookie.trim().startsWith('deepracer_token=')
+    );
+  };
+
+  if (!isAuthenticated()) {
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
 export default function App() {
   const Router = USE_BROWSER_ROUTER ? BrowserRouter : HashRouter;
 
@@ -22,17 +39,52 @@ export default function App() {
         <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
         <div>
           <Routes>
-            <Route index path="/test_login" element={<LoginPage />} />
-            <Route index path="/logout" element={<LoginPage />} />
-            <Route index path="/login" element={<LoginPage />} />
-            <Route index path="/logs" element={<LogsPage />} />
-            <Route index path="/settings" element={<SettingsPage />} />
-            <Route index path="/calibration" element={<CalibrationPage />} />
-            <Route index path="/recalibrate-steering" element={<RecalibrateSteeringPage />} />
-            <Route index path="/recalibrate-speed" element={<RecalibrateSpeedPage />} />
-            <Route index path="/models" element={<ModelsPage />} />
-            <Route index path="/home" element={<HomePage />} />
-            <Route index path="/" element={<HomePage />} />
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/test_login" element={<LoginPage />} />
+            <Route path="/logout" element={<LoginPage />} />
+
+            {/* Protected routes */}
+            <Route path="/logs" element={
+              <ProtectedRoute>
+                <LogsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/calibration" element={
+              <ProtectedRoute>
+                <CalibrationPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/recalibrate-steering" element={
+              <ProtectedRoute>
+                <RecalibrateSteeringPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/recalibrate-speed" element={
+              <ProtectedRoute>
+                <RecalibrateSpeedPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/models" element={
+              <ProtectedRoute>
+                <ModelsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/home" element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

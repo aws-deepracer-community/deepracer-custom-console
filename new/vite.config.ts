@@ -28,6 +28,11 @@ export default defineConfig({
         target: car_ip,
         changeOrigin: true,
         secure: false,
+      },
+      '/auth': {
+        target: car_ip,
+        changeOrigin: true,
+        secure: false,
       }
     },
   },

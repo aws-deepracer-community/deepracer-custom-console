@@ -64,18 +64,16 @@ export default () => {
     }
   
     try {
-      // Create FormData object
       const formData = new FormData();
       formData.append('password', value);
   
       const response = await axios.post('/login', 
-        formData,  // Send as FormData
+        formData,
         {
           headers: {
             'X-CSRFToken': csrfToken,
-            // Don't set Content-Type - axios will set it automatically with boundary for FormData
           },
-          withCredentials: true
+          withCredentials: true  // This is crucial for cookie handling
         }
       );
   
@@ -84,6 +82,9 @@ export default () => {
         window.location.reload();
       } else {
         console.log('Login successful');
+        // The cookies will be automatically stored by the browser
+        // You can verify the cookies are set using:
+        console.log('Cookies set:', document.cookie);
         navigate('/home');
       }
     } catch (error) {
@@ -91,6 +92,7 @@ export default () => {
       navigate('/login');
     }
   };
+  
   
 
   return (
