@@ -1,4 +1,4 @@
-import { TextContent, Textarea, Button } from "@cloudscape-design/components";
+import { TextContent, Button } from "@cloudscape-design/components";
 import * as React from "react";
 import Checkbox from "@cloudscape-design/components/checkbox";
 import axios from 'axios';
@@ -18,7 +18,6 @@ const handleLogout = async () => {
 
 export default () => {
   const [value, setValue] = React.useState("");
-  const [obsfuscatedValue, setObsfuscatedValue] = React.useState("");
   const [checked, setChecked] = React.useState(false);
   const [csrfToken, setCsrfToken] = React.useState("");
   const navigate = useNavigate();
@@ -111,7 +110,7 @@ export default () => {
         <Input
           onChange={({ detail }) => setValue(detail.value)}
           value={value}
-          type= {checked ? null : "password"}
+          type= {checked ? "text" : "password"}
           placeholder="Enter your password"
           onKeyDown={({ detail }) => {
             if (detail.keyCode === 13) { // 13 is the key code for Enter
