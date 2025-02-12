@@ -7,12 +7,26 @@ import { useState } from "react";
 import { useOnFollow } from "../common/hooks/use-on-follow";
 import { APP_NAME } from "../common/constants";
 import { useLocation } from "react-router-dom";
+import Button from "@cloudscape-design/components/button";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function NavigationPanel() {
   const location = useLocation();
   const onFollow = useOnFollow();
   const [navigationPanelState, setNavigationPanelState] =
     useNavigationPanelState();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.get('/redirect_login');
+      console.log('Vehicle Logged Out:', response.data);
+    } catch (error) {
+      console.error('Error logging out vehicle:', error);
+    }
+    navigate('/login');
+  };
 
   const [items] = useState<SideNavigationProps.Item[]>(() => {
     const items: SideNavigationProps.Item[] = [
@@ -65,7 +79,6 @@ export default function NavigationPanel() {
         external: true,
       },
     );
-
     return items;
   });
 
@@ -84,20 +97,25 @@ export default function NavigationPanel() {
   };
 
   return (
-    <SideNavigation
-      onFollow={onFollow}
-      onChange={onChange}
-      header={{ href: "/", text: APP_NAME }}
-      activeHref={location.pathname}
-      items={items.map((value, idx) => {
-        if (value.type === "section") {
-          const collapsed =
-            navigationPanelState.collapsedSections?.[idx] === true;
-          value.defaultExpanded = !collapsed;
-        }
-
-        return value;
-      })}
-    />
+    <>
+      <SideNavigation
+        onFollow={onFollow}
+        onChange={onChange}
+        header={{ href: "/", text: APP_NAME }}
+        activeHref={location.pathname}
+        items={items.map((value, idx) => {
+          if (value.type === "section") {
+            const collapsed =
+              navigationPanelState.collapsedSections?.[idx] === true;
+            value.defaultExpanded = !collapsed;
+          }
+          return value;
+        })}
+      />
+      <div style={{ marginLeft: "20px" }}>
+        <Button onClick={handleLogout}>Logout</Button>
+      </div>
+    </>
   );
+  
 }
