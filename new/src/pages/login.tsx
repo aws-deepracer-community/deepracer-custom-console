@@ -3,6 +3,8 @@ import * as React from "react";
 import Checkbox from "@cloudscape-design/components/checkbox";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Input from "@cloudscape-design/components/input";
+
 
 const handleLogout = async () => {
   try {
@@ -106,38 +108,11 @@ export default () => {
         <p>The default AWS DeepRacer password can be found printed on the bottom of your vehicle.</p>
         <p>If you've recently flashed your car the password may have been reset to deepracer</p>
         <p><strong>Password</strong></p>
-        <Textarea
-            onChange={({ detail }) => {
-              // Remove any newline characters from the input
-              const cleanValue = detail.value.replace(/\n/g, '');
-              // If new value is longer (character added)
-              if (cleanValue.length > value.length) {
-                // Find where the change occurred by comparing the strings
-                let index = 0;
-                while (index < value.length && cleanValue[index] === value[index]) {
-                  index++;
-                }
-                // Insert the new character at the correct position
-                const newValue = value.slice(0, index) + cleanValue[index] + value.slice(index);
-                setValue(newValue);
-                setObsfuscatedValue('*'.repeat(newValue.length));
-              } else if (cleanValue.length < value.length) {
-                // Deletion logic (keeping what we fixed before)
-                let index = 0;
-                while (index < cleanValue.length && cleanValue[index] === value[index]) {
-                  index++;
-                }
-                const newValue = value.slice(0, index) + value.slice(index + 1);
-                setValue(newValue);
-                setObsfuscatedValue('*'.repeat(newValue.length));
-              }
-            }}
-          value={checked ? value : obsfuscatedValue} // This line masks the password
-          disableBrowserAutocorrect
-          autoFocus={true}
-          spellcheck
+        <Input
+          onChange={({ detail }) => setValue(detail.value)}
+          value={value}
+          type= {checked ? null : "password"}
           placeholder="Enter your password"
-          rows={1}
           onKeyDown={({ detail }) => {
             if (detail.keyCode === 13) { // 13 is the key code for Enter
               submitLogin();
