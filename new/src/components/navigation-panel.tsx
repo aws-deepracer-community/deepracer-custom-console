@@ -22,6 +22,7 @@ export default function NavigationPanel() {
   const [batteryLevel, setBatteryLevel] = useState<number>(0);
   const [batteryError, setBatteryError] = useState<boolean>(false);
   const [ssid, setSsid] = useState<string>('');
+  const [ipAddresses, setIpAddresses] = useState<string[]>([]);
 
   const handleLogout = async () => {
     try {
@@ -61,6 +62,8 @@ export default function NavigationPanel() {
       const response = await axios.get('/api/get_network_details');
       if (response.data && response.data.success) {
         setSsid(response.data.SSID);
+        // Split the IP addresses string and trim whitespace
+        setIpAddresses(response.data.ip_address.split(',').map(ip => ip.trim()));
       }
       return response.data;
     } catch (error) {
@@ -163,6 +166,9 @@ export default function NavigationPanel() {
       <div style={{ marginLeft: "20px" }}>
         <TextContent>
           <p>SSID: {ssid}</p>
+          {ipAddresses.map((ip, index) => (
+            <p key={index}>IP: {ip}</p>
+          ))}
         </TextContent>
         <ProgressBar
           value={batteryLevel}
