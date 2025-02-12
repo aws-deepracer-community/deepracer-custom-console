@@ -110,13 +110,20 @@ export default () => {
             onChange={({ detail }) => {
               // Remove any newline characters from the input
               const cleanValue = detail.value.replace(/\n/g, '');
-              //set the value to append the character to the end of the string, unless the delete key is press then remove the last character from value
+              // If new value is longer, append the new character
               if (detail.value.length > value.length) {
                 setValue(value + cleanValue.slice(-1));
                 setObsfuscatedValue(obsfuscatedValue + '*');
-              } else {
-                setValue(value.slice(0, -1));
-                setObsfuscatedValue(obsfuscatedValue.slice(0, -1));
+              } else if (detail.value.length < value.length) {
+                // Find where the change occurred by comparing the strings
+                let index = 0;
+                while (index < detail.value.length && detail.value[index] === value[index]) {
+                  index++;
+                }
+                // Remove character at the correct position
+                const newValue = value.slice(0, index) + value.slice(index + 1);
+                setValue(newValue);
+                setObsfuscatedValue('*'.repeat(newValue.length));
               }
             }}
           value={checked ? value : obsfuscatedValue} // This line masks the password
