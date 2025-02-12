@@ -41,7 +41,7 @@ export default function NavigationPanel() {
         setBatteryErrorDismissed(false);   // Reset error dismissed state
       } else {
         setBatteryError(false);
-        setBatteryLevel((batteryData.battery_level / 10) * 100);
+        setBatteryLevel(((batteryData.battery_level + 10)/ 10) * 100);
         setBatteryErrorDismissed(false);   // Reset error dismissed state
         // Only reset warning dismissed state if battery level drops to 40 or below
         if (batteryData.battery_level <= 4) {
