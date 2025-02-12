@@ -63,7 +63,7 @@ export default function NavigationPanel() {
       if (response.data && response.data.success) {
         setSsid(response.data.SSID);
         // Split the IP addresses string and trim whitespace
-        setIpAddresses(response.data.ip_address.split(',').map(ip => ip.trim()));
+        setIpAddresses(response.data.ip_address.split(',').map((ip: string) => ip.trim()));
       }
       return response.data;
     } catch (error) {
