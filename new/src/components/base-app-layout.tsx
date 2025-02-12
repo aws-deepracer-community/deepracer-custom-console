@@ -3,6 +3,8 @@ import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-st
 import NavigationPanel from "./navigation-panel";
 import { useState, useEffect } from "react";
 import axios from 'axios';
+import { FlashbarProps } from "@cloudscape-design/components";
+
 
 export default function BaseAppLayout(props: AppLayoutProps) {
   const [navigationPanelState, setNavigationPanelState] = useNavigationPanelState();
@@ -21,7 +23,7 @@ export default function BaseAppLayout(props: AppLayoutProps) {
         setBatteryErrorDismissed(false);   // Reset error dismissed state
       } else {
         setBatteryError(false);
-        setBatteryLevel(((batteryData.battery_level + 10)/ 10) * 100);
+        setBatteryLevel((batteryData.battery_level / 10) * 100);
         setBatteryErrorDismissed(false);   // Reset error dismissed state
         // Only reset warning dismissed state if battery level drops to 40 or below
         if (batteryData.battery_level <= 4) {
@@ -49,35 +51,35 @@ export default function BaseAppLayout(props: AppLayoutProps) {
 
   return (
     <>
-      <Flashbar
-        items={[
-          ...(batteryError && !batteryErrorDismissed
-            ? [
-                {
-                  type: "error",
-                  content: "Vehicle battery is not connected",
-                  dismissible: true,
-                  dismissLabel: "Dismiss message",
-                  id: "battery-error",
-                  onDismiss: () => setBatteryErrorDismissed(true),
-                },
-              ]
-            : []),
-          ...(batteryLevel <= 40 && !batteryError && !batteryWarningDismissed
-            ? [
-                {
-                  type: "warning",
-                  content: `Battery Level is at ${batteryLevel}%`,
-                  dismissible: true,
-                  dismissLabel: "Dismiss message",
-                  id: "battery-warning",
-                  onDismiss: () => setBatteryWarningDismissed(true),
-                },
-              ]
-            : []),
-        ]}
-      />
-      <AppLayout
+        <Flashbar
+          items={[
+            ...(batteryError && !batteryErrorDismissed
+              ? [
+                  {
+                    type: "error" as FlashbarProps.Type, // Add type assertion
+                    content: "Vehicle battery is not connected",
+                    dismissible: true,
+                    dismissLabel: "Dismiss message",
+                    id: "battery-error",
+                    onDismiss: () => setBatteryErrorDismissed(true),
+                  },
+                ]
+              : []),
+            ...(batteryLevel <= 40 && !batteryError && !batteryWarningDismissed
+              ? [
+                  {
+                    type: "warning" as FlashbarProps.Type, // Add type assertion
+                    content: `Battery Level is at ${batteryLevel}%`,
+                    dismissible: true,
+                    dismissLabel: "Dismiss message",
+                    id: "battery-warning",
+                    onDismiss: () => setBatteryWarningDismissed(true),
+                  },
+                ]
+              : []),
+          ]}
+        />
+        <AppLayout
         headerSelector="#awsui-top-navigation"
         navigation={<NavigationPanel />}
         navigationOpen={!navigationPanelState.collapsed}
