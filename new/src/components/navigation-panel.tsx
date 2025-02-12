@@ -54,10 +54,27 @@ export default function NavigationPanel() {
     }
   };
 
+  const getNetworkStatus = async () => {
+    try {
+      const response = await axios.get('/api/get_network_details');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching battery status:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     updateBatteryStatus();
-    const interval = setInterval(updateBatteryStatus, 10000); // Update every 10 seconds
-    return () => clearInterval(interval);
+    getNetworkStatus();
+    const interval = setInterval(updateBatteryStatus, 10000);
+    const network_interval = setInterval(getNetworkStatus, 10000);
+    
+    // Return a cleanup function that clears both intervals
+    return () => {
+        clearInterval(interval);
+        clearInterval(network_interval);
+    };
   }, []);
 
   const [items] = useState<SideNavigationProps.Item[]>(() => {
