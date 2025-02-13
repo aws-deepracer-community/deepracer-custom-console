@@ -1,22 +1,20 @@
 import { useEffect, useState } from 'react';
-import { TextContent, Modal, Box } from "@cloudscape-design/components";
-import BaseAppLayout from "../components/base-app-layout";
-import Container from "@cloudscape-design/components/container";
-import Header from "@cloudscape-design/components/header";
-import SpaceBetween from "@cloudscape-design/components/space-between";
-import Button from "@cloudscape-design/components/button";
-import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import StatusIndicator from "@cloudscape-design/components/status-indicator";
+import BaseAppLayout from "../components/base-app-layout";
 import Circle from '@uiw/react-color-circle';
-
+import { TextContent, Modal, Checkbox, Alert, Form, FormField, Input, Container, Header, SpaceBetween, Button, KeyValuePairs, StatusIndicator } from "@cloudscape-design/components";
 
 const getApi = async (path: string) => {
   try {
     const response = await axios.get('/api/' + path);
     return response.data;
   } catch (error) {
+    if (error.response.status === 401) {
+      console.log('Unauthorized');
+      window.location = '/login';
+      return null;
+    }
     console.error('Error getting api' + path + ':', error);
     return null;
   }
@@ -27,10 +25,64 @@ const postApi = async (path: string, data) => {
     const response = await axios.post('/api/' + path, data);
     return response.data;
   } catch (error) {
+    if (error.response.status === 401) {
+      console.log('Unauthorized');
+      window.location = '/login';
+      return null;
+    }
     console.error('Error posting api' + path + ':', error, 'with data:', data);
     return null;
   }
 };
+
+var oldPasswordError=true;
+const validateOldPassword = (oldPassword: string) => {
+  if (oldPassword.length === 0 ) {
+    oldPasswordError=true;
+    return "Old password is required";
+  } else {
+    oldPasswordError=false;
+  }
+}
+
+var newPasswordError=true;
+const validateNewPassword = (password: string) => {
+  if ( password.length === 0) {
+    return;
+  }
+  if ( password.length < 8) {
+    newPasswordError=true;
+    return "Password must be at least 8 characters long";
+  }
+  if ( ! /\d/.test(password) ) {
+    newPasswordError=true;
+    return "Password must contain at least one number";
+  }
+  if ( ! /[A-Z]/.test(password) ) {
+    newPasswordError=true;
+    return "Password must contain at least one uppercase character";
+  }
+  if ( ! /[a-z]/.test(password) ) {
+    newPasswordError=true;
+    return "Password must contain at least one lowercase character";
+  }
+  newPasswordError=false;
+  return;
+}
+
+var confirmPasswordError=true;
+const validateConfirmPassword = ( newPassword: string, confirmPassword: string) => {
+  if ( newPassword.length === 0) {
+    confirmPasswordError = true;
+    return;
+  }
+  if ( newPassword != confirmPassword) {
+    confirmPasswordError = true;
+    return "New password and confirm password do not match";
+  }
+  confirmPasswordError = false;
+  return;
+}
 
 
 const getColorRgb = (rgb) => {
@@ -83,42 +135,140 @@ const NetworkSettingsContainer = () => {
 }
 
 const DeviceConsolePasswordContainer = () => {
-  // const [networkData, setNetworkData] = useState({ SSID: 'Value', ip_address: 'Value', is_usb_connected: 'Value' });
-  const navigate = useNavigate();
+  const [devicePasswordModal, setdevicePasswordModal] = useState(false);
+  const [devicePasswordInputType, setdevicePasswordInputType] = useState('password');
+  const [deviceOldPassword, setdeviceOldPassword] = useState('');
+  const [deviceNewPassword, setdeviceNewPassword] = useState('');
+  const [deviceConfirmPassword, setdeviceConfirmPassword] = useState('');
+  const [deviceShowPassword, setdeviceShowPassword] = useState(false);
+  const [devicePasswordError, setdevicePasswordError] = useState('');
+  const [devicePasswordErrorVisible, setdevicePasswordErrorVisible] = useState(false);
+  const [devicePasswordChangedErrorVisible, setdevicePasswordChangedErrorVisible] = useState(false);
+  const [devicePasswordChangedSuccessVisible, setdevicePasswordChangedSuccessVisible] = useState(false);
+  const [devicePasswordChanging, setdevicePasswordChanging] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchNetworkSettingsData = async () => {
-  //     const data = await getNetworkSettings();
-  //     if (data && data.success) {
-  //       setNetworkData({ SSID: data.SSID, ip_address: data.ip_address, is_usb_connected: data.is_usb_connected });
-  //     }
-  //   };
-  //   fetchNetworkSettingsData();
-  // }, []);
+  const showDevicePasswordModal = (visible: boolean) => {
+    setdevicePasswordModal(visible);
+    setdevicePasswordChangedErrorVisible(false);
+    setdevicePasswordErrorVisible(false);
+    setdevicePasswordChanging(false);
+    setdeviceShowPassword(false);
+    setdevicePasswordChangedSuccessVisible(false);
+    setdeviceOldPassword('');
+    setdeviceNewPassword('');
+    setdeviceConfirmPassword('');
+    setdevicePasswordInputType('password');
+  }
+
+  const deviceShowPasswordToggle = (checked: boolean) => {
+    setdeviceShowPassword(checked)
+    if (checked) {
+      setdevicePasswordInputType('text')
+    } else {
+      setdevicePasswordInputType('password')
+    }
+  }
+
+  const changedevicePasswordAction = async () => {
+    var changePassword;
+    if (oldPasswordError) {
+      setdevicePasswordError('Old password is required');
+      setdevicePasswordErrorVisible(true);
+      return;
+    }
+    else if (newPasswordError) {
+      setdevicePasswordError('New password is required and must meet the password requirements');
+      setdevicePasswordErrorVisible(true);
+      return;
+    }
+    else if (confirmPasswordError) {
+      setdevicePasswordError('New and confirm Passwords do not match');
+      setdevicePasswordErrorVisible(true);
+      return;
+    }
+    else {
+      setdevicePasswordError('');
+      setdevicePasswordErrorVisible(false);
+    }
+    if ( ! oldPasswordError && ! newPasswordError && ! confirmPasswordError) {
+      setdevicePasswordChanging(true);
+      changePassword = await postApi('password', { old_password: deviceOldPassword, new_password: deviceNewPassword });
+    }
+    if (changePassword && changePassword.success) {
+        //console.log('password changed');
+        setdevicePasswordChanging(true);
+        setdevicePasswordModal(false);
+        setdevicePasswordChangedSuccessVisible(true);
+    }
+    else {
+      setdevicePasswordChangedErrorVisible(true);
+      setdevicePasswordChanging(false);
+      //console.log('password changed failed');
+    }
+  }
 
   return (
     <Container
       header={
-        <Header
-          actions={
-            <SpaceBetween
-              direction="horizontal"
-              size="xs"
-            >
-              <Button onClick={() => navigate('/passwordReset')}>Change Device Console Password</Button>
-            </SpaceBetween>
-          }
+        <Header actions={
+            <SpaceBetween direction="horizontal" size="xs" >
+              <Button onClick={() => showDevicePasswordModal(true)}>Change Device Console Password</Button>
+            </SpaceBetween> }
         >
           Device console password
         </Header>
       }
     >
-        <KeyValuePairs
-          columns={1}
-          items={[
-            { label: "Password", value: '*****************' }
-          ]}
-        />
+    <SpaceBetween direction="vertical" size="xs">
+      <p>A password is required to protect access to your AWS DeepRacer vehicle. </p>
+      <p>If you forget your password, <a href='https://docs.aws.amazon.com/console/deepracer/reset-your-password' target="_blank">reset your password. </a></p>
+      { devicePasswordChangedSuccessVisible ? <Alert onDismiss={() => {setdevicePasswordChangedSuccessVisible(false) }} dismissible type="success">The device password was changed successfully.</Alert>: null }
+    </SpaceBetween>
+      <Modal
+        onDismiss={() => showDevicePasswordModal(false)}
+        visible={devicePasswordModal}
+        header="Change Device Password"
+      >
+        <form onSubmit={e => e.preventDefault()}>
+          <Form
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button formAction="none" variant="link" onClick={() => showDevicePasswordModal(false) }>Cancel</Button>
+                <Button variant="primary" loading={devicePasswordChanging} onClick={() => changedevicePasswordAction() }>Change Password</Button>
+              </SpaceBetween>
+            }
+          >
+            <SpaceBetween direction="vertical" size="l">
+              <FormField  label="Old password" warningText={validateOldPassword(deviceOldPassword)} >
+                <Input onChange={ event  => setdeviceOldPassword(event.detail.value)} type={devicePasswordInputType} inputMode='text' value={deviceOldPassword} disableBrowserAutocorrect />
+              </FormField>
+              <FormField
+                label="New password"
+                errorText={validateNewPassword(deviceNewPassword)}
+                constraintText={<>Must contain at least one number and one uppercase and one lowercase letter, and at least 8 or more characters</>}
+                >
+                <Input onChange={event => setdeviceNewPassword(event.detail.value)} type={devicePasswordInputType} inputMode='text' value={deviceNewPassword} disableBrowserAutocorrect/>
+
+              </FormField>
+              <FormField
+                label="Confirm new password"
+                errorText={validateConfirmPassword(deviceNewPassword, deviceConfirmPassword)}
+                >
+                <Input onChange={event => setdeviceConfirmPassword(event.detail.value)} type={devicePasswordInputType} inputMode='text' value={deviceConfirmPassword} disableBrowserAutocorrect/>
+
+              </FormField>
+
+              <Checkbox onChange={ event => deviceShowPasswordToggle(event.detail.checked)} checked={deviceShowPassword} >Show Passwords</Checkbox>
+
+
+            { devicePasswordErrorVisible ? <Alert type="error" onDismiss={() => {setdevicePasswordErrorVisible(false) }}  dismissible header={devicePasswordError} /> : null }
+            { devicePasswordChangedErrorVisible ? <Alert onDismiss={() => {setdevicePasswordChangedErrorVisible(false) }} type="error" dismissible header='The device password change was unsuccessful' /> : null }
+            </SpaceBetween>
+
+          </Form>
+        </form>
+      </Modal>
+
     </Container>
   );
 }
@@ -128,7 +278,94 @@ const DeviceSshContainer = () => {
   const [sshEnabling, setsshEnabling] = useState(false);
   const [sshDisabling, setsshDisabling] = useState(false);
   const [sshPasswordModal, setsshPasswordModal] = useState(false);
-//  const navigate = useNavigate();
+  const [sshPasswordInputType, setsshPasswordInputType] = useState('password');
+  const [sshOldPassword, setsshOldPassword] = useState('');
+  const [sshNewPassword, setsshNewPassword] = useState('');
+  const [sshConfirmPassword, setsshConfirmPassword] = useState('');
+  const [sshShowPassword, setsshShowPassword] = useState(false);
+  const [sshPasswordError, setsshPasswordError] = useState('');
+  const [sshDefaultPasswordChanged, setsshDefaultPasswordChanged] = useState(false);
+  const [sshPasswordErrorVisible, setsshPasswordErrorVisible] = useState(false);
+  const [sshPasswordChangedErrorVisible, setsshPasswordChangedErrorVisible] = useState(false);
+  const [sshPasswordChangedSuccessVisible, setsshPasswordChangedSuccessVisible] = useState(false);
+  const [sshPasswordChanging, setsshPasswordChanging] = useState(false);
+  // var sshOldPasswordError=true;
+  // var sshNewPasswordError=true;
+  // var sshConfirmPasswordError=true;
+
+  const getIsSshDefaultPasswordChanged = async () => {
+    const data = await getApi('isSshDefaultPasswordChanged');
+    if (data && data.success) {
+      setsshDefaultPasswordChanged(data.isDefaultSshPasswordChanged);
+    }
+  }
+
+  const changeSSHPasswordAction = async () => {
+    var changePassword;
+    if (oldPasswordError) {
+      setsshPasswordError('Old password is required');
+      setsshPasswordErrorVisible(true);
+      return;
+    }
+    else if (newPasswordError) {
+      setsshPasswordError('New password is required and must meet the password requirements');
+      setsshPasswordErrorVisible(true);
+      return;
+    }
+    else if (confirmPasswordError) {
+      setsshPasswordError('New and confirm Passwords do not match');
+      setsshPasswordErrorVisible(true);
+      return;
+    }
+    else {
+      setsshPasswordError('');
+      setsshPasswordErrorVisible(false);
+    }
+    if (sshDefaultPasswordChanged && ! oldPasswordError && ! newPasswordError && ! confirmPasswordError) {
+      setsshPasswordChanging(true);
+      changePassword = await postApi('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
+    }
+    else if (! sshDefaultPasswordChanged && ! newPasswordError && ! confirmPasswordError) {
+      // TODO need to check this after flash
+      setsshPasswordChanging(true);
+      changePassword = await postApi('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
+    }
+    if (changePassword && changePassword.success) {
+        //console.log('password changed');
+        setsshPasswordChanging(false);
+        setsshPasswordModal(false);
+        setsshPasswordChangedSuccessVisible(true);
+    }
+    else {
+      setsshPasswordChangedErrorVisible(true);
+      setsshPasswordChanging(false);
+      //console.log('password changed failed');
+    }
+  }
+
+  const sshShowPasswordToggle = (checked: boolean) => {
+    setsshShowPassword(checked)
+    if (checked) {
+      setsshPasswordInputType('text')
+    } else {
+      setsshPasswordInputType('password')
+    }
+  }
+
+  const showSSHPasswordModal = (visible: boolean) => {
+    getIsSshDefaultPasswordChanged();
+    setsshPasswordChangedErrorVisible(false);
+    setsshPasswordErrorVisible(false);
+    setsshPasswordChanging(false);
+    setsshShowPassword(false);
+    setsshPasswordChangedSuccessVisible(false);
+    setsshPasswordModal(visible);
+    setsshOldPassword('');
+    setsshNewPassword('');
+    setsshConfirmPassword('');
+    setsshPasswordInputType('password');
+  }
+
   const disbleSsh = async () => {
     setsshDisabling(true)
     const setSsh = await getApi('disableSsh');
@@ -153,7 +390,6 @@ const DeviceSshContainer = () => {
     setsshEnabling(false)
   }
 
-
   useEffect(() => {
     const fetchSshSettingsData = async () => {
       const data = await getApi('isSshEnabled');
@@ -162,6 +398,7 @@ const DeviceSshContainer = () => {
       }
     };
     fetchSshSettingsData();
+    getIsSshDefaultPasswordChanged();
   }, []);
 
   return (
@@ -183,27 +420,64 @@ const DeviceSshContainer = () => {
         </Header>
       }
     >
+        <SpaceBetween direction="vertical" size="l">
         <KeyValuePairs
           columns={2}
           items={[
             { label: "SSH Server", value: sshData.isSshEnabled == 'Unknown' ? <StatusIndicator type="warning">Unknown</StatusIndicator> : sshData.isSshEnabled ? <StatusIndicator type="success">Enabled</StatusIndicator> : <StatusIndicator type="info">Not enabled</StatusIndicator> },
-            { label: "Password", value: '*****************' }
+            { label: "Username", value: sshData.isSshEnabled ? 'deepracer': '' },
           ]}
         />
+
+        { sshData.isSshEnabled ? <Alert type="info">Type in "ssh deepracer@[IP Addresss]" on your terminal to log into the device remotely.</Alert>: null }
+        { sshPasswordChangedSuccessVisible ? <Alert onDismiss={() => {setsshPasswordChangedSuccessVisible(false) }} dismissible type="success">The ssh password was changed successfully.</Alert>: null }
+        </SpaceBetween>
       <Modal
-        onDismiss={() => setsshPasswordModal(false)}
+        onDismiss={() => showSSHPasswordModal(false)}
         visible={sshPasswordModal}
-        footer={
-          <Box float="right">
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button variant="link">Cancel</Button>
-              <Button variant="primary">Ok</Button>
-            </SpaceBetween>
-          </Box>
-        }
         header="Change SSH Password"
       >
-        Your description should go here
+        <form onSubmit={e => e.preventDefault()}>
+          <Form
+            //errorText={validateSSHPasswordAll()}
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button formAction="none" variant="link" onClick={() => showSSHPasswordModal(false) }>Cancel</Button>
+                <Button variant="primary" loading={sshPasswordChanging} onClick={() => changeSSHPasswordAction() }>Change Password</Button>
+              </SpaceBetween>
+            }
+          >
+            <SpaceBetween direction="vertical" size="l">
+
+              { sshDefaultPasswordChanged ?
+                <FormField  label="Old password" warningText={validateOldPassword(sshOldPassword)} constraintText={sshDefaultPasswordChanged? null : 'Old password is not required as default is still set' } >
+                <Input onChange={ event  => setsshOldPassword(event.detail.value)} type={sshPasswordInputType} inputMode='text' value={sshOldPassword} disableBrowserAutocorrect />
+              </FormField> : null }
+              <FormField
+                label="New password"
+                errorText={validateNewPassword(sshNewPassword)}
+                constraintText={<>Must contain at least one number and one uppercase and one lowercase letter, and at least 8 or more characters</>}
+                >
+                <Input onChange={event => setsshNewPassword(event.detail.value)} type={sshPasswordInputType} inputMode='text' value={sshNewPassword} disableBrowserAutocorrect/>
+
+              </FormField>
+              <FormField
+                label="Confirm new password"
+                errorText={validateConfirmPassword(sshNewPassword,sshConfirmPassword )}
+                >
+                <Input onChange={event => setsshConfirmPassword(event.detail.value)} type={sshPasswordInputType} inputMode='text' value={sshConfirmPassword} disableBrowserAutocorrect/>
+
+              </FormField>
+
+              <Checkbox onChange={ event => sshShowPasswordToggle(event.detail.checked)} checked={sshShowPassword} >Show Passwords</Checkbox>
+
+
+            { sshPasswordErrorVisible ? <Alert type="error" onDismiss={() => {setsshPasswordErrorVisible(false) }}  dismissible header={sshPasswordError} /> : null }
+            { sshPasswordChangedErrorVisible ? <Alert onDismiss={() => {setsshPasswordChangedErrorVisible(false) }} type="error" dismissible header='The ssh password change was unsuccessful' /> : null }
+            </SpaceBetween>
+
+          </Form>
+        </form>
       </Modal>
     </Container>
 
@@ -233,13 +507,13 @@ const LedColorContainer = () => {
       // must be in calibration mode to get led color
       const setCalibration = await getApi('set_calibration_mode');
       if (setCalibration && setCalibration.success) {
-        console.log('Set calibration:', setCalibration);
+        //console.log('Set calibration:', setCalibration);
         const ledData = await getApi('get_led_color');
         if (ledData && ledData.success) {
           var hexFromRgb = getColorRgb({r: ledData.red, g: ledData.green, b: ledData.blue});
-          console.log(ledData)
+          //console.log(ledData)
           setHex(hexFromRgb)
-          console.log(hexFromRgb)
+         // console.log(hexFromRgb)
         }
       }
     };
@@ -299,8 +573,6 @@ const LedColorContainer = () => {
 }
 
 const AboutContainer = () => {
-
-  // TO DO: Some Hardcoded values, need to create an API
 
   const [deviceInfo, setDeviceInfo] = useState({ hardware_version: 'Unknown', software_version: 'Unknown' });
   const [softwareInfo, setsoftwareInfo] = useState({ software_update_available: 'Unknown', mandatory_update: 'Unknown' });
@@ -368,9 +640,8 @@ const AboutContainer = () => {
 
 
 export default function SettingsPage() {
-  useEffect(() => {
-    // setNetwork();
-  }, []);
+  // useEffect(() => {
+  // }, []);
 
   return (
     <BaseAppLayout
@@ -390,4 +661,3 @@ export default function SettingsPage() {
     />
   );
 }
-
