@@ -8,7 +8,7 @@ import SpaceBetween from "@cloudscape-design/components/space-between";
 import axios from 'axios';
 import { Joystick } from 'react-joystick-component';
 import Container from "@cloudscape-design/components/container";
-
+import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 
 const HomePage = () => {
   const [showCameraFeed, setShowCameraFeed] = useState(false);
@@ -263,27 +263,41 @@ const HomePage = () => {
                 >
                   {showCameraFeed ? "Turn Off Camera" : "Turn On Camera"}
                 </Toggle>
-                <RadioGroup
-                  onChange={handleCameraFeedTypeChange}
-                  value={cameraFeedType}
-                  items={[
-                    {
-                      value: "mono",
-                      label: `Mono Camera ${cameraStatusText}`,
-                      disabled: sensorStatus.camera_status === "not_connected",
-                    },
-                    {
-                      value: "stereo",
-                      label: `Stereo Camera ${stereoStatusText}`,
-                      disabled: sensorStatus.stereo_status === "not_connected",
-                    },
-                    {
-                      value: "lidar",
-                      label: `LiDAR ${lidarStatusText}`,
-                      disabled: sensorStatus.lidar_status === "not_connected",
-                    },
-                  ]}
-                />
+                <KeyValuePairs
+                          columns={3}
+                          items={[
+                            { label: "Mono Camera", value: (<RadioGroup
+                              onChange={handleCameraFeedTypeChange}
+                              value={cameraFeedType}
+                              items={[
+                                {
+                                  value: "mono",
+                                  label: `${cameraStatusText}`,
+                                  disabled: sensorStatus.camera_status === "not_connected",
+                                }
+                              ]}/>) },
+                            { label: "Stereo Camera", value: (<RadioGroup
+                              onChange={handleCameraFeedTypeChange}
+                              value={cameraFeedType}
+                              items={[
+                                {
+                                  value: "stereo",
+                                  label: `${stereoStatusText}`,
+                                  disabled: sensorStatus.stereo_status === "not_connected",
+                                }
+                              ]}/>) },
+                            { label: "LiDAR", value: (<RadioGroup
+                              onChange={handleCameraFeedTypeChange}
+                              value={cameraFeedType}
+                              items={[
+                                {
+                                  value: "lidar",
+                                  label: `${lidarStatusText}`,
+                                  disabled: sensorStatus.lidar_status === "not_connected",
+                                }
+                              ]}/>) }
+                          ]}
+                        />
               </SpaceBetween>
             </Container>
             <Tabs 
