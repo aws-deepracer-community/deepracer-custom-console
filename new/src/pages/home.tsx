@@ -7,6 +7,8 @@ import Box from "@cloudscape-design/components/box";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import axios from 'axios';
 import { Joystick } from 'react-joystick-component';
+import Container from "@cloudscape-design/components/container";
+
 
 const HomePage = () => {
   const [showCameraFeed, setShowCameraFeed] = useState(false);
@@ -217,33 +219,73 @@ const HomePage = () => {
           <TextContent>
             <h1>Control Vehicle</h1>
             <h2>Sensor</h2>
-            <div style={{ display: 'flex', alignItems: 'right', justifyContent: 'space-between' }}>
-            <div
-              style={{
-                width: "482px",
-                height: "362px",
-                border: "1px solid #ccc",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#f0f0f0",
-                overflow: "hidden",
-              }}
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap',
+              gap: '20px',
+              alignItems: 'flex-start',
+              justifyContent: 'left'
+            }}>
+
+            <Container
+              header={<h2>Camera Feed</h2>}
             >
-              {showCameraFeed ? (
-                <iframe
-                  src={cameraFeedSrc}
-                  width="482"
-                  height="362"
-                  frameBorder="0"
-                  allowFullScreen={true}
-                  title="Video Feed"
-                  style={{ border: "none" }}
-                ></iframe>
-              ) : (
-                <p>Camera feed is off</p>
-              )}
-            </div>
+              <SpaceBetween size="s">
+                <div
+                  style={{
+                    width: "482px",
+                    height: "362px",
+                    border: "1px solid #ccc",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f0f0f0",
+                    overflow: "hidden",
+                  }}
+                >
+                  {showCameraFeed ? (
+                    <iframe
+                      src={cameraFeedSrc}
+                      width="482"
+                      height="362"
+                      frameBorder="0"
+                      allowFullScreen={true}
+                      title="Video Feed"
+                      style={{ border: "none" }}
+                    ></iframe>
+                  ) : (
+                    <p>Camera feed is off</p>
+                  )}
+                </div>
+                <Toggle
+                  onChange={toggleCameraFeed}
+                  checked={showCameraFeed}
+                >
+                  {showCameraFeed ? "Turn Off Camera" : "Turn On Camera"}
+                </Toggle>
+                <RadioGroup
+                  onChange={handleCameraFeedTypeChange}
+                  value={cameraFeedType}
+                  items={[
+                    {
+                      value: "mono",
+                      label: `Mono Camera ${cameraStatusText}`,
+                      disabled: sensorStatus.camera_status === "not_connected",
+                    },
+                    {
+                      value: "stereo",
+                      label: `Stereo Camera ${stereoStatusText}`,
+                      disabled: sensorStatus.stereo_status === "not_connected",
+                    },
+                    {
+                      value: "lidar",
+                      label: `LiDAR ${lidarStatusText}`,
+                      disabled: sensorStatus.lidar_status === "not_connected",
+                    },
+                  ]}
+                />
+              </SpaceBetween>
+            </Container>
             <Tabs 
             onChange={({ detail }) => handleTabChange(detail.activeTabId)}
             tabs={[
@@ -328,32 +370,6 @@ const HomePage = () => {
             variant="container"
           />
             </div>
-            <Toggle
-              onChange={toggleCameraFeed}
-              checked={showCameraFeed}
-            >
-              {showCameraFeed ? "Turn Off Camera" : "Turn On Camera"}
-            </Toggle>            <RadioGroup
-            onChange={handleCameraFeedTypeChange}
-            value={cameraFeedType}
-            items={[
-              {
-                value: "mono",
-                label: `Mono Camera ${cameraStatusText}`,
-                disabled: sensorStatus.camera_status === "not_connected",
-              },
-              {
-                value: "stereo",
-                label: `Stereo Camera ${stereoStatusText}`,
-                disabled: sensorStatus.stereo_status === "not_connected",
-              },
-              {
-                value: "lidar",
-                label: `LiDAR ${lidarStatusText}`,
-                disabled: sensorStatus.lidar_status === "not_connected",
-              },
-            ]}
-            />
           </TextContent>
         </div>
       }
