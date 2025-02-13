@@ -346,14 +346,30 @@ const HomePage = () => {
                   />
                 )}
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <Button variant="primary" onClick={handleStart}>Start vehicle</Button>
-                  <Button variant="primary" onClick={handleStop}>Stop vehicle</Button>
+                  <Button variant="primary" fullWidth onClick={handleStart}>Start vehicle</Button>
+                  <Button variant="primary" fullWidth onClick={handleStop}>Stop vehicle</Button>
                 </div>
                 <h2>Speed</h2>
                 <p>Adjust maximum speed {throttle}%</p>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                <Button variant="primary" onClick={() => handleThrottle('down')} iconName="angle-down">-</Button>
-                <Button variant="primary" onClick={() => handleThrottle('up')} iconName="angle-up">+</Button>
+                <Button 
+                  variant="primary" 
+                  onClick={() => handleThrottle('down')} 
+                  iconName="angle-down"
+                  data-size="large-button"
+                  fullWidth
+                >
+                  -
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={() => handleThrottle('up')} 
+                  iconName="angle-up"
+                  data-size="large-button"
+                  fullWidth
+                >
+                  +
+                </Button>
                 </div>
                 </div>
               },
@@ -364,19 +380,42 @@ const HomePage = () => {
                 <div>
                 <h2>Drive</h2>
                 <p>Drive the vehicle manually using the joystick</p>
-                <Joystick
-                  size={100}
-                  baseColor="gray"
-                  stickColor="black"
-                  start={handleStart}
-                  move={handleJoystickMove}
-                  stop={handleStop}
-                />
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '10px'
+                }}>
+                  <Joystick
+                    size={100}
+                    baseColor="gray"
+                    stickColor="black"
+                    start={handleStart}
+                    move={handleJoystickMove}
+                    stop={handleStop}
+                  />
+                </div>
                 <h2>Speed</h2>
                 <p>Adjust maximum speed {throttle}%</p>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                <Button variant="primary" onClick={() => handleThrottle('down')} iconName="angle-down">-</Button>
-                <Button variant="primary" onClick={() => handleThrottle('up')} iconName="angle-up">+</Button>
+                <Button 
+                  variant="primary" 
+                  onClick={() => handleThrottle('down')} 
+                  iconName="angle-down"
+                  data-size="large-button"
+                  fullWidth
+                >
+                  -
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={() => handleThrottle('up')} 
+                  iconName="angle-up"
+                  data-size="large-button"
+                  fullWidth
+                >
+                  +
+                </Button>
                 </div>
                 </div>
               }

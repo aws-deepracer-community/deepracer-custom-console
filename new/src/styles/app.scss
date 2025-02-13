@@ -23,3 +23,10 @@ body {
 body.awsui-dark-mode {
   background-color: #0e1b2a;
 }
+
+button[data-size="large-button"] {
+  width: 130px;
+  height: 130px;
+  font-size: 150px;
+  text-align: center;
+}
