@@ -23,6 +23,7 @@ export default function NavigationPanel() {
   const [batteryError, setBatteryError] = useState<boolean>(false);
   const [ssid, setSsid] = useState<string>('');
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
+  const [hasInitialReading, setHasInitialReading] = useState<boolean>(false);
 
   const handleLogout = async () => {
     try {
@@ -37,6 +38,7 @@ export default function NavigationPanel() {
   const updateBatteryStatus = async () => {
     const batteryData = await getBatteryStatus();
     if (batteryData && batteryData.success) {
+      setHasInitialReading(true);
       if (batteryData.battery_level === -1) {
         setBatteryError(true);
         setBatteryLevel(0);
@@ -174,9 +176,13 @@ export default function NavigationPanel() {
           value={batteryLevel}
           description="Current Battery Charge"
           label="Battery Status"
-          status={batteryError ? "error" : "in-progress"}
+          status={!hasInitialReading || batteryError ? "error" : "in-progress"}
           additionalInfo={
-            batteryError ? "Vehicle battery is not connected" : undefined
+            !hasInitialReading
+              ? "Unable to get battery reading"
+              : batteryError
+              ? "Vehicle battery is not connected"
+              : undefined
           }
         />
         <Button onClick={handleLogout}>Logout</Button>
