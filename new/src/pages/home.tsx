@@ -22,7 +22,7 @@ const HomePage = () => {
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [progressStatus, setProgressStatus] = useState<'in-progress' | 'success'>('in-progress');
   const [progressValue, setProgressValue] = useState<number>(0)
-  const [throttle, setThrottle] = useState(50);
+  const [throttle, setThrottle] = useState(30);
   let currentProgress = 0;
   const lastJoystickMoveTime = useRef<number>(0);
 
