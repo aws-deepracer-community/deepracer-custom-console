@@ -230,7 +230,7 @@ const HomePage = () => {
             <Container
               header={<h2>Camera Feed</h2>}
             >
-              <SpaceBetween size="s">
+              <SpaceBetween size="l">
                 <div
                   style={{
                     width: "482px",
