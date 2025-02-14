@@ -38,7 +38,10 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: 'index.html',
+      input: {
+        main: 'index.html',
+        login: 'login.html'
+      },
       output: {
         entryFileNames: 'static/[name].js',
         chunkFileNames: 'static/[name].js',
