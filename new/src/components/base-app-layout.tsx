@@ -12,6 +12,8 @@ export default function BaseAppLayout(props: AppLayoutProps) {
   const [batteryWarningDismissed, setBatteryWarningDismissed] = useState(false);
   const [batteryErrorDismissed, setBatteryErrorDismissed] = useState(false);
   const [hasInitialReading, setHasInitialReading] = useState(false);
+  const [pageLoadTime] = useState<number>(Date.now());
+  const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
 
   const updateBatteryStatus = async () => {
     const batteryData = await getBatteryStatus();
@@ -53,20 +55,20 @@ export default function BaseAppLayout(props: AppLayoutProps) {
     <>
       <Flashbar
         items={[
-          ...((batteryError || !hasInitialReading) && !batteryErrorDismissed
-            ? [
-                {
-                  type: "error" as FlashbarProps.Type,
-                  content: !hasInitialReading 
-                    ? "Unable to get battery reading"
-                    : "Vehicle battery is not connected",
-                  dismissible: true,
-                  dismissLabel: "Dismiss message",
-                  id: "battery-error",
-                  onDismiss: () => setBatteryErrorDismissed(true),
-                },
-              ]
-            : []),
+          ...((batteryError || (!hasInitialReading && hasBeenTenSeconds)) && !batteryErrorDismissed
+          ? [
+              {
+                type: "error" as FlashbarProps.Type,
+                content: (!hasInitialReading && hasBeenTenSeconds)
+                  ? "Unable to get battery reading"
+                  : "Vehicle battery is not connected",
+                dismissible: true,
+                dismissLabel: "Dismiss message",
+                id: "battery-error",
+                onDismiss: () => setBatteryErrorDismissed(true),
+              },
+            ]
+          : []),
           ...(batteryLevel <= 40 && !batteryError && !batteryWarningDismissed && hasInitialReading
             ? [
                 {

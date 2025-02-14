@@ -24,6 +24,8 @@ export default function NavigationPanel() {
   const [ssid, setSsid] = useState<string>('');
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
   const [hasInitialReading, setHasInitialReading] = useState<boolean>(false);
+  const [pageLoadTime] = useState<number>(Date.now());
+  const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
 
   const handleLogout = async () => {
     try {
@@ -176,9 +178,9 @@ export default function NavigationPanel() {
           value={batteryLevel}
           description="Current Battery Charge"
           label="Battery Status"
-          status={!hasInitialReading || batteryError ? "error" : "in-progress"}
+          status={!hasInitialReading && hasBeenTenSeconds || batteryError ? "error" : "in-progress"}
           additionalInfo={
-            !hasInitialReading
+            !hasInitialReading && hasBeenTenSeconds
               ? "Unable to get battery reading"
               : batteryError
               ? "Vehicle battery is not connected"
