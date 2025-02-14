@@ -1,7 +1,0 @@
-/// <reference types="react" />
-import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
-import { ContentLayoutProps } from './interfaces';
-type InternalContentLayoutProps = ContentLayoutProps & InternalBaseComponentProps;
-export default function InternalContentLayout({ children, disableOverlap, header, headerVariant, headerBackgroundStyle, __internalRootRef, maxContentWidth, breadcrumbs, notifications, defaultPadding, secondaryHeader, ...rest }: InternalContentLayoutProps): JSX.Element;
-export {};
-//# sourceMappingURL=internal.d.ts.map

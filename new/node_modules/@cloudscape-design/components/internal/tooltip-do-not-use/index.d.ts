@@ -1,4 +1,0 @@
-import InternalTooltip_DO_NOT_USE, { TooltipProps } from '../components/tooltip/index.js';
-export type InternalTooltipProps = TooltipProps;
-export default InternalTooltip_DO_NOT_USE;
-//# sourceMappingURL=index.d.ts.map

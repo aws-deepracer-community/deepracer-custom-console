@@ -1,8 +1,0 @@
-import React from 'react';
-import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
-import { LinkProps } from './interfaces';
-declare const InternalLink: React.ForwardRefExoticComponent<InternalBaseComponentProps<HTMLAnchorElement> & Omit<LinkProps, "variant"> & {
-    variant?: LinkProps['variant'] | 'top-navigation' | 'link' | 'recovery';
-} & React.RefAttributes<LinkProps.Ref>>;
-export default InternalLink;
-//# sourceMappingURL=internal.d.ts.map

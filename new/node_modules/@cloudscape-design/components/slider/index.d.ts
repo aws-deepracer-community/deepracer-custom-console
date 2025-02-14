@@ -1,5 +1,0 @@
-/// <reference types="react" />
-import { SliderProps } from './interfaces';
-export { SliderProps };
-export default function Slider({ tickMarks, hideFillLine, ...props }: SliderProps): JSX.Element;
-//# sourceMappingURL=index.d.ts.map

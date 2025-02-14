@@ -1,8 +1,0 @@
-/// <reference types="react" />
-import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
-import { SomeRequired } from '../internal/types';
-import { SplitPanelProps } from './interfaces';
-export type SplitPanelImplementationProps = SomeRequired<SplitPanelProps, 'hidePreferencesButton' | 'closeBehavior'> & InternalBaseComponentProps;
-export declare function SplitPanelImplementation({ __internalRootRef, header, children, hidePreferencesButton, closeBehavior, i18nStrings, ...restProps }: SplitPanelImplementationProps): JSX.Element;
-export declare const createWidgetizedSplitPanel: (Loader?: typeof SplitPanelImplementation | undefined) => typeof SplitPanelImplementation;
-//# sourceMappingURL=implementation.d.ts.map

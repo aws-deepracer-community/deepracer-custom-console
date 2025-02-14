@@ -1,6 +1,0 @@
-import React from 'react';
-import { PromptInputProps } from './interfaces';
-export { PromptInputProps };
-declare const PromptInput: React.ForwardRefExoticComponent<PromptInputProps & React.RefAttributes<PromptInputProps.Ref>>;
-export default PromptInput;
-//# sourceMappingURL=index.d.ts.map

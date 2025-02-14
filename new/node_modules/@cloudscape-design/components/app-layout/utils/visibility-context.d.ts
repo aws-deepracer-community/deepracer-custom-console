@@ -1,3 +1,0 @@
-/// <reference types="react" />
-export declare const ActiveDrawersContext: import("react").Context<readonly string[]>;
-//# sourceMappingURL=visibility-context.d.ts.map

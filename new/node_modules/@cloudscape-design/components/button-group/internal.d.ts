@@ -1,5 +1,0 @@
-import React from 'react';
-import { ButtonGroupProps, InternalButtonGroupProps } from './interfaces';
-declare const InternalButtonGroup: React.ForwardRefExoticComponent<InternalButtonGroupProps & React.RefAttributes<ButtonGroupProps.Ref>>;
-export default InternalButtonGroup;
-//# sourceMappingURL=internal.d.ts.map

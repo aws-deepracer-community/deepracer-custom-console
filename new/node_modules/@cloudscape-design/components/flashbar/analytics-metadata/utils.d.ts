@@ -1,7 +1,0 @@
-import { GeneratedAnalyticsMetadataFragment } from '@cloudscape-design/component-toolkit/internal/analytics-metadata';
-import { GeneratedAnalyticsMetadataFlashbarComponent } from './interfaces';
-export declare const getComponentsAnalyticsMetadata: (itemsCount: number, stackItems: boolean, expanded?: boolean) => {
-    component: GeneratedAnalyticsMetadataFlashbarComponent;
-};
-export declare const getItemAnalyticsMetadata: (position: number, type: string, id?: string) => GeneratedAnalyticsMetadataFragment;
-//# sourceMappingURL=utils.d.ts.map

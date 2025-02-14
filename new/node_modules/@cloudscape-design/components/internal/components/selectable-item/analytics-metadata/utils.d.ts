@@ -1,4 +1,0 @@
-import { SelectableItemProps } from '../interfaces';
-import { GeneratedAnalyticsMetadataSelectableItemSelect } from './interfaces';
-export declare const getAnalyticsSelectActionMetadata: ({ isChild, value, ...restProps }: Partial<SelectableItemProps>) => GeneratedAnalyticsMetadataSelectableItemSelect;
-//# sourceMappingURL=utils.d.ts.map

@@ -1,4 +1,0 @@
-export declare function getStickyOffsetVars(headerHeight: number, footerHeight: number, stickyNotificationsHeight: string, mobileToolbarHeight: string, disableBodyScroll: boolean, isMobile: boolean): {
-    [x: string]: string;
-};
-//# sourceMappingURL=sticky-offsets.d.ts.map

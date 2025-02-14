@@ -1,7 +1,0 @@
-import { WizardProps } from '../interfaces';
-export declare const getNavigationActionDetail: (targetStepIndex: number, reason: WizardProps.NavigationReason, addAction?: boolean, label?: string) => {
-    "data-awsui-analytics": string;
-} | {
-    "data-awsui-analytics"?: undefined;
-};
-//# sourceMappingURL=utils.d.ts.map
