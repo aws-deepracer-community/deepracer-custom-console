@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
+import { TextContent, Modal, Checkbox, Alert } from "@cloudscape-design/components";
+import Form from "@cloudscape-design/components/form";
+import FormField from "@cloudscape-design/components/form-field";
+import Input from "@cloudscape-design/components/input";
+import BaseAppLayout from "../components/base-app-layout";
+import Container from "@cloudscape-design/components/container";
+import Header from "@cloudscape-design/components/header";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import Button from "@cloudscape-design/components/button";
+import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import BaseAppLayout from "../components/base-app-layout";
+import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Circle from '@uiw/react-color-circle';
-import { TextContent, Modal, Checkbox, Alert, Form, FormField, Input, Container, Header, SpaceBetween, Button, KeyValuePairs, StatusIndicator, InputProps } from "@cloudscape-design/components";
 
-var sshPasswordInputType: InputProps.Type = "password";
-var devicePasswordInputType: InputProps.Type = 'password';
 
 const getApi = async (path: string) => {
   try {
@@ -15,7 +22,7 @@ const getApi = async (path: string) => {
   } catch (error) {
     if (error.response.status === 401) {
       console.log('Unauthorized');
-      window.location.href = '/login';
+      window.location = '/login';
       return null;
     }
     console.error('Error getting api' + path + ':', error);
@@ -23,17 +30,17 @@ const getApi = async (path: string) => {
   }
 };
 
-const postApi = async (path: string, data: any) => {
+const postApi = async (path: string, data) => {
   try {
-    const response = await axios.post('/api/' + path, data)
+    const response = await axios.post('/api/' + path, data);
     return response.data;
   } catch (error) {
     if (error.response.status === 401) {
       console.log('Unauthorized');
-      window.location.href = '/login';
+      window.location = '/login';
       return null;
     }
-    console.error('Error getting api' + path + ':', error);
+    console.error('Error posting api' + path + ':', error, 'with data:', data);
     return null;
   }
 };
@@ -88,8 +95,8 @@ const validateConfirmPassword = ( newPassword: string, confirmPassword: string) 
 }
 
 
-const getColorRgb = (rgb: any) => {
-  var hexcode: string = '#' + [rgb.r, rgb.g, rgb.b].map(x => x.toString(16).padStart(2, '0')).join('')
+const getColorRgb = (rgb) => {
+  var hexcode = '#' + [rgb.r, rgb.g, rgb.b].map(x => x.toString(16).padStart(2, '0')).join('')
   return hexcode;
 };
 
@@ -99,6 +106,7 @@ const NetworkSettingsContainer = () => {
 
   useEffect(() => {
     const fetchNetworkSettingsData = async () => {
+      // const data = await getNetworkSettings();
       const data = await getApi('get_network_details');
       if (data && data.success) {
         setNetworkData({ SSID: data.SSID, ip_address: data.ip_address, is_usb_connected: data.is_usb_connected });
@@ -138,15 +146,36 @@ const NetworkSettingsContainer = () => {
 
 const DeviceConsolePasswordContainer = () => {
   const [devicePasswordModal, setdevicePasswordModal] = useState(false);
+  const [devicePasswordInputType, setdevicePasswordInputType] = useState('password');
   const [deviceOldPassword, setdeviceOldPassword] = useState('');
   const [deviceNewPassword, setdeviceNewPassword] = useState('');
   const [deviceConfirmPassword, setdeviceConfirmPassword] = useState('');
   const [deviceShowPassword, setdeviceShowPassword] = useState(false);
   const [devicePasswordError, setdevicePasswordError] = useState('');
+  const [deviceDefaultPasswordChanged, setdeviceDefaultPasswordChanged] = useState(false);
   const [devicePasswordErrorVisible, setdevicePasswordErrorVisible] = useState(false);
   const [devicePasswordChangedErrorVisible, setdevicePasswordChangedErrorVisible] = useState(false);
   const [devicePasswordChangedSuccessVisible, setdevicePasswordChangedSuccessVisible] = useState(false);
   const [devicePasswordChanging, setdevicePasswordChanging] = useState(false);
+  // var sshOldPasswordError=true;
+  // var sshNewPasswordError=true;
+  // var sshConfirmPasswordError=true;
+
+
+  // const [networkData, setNetworkData] = useState({ SSID: 'Value', ip_address: 'Value', is_usb_connected: 'Value' });
+  const navigate = useNavigate();
+
+
+
+  // useEffect(() => {
+  //   const fetchNetworkSettingsData = async () => {
+  //     const data = await getNetworkSettings();
+  //     if (data && data.success) {
+  //       setNetworkData({ SSID: data.SSID, ip_address: data.ip_address, is_usb_connected: data.is_usb_connected });
+  //     }
+  //   };
+  //   fetchNetworkSettingsData();
+  // }, []);
 
   const showDevicePasswordModal = (visible: boolean) => {
     setdevicePasswordModal(visible);
@@ -158,15 +187,15 @@ const DeviceConsolePasswordContainer = () => {
     setdeviceOldPassword('');
     setdeviceNewPassword('');
     setdeviceConfirmPassword('');
-    devicePasswordInputType='password';
+    setdevicePasswordInputType('password');
   }
 
   const deviceShowPasswordToggle = (checked: boolean) => {
     setdeviceShowPassword(checked)
     if (checked) {
-      devicePasswordInputType ='text'
+      setdevicePasswordInputType('text')
     } else {
-      devicePasswordInputType = 'password'
+      setdevicePasswordInputType('password')
     }
   }
 
@@ -196,7 +225,7 @@ const DeviceConsolePasswordContainer = () => {
       changePassword = await postApi('password', { old_password: deviceOldPassword, new_password: deviceNewPassword });
     }
     if (changePassword && changePassword.success) {
-        //console.log('password changed');
+        console.log('password changed');
         setdevicePasswordChanging(true);
         setdevicePasswordModal(false);
         setdevicePasswordChangedSuccessVisible(true);
@@ -204,17 +233,22 @@ const DeviceConsolePasswordContainer = () => {
     else {
       setdevicePasswordChangedErrorVisible(true);
       setdevicePasswordChanging(false);
-      //console.log('password changed failed');
+      console.log('password changed failed');
     }
   }
 
   return (
     <Container
       header={
-        <Header actions={
-            <SpaceBetween direction="horizontal" size="xs" >
+        <Header
+          actions={
+            <SpaceBetween
+              direction="horizontal"
+              size="xs"
+            >
               <Button onClick={() => showDevicePasswordModal(true)}>Change Device Console Password</Button>
-            </SpaceBetween> }
+            </SpaceBetween>
+          }
         >
           Device console password
         </Header>
@@ -279,37 +313,44 @@ const DeviceSshContainer = () => {
   const [sshEnabling, setsshEnabling] = useState(false);
   const [sshDisabling, setsshDisabling] = useState(false);
   const [sshPasswordModal, setsshPasswordModal] = useState(false);
+  const [sshPasswordInputType, setsshPasswordInputType] = useState('password');
   const [sshOldPassword, setsshOldPassword] = useState('');
   const [sshNewPassword, setsshNewPassword] = useState('');
   const [sshConfirmPassword, setsshConfirmPassword] = useState('');
-  const [sshShowPassword, setsshShowPassword] = useState(false);
+  const [showPassword, setshowPassword] = useState(false);
   const [sshPasswordError, setsshPasswordError] = useState('');
   const [sshDefaultPasswordChanged, setsshDefaultPasswordChanged] = useState(false);
   const [sshPasswordErrorVisible, setsshPasswordErrorVisible] = useState(false);
   const [sshPasswordChangedErrorVisible, setsshPasswordChangedErrorVisible] = useState(false);
   const [sshPasswordChangedSuccessVisible, setsshPasswordChangedSuccessVisible] = useState(false);
   const [sshPasswordChanging, setsshPasswordChanging] = useState(false);
+  var sshOldPasswordError=true;
+  var sshNewPasswordError=true;
+  var sshConfirmPasswordError=true;
+
+  //{oldPassword: "Onef1neday!", newPassword: "Onef1neday!!"}
 
   const getIsSshDefaultPasswordChanged = async () => {
     const data = await getApi('isSshDefaultPasswordChanged');
     if (data && data.success) {
       setsshDefaultPasswordChanged(data.isDefaultSshPasswordChanged);
+      //console.log(data.isDefaultSshPasswordChanged)
     }
   }
 
   const changeSSHPasswordAction = async () => {
     var changePassword;
-    if (oldPasswordError) {
+    if (sshOldPasswordError) {
       setsshPasswordError('Old password is required');
       setsshPasswordErrorVisible(true);
       return;
     }
-    else if (newPasswordError) {
+    else if (sshNewPasswordError) {
       setsshPasswordError('New password is required and must meet the password requirements');
       setsshPasswordErrorVisible(true);
       return;
     }
-    else if (confirmPasswordError) {
+    else if (sshConfirmPasswordError) {
       setsshPasswordError('New and confirm Passwords do not match');
       setsshPasswordErrorVisible(true);
       return;
@@ -318,17 +359,17 @@ const DeviceSshContainer = () => {
       setsshPasswordError('');
       setsshPasswordErrorVisible(false);
     }
-    if (sshDefaultPasswordChanged && ! oldPasswordError && ! newPasswordError && ! confirmPasswordError) {
+    if (sshDefaultPasswordChanged && ! sshOldPasswordError && ! sshNewPasswordError && ! sshConfirmPasswordError) {
       setsshPasswordChanging(true);
       changePassword = await postApi('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
     }
-    else if (! sshDefaultPasswordChanged && ! newPasswordError && ! confirmPasswordError) {
+    else if (! sshDefaultPasswordChanged && ! sshNewPasswordError && ! sshConfirmPasswordError) {
       // TODO need to check this after flash
       setsshPasswordChanging(true);
       changePassword = await postApi('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
     }
     if (changePassword && changePassword.success) {
-        //console.log('password changed');
+        console.log('password changed');
         setsshPasswordChanging(false);
         setsshPasswordModal(false);
         setsshPasswordChangedSuccessVisible(true);
@@ -336,18 +377,62 @@ const DeviceSshContainer = () => {
     else {
       setsshPasswordChangedErrorVisible(true);
       setsshPasswordChanging(false);
-      //console.log('password changed failed');
+      console.log('password changed failed');
     }
   }
 
-  const sshShowPasswordToggle = (checked: boolean) => {
-    setsshShowPassword(checked)
-    if (checked) {
-      //setsshPasswordInputType('text')
-      sshPasswordInputType = 'text'
+  const validateOldSSHPassword = () => {
+    if (sshOldPassword.length === 0 && sshDefaultPasswordChanged ) {
+      sshOldPasswordError=true;
+      return "Old password is required";
     } else {
-      // setsshPasswordInputType('password')
-      sshPasswordInputType = 'password';
+      sshOldPasswordError=false;
+    }
+  }
+
+  const validateSSHPassword = (password: string) => {
+    if ( password.length === 0) {
+      return;
+    }
+    if ( password.length < 8) {
+      sshNewPasswordError=true;
+      return "Password must be at least 8 characters long";
+    }
+    if ( ! /\d/.test(password) ) {
+      sshNewPasswordError=true;
+      return "Password must contain at least one number";
+    }
+    if ( ! /[A-Z]/.test(password) ) {
+      sshNewPasswordError=true;
+      return "Password must contain at least one uppercase character";
+    }
+    if ( ! /[a-z]/.test(password) ) {
+      sshNewPasswordError=true;
+      return "Password must contain at least one lowercase character";
+    }
+    sshNewPasswordError=false;
+    return;
+  }
+
+  const validateSSHPasswordMatch = () => {
+    if ( sshNewPassword.length === 0) {
+      sshConfirmPasswordError = true;
+      return;
+    }
+    if ( sshNewPassword != sshConfirmPassword) {
+      sshConfirmPasswordError = true;
+      return "New password and confirm password do not match";
+    }
+    sshConfirmPasswordError = false;
+    return;
+  }
+
+  const showPasswordToggle = (checked: boolean) => {
+    setshowPassword(checked)
+    if (checked) {
+      setsshPasswordInputType('text')
+    } else {
+      setsshPasswordInputType('password')
     }
   }
 
@@ -356,13 +441,13 @@ const DeviceSshContainer = () => {
     setsshPasswordChangedErrorVisible(false);
     setsshPasswordErrorVisible(false);
     setsshPasswordChanging(false);
-    setsshShowPassword(false);
+    setshowPassword(false);
     setsshPasswordChangedSuccessVisible(false);
     setsshPasswordModal(visible);
     setsshOldPassword('');
     setsshNewPassword('');
     setsshConfirmPassword('');
-    sshPasswordInputType = 'password';
+    setsshPasswordInputType('password');
   }
 
   const disbleSsh = async () => {
@@ -449,12 +534,12 @@ const DeviceSshContainer = () => {
             <SpaceBetween direction="vertical" size="l">
 
               { sshDefaultPasswordChanged ?
-                <FormField  label="Old password" warningText={validateOldPassword(sshOldPassword)} constraintText={sshDefaultPasswordChanged? null : 'Old password is not required as default is still set' } >
+                <FormField  label="Old password" warningText={validateOldSSHPassword()} constraintText={sshDefaultPasswordChanged? null : 'Old password is not required as default is still set' } >
                 <Input onChange={ event  => setsshOldPassword(event.detail.value)} type={sshPasswordInputType} inputMode='text' value={sshOldPassword} disableBrowserAutocorrect />
               </FormField> : null }
               <FormField
                 label="New password"
-                errorText={validateNewPassword(sshNewPassword)}
+                errorText={validateSSHPassword(sshNewPassword)}
                 constraintText={<>Must contain at least one number and one uppercase and one lowercase letter, and at least 8 or more characters</>}
                 >
                 <Input onChange={event => setsshNewPassword(event.detail.value)} type={sshPasswordInputType} inputMode='text' value={sshNewPassword} disableBrowserAutocorrect/>
@@ -462,13 +547,13 @@ const DeviceSshContainer = () => {
               </FormField>
               <FormField
                 label="Confirm new password"
-                errorText={validateConfirmPassword(sshNewPassword,sshConfirmPassword )}
+                errorText={validateSSHPasswordMatch()}
                 >
                 <Input onChange={event => setsshConfirmPassword(event.detail.value)} type={sshPasswordInputType} inputMode='text' value={sshConfirmPassword} disableBrowserAutocorrect/>
 
               </FormField>
 
-              <Checkbox onChange={ event => sshShowPasswordToggle(event.detail.checked)} checked={sshShowPassword} >Show Passwords</Checkbox>
+              <Checkbox onChange={ event => showPasswordToggle(event.detail.checked)} checked={showPassword} >Show Passwords</Checkbox>
 
 
             { sshPasswordErrorVisible ? <Alert type="error" onDismiss={() => {setsshPasswordErrorVisible(false) }}  dismissible header={sshPasswordError} /> : null }
@@ -487,7 +572,7 @@ const DeviceSshContainer = () => {
 
 const LedColorContainer = () => {
   const [hex, setHex] = useState('#000000');
-  const setLedColor = async (color: any) => {
+  const setLedColor = async (color) => {
     const setled = await postApi('set_led_color', { red: color.rgb.r, green: color.rgb.g, blue: color.rgb.b });
     if (setled && setled.success) {
       console.log('Set led color:', setled);
@@ -573,6 +658,8 @@ const LedColorContainer = () => {
 
 const AboutContainer = () => {
 
+  // TO DO: Some Hardcoded values, need to create an API
+
   const [deviceInfo, setDeviceInfo] = useState({ hardware_version: 'Unknown', software_version: 'Unknown' });
   const [softwareInfo, setsoftwareInfo] = useState({ software_update_available: 'Unknown', mandatory_update: 'Unknown' });
 
@@ -639,8 +726,9 @@ const AboutContainer = () => {
 
 
 export default function SettingsPage() {
-  // useEffect(() => {
-  // }, []);
+  useEffect(() => {
+    // setNetwork();
+  }, []);
 
   return (
     <BaseAppLayout
@@ -660,3 +748,8 @@ export default function SettingsPage() {
     />
   );
 }
+
+function setsshOldPassword(arg0: string) {
+  throw new Error('Function not implemented.');
+}
+
