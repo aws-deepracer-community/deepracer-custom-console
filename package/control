@@ -1,0 +1,10 @@
+Package: aws-deepracer-device-console-new
+Replaces: aws-deepracer-device-console
+Provides: aws-deepracer-device-console
+Version: 2.5.0.0+community
+Section: base
+Priority: optional
+Maintainer: AWS DeepRacer Community
+Architecture: all
+Depends: aws-deepracer-util, nginx (>= 1.10.3), nginx-extras (>= 1.10.3), apache2-utils (>= 2.4.18)
+Description: AWS DeepRacer web server
