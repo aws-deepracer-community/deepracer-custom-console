@@ -12,3 +12,6 @@ mv $DIR/dist/opt/aws/deepracer/lib/device_console/*.html $DIR/dist/opt/aws/deepr
 mv $DIR/dist/opt/aws/deepracer/lib/device_console/*.json $DIR/dist/opt/aws/deepracer/lib/device_console/templates
 
 dpkg-deb --root-owner-group --build $DIR/dist $DIR/dist/aws-deepracer-device-console.deb
+dpkg-name -o $DIR/dist/aws-deepracer-device-console.deb
+FILE=$(compgen -G $DIR/dist/aws-deepracer-device-console*.deb)
+mv $FILE $(echo $FILE | sed -e 's/\+/\-/')
