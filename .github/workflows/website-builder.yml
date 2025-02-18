@@ -11,9 +11,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Install Node
         run: |
           sudo apt install nodejs
+
       - name: Build website
         run: |
           pwd
@@ -22,10 +24,17 @@ jobs:
           npm run build
           cd dist
           rm -f ../../deepracer-console-new.zip && zip -r ../../deepracer-console-new.zip .
+          cd ../../
+
+      - name: Create deb package
+        run: |
+          ./deepracer-build-pkg.sh
 
       - name: Create a draft release
         run: |
-          gh release create --draft --prerelease --title "${{ github.ref_name }} ${{ github.run_id }}" --target ${{ github.ref_name }} --notes "Auto-generated draft release from workflow https://github.com/aws-deepracer-community/deepracer-custom-console/actions/runs/${{ github.run_id }}" v0.${{ github.run_id }}  deepracer-console-new.zip
+          DEBFILE=$(compgen -G dist/aws-deepracer-device-console*.deb)
+          gh release create --draft --prerelease --title "Branch: ${{ github.ref_name }}, Job: ${{ github.run_id }}" --target ${{ github.ref_name }} --notes "Draft Release from Branch: ${{ github.ref_name }}, Action Job id: ${{ github.run_id }} Auto-generated draft release from workflow https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" v0.${{ github.run_id }}  deepracer-console-new.zip $DEBFILE
           rm deepracer-console-new.zip
+          rm $DEBFILE
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
