@@ -61,49 +61,6 @@ const NetworkSettingsContainer = () => {
   );
 }
 
-const UpdateNetworkSettingsContainer = () => {
-  const [networkData, setNetworkData] = useState({ SSID: 'Unknown', ip_address: 'Unknown', is_usb_connected: 'Unknown' });
-
-  useEffect(() => {
-    const fetchNetworkSettingsData = async () => {
-      const data = await getApi('get_network_details');
-      if (data && data.success) {
-        setNetworkData({ SSID: data.SSID, ip_address: data.ip_address, is_usb_connected: data.is_usb_connected });
-      }
-    };
-    fetchNetworkSettingsData();
-    const interval = setInterval(fetchNetworkSettingsData, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <Container
-      header={
-        <Header
-          actions={
-            <SpaceBetween
-              direction="horizontal"
-              size="xs"
-            >
-            </SpaceBetween>
-          }
-        >
-          Network Settings
-        </Header>
-      }
-    >
-        <KeyValuePairs
-          columns={3}
-          items={[
-            { label: "Wi-Fi Network SSID", value: networkData.SSID == 'Unknown' ? <StatusIndicator type="warning">Unknown</StatusIndicator> : networkData.SSID },
-            { label: "Vehicle IP Address", value: networkData.ip_address == 'Unknown' ? <StatusIndicator type="warning">Unknown</StatusIndicator> : networkData.ip_address },
-            { label: "update Wifi", value: networkData.is_usb_connected == 'Unknown' ? <StatusIndicator type="warning">Unknown</StatusIndicator> : networkData.is_usb_connected ? <StatusIndicator type="success">Connected</StatusIndicator> : <StatusIndicator type="info">Not Connected</StatusIndicator> }
-          ]}
-        />
-    </Container>
-  );
-}
-
 const ConnectUSBContainer = () => {
   const [isUsbConnected, setIsUsbConnected] = useState(false);
 

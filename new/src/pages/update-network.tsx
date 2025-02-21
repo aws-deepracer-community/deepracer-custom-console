@@ -78,7 +78,11 @@ const NetworkSettingsContainer = () => {
   );
 }
 
-const UpdateNetworkSettingsContainer = ({ setFlashbarItems }) => {
+interface UpdateNetworkSettingsContainerProps {
+  setFlashbarItems: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSettingsContainerProps) => {
   const [checked, setChecked] = React.useState(false);
   const [value, setValue] = React.useState("");
   const [wifiOptions, setWifiOptions] = useState([]);
@@ -116,10 +120,6 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }) => {
 
   const handleWifiSelect = ({ detail }: { detail: any }) => {
     setSelectedWifi(detail.selectedOption);
-  };
-
-  const openDeepracer = () => {
-    window.open('https://deepracer.aws', '_blank');
   };
 
   const handleConnect = async () => {
@@ -207,7 +207,7 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }) => {
 }
 
 export default function UpDateNetworkPage() {
-  const [flashbarItems, setFlashbarItems] = useState([]);
+  const [flashbarItems, setFlashbarItems] = useState<any[]>([]);
 
   return (
         <TextContent>
