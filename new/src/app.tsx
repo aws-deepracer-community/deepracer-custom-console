@@ -11,6 +11,8 @@ import LogsPage from "./pages/logs";
 import RecalibrateSteeringPage from "./pages/recalibrate-steering";
 import RecalibrateSpeedPage from "./pages/recalibrate-speed";
 import LoginPage from "./pages/login";
+import EditNetworkPage from "./pages/edit-network";
+import UpdateNetworkPage from "./pages/update-network";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -53,6 +55,16 @@ export default function App() {
             <Route path="/settings" element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/edit-network" element={
+              <ProtectedRoute>
+                <EditNetworkPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/update-network" element={
+              <ProtectedRoute>
+                <UpdateNetworkPage />
               </ProtectedRoute>
             } />
             <Route path="/calibration" element={

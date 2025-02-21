@@ -28,26 +28,15 @@ export default () => {
   React.useEffect(() => {
     const generateCsrfToken = async () => {
       try {
-        // Make a request to your backend endpoint that generates a CSRF token
-        const response = await axios.get('/generate-csrf');
-        const token = response.data.csrf_token;
-        
-        // Set the token in state
-        setCsrfToken(token);
-        
-        // Set up axios defaults
-        axios.defaults.headers.common['X-CSRFToken'] = token;
-        axios.defaults.withCredentials = true;
-
-        // Add the token to the document head as a meta tag
-        const meta = document.createElement('meta');
-        meta.name = 'csrf-token';
-        meta.content = token;
-        document.head.appendChild(meta);
-
-        console.log('CSRF token generated:', token); //for troubleshooting
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (token) {
+          setCsrfToken(token);
+          axios.defaults.headers.common['X-CSRF-Token'] = token;
+          axios.defaults.withCredentials = true;
+          console.log('CSRF token set:', token); // for troubleshooting
+        }
       } catch (error) {
-        console.error('Error generating CSRF token:', error);
+        console.error('Error setting CSRF token:', error);
       }
     };
 
@@ -66,12 +55,12 @@ export default () => {
     try {
       const formData = new FormData();
       formData.append('password', value);
-  
+      console.log('CSRF Token:', csrfToken);
       const response = await axios.post('/login', 
         formData,
         {
           headers: {
-            'X-CSRFToken': csrfToken,
+            'X-CSRF-Token': csrfToken,
           },
           withCredentials: true  // This is crucial for cookie handling
         }
