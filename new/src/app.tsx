@@ -11,6 +11,8 @@ import LogsPage from "./pages/logs";
 import RecalibrateSteeringPage from "./pages/recalibrate-steering";
 import RecalibrateSpeedPage from "./pages/recalibrate-speed";
 import LoginPage from "./pages/login";
+import EditNetworkPage from "./pages/edit-network";
+import UpdateNetworkPage from "./pages/update-network";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -31,6 +33,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 export default function App() {
   const Router = USE_BROWSER_ROUTER ? BrowserRouter : HashRouter;
+  const isDeepracerAws = window.location.hostname === 'deepracer.aws';
 
   return (
     <div style={{ height: "100%" }}>
@@ -45,47 +48,62 @@ export default function App() {
             <Route path="/logout" element={<LoginPage />} />
 
             {/* Protected routes */}
-            <Route path="/logs" element={
-              <ProtectedRoute>
-                <LogsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/calibration" element={
-              <ProtectedRoute>
-                <CalibrationPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/recalibrate-steering" element={
-              <ProtectedRoute>
-                <RecalibrateSteeringPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/recalibrate-speed" element={
-              <ProtectedRoute>
-                <RecalibrateSpeedPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/models" element={
-              <ProtectedRoute>
-                <ModelsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/home" element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            } />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            } />
-            <Route path="*" element={<NotFound />} />
+            {isDeepracerAws ? (
+              <Route path="*" element={
+                <ProtectedRoute>
+                  <UpdateNetworkPage />
+                </ProtectedRoute>
+              } />
+            ) : (
+              <>
+                <Route path="/logs" element={
+                  <ProtectedRoute>
+                    <LogsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/edit-network" element={
+                  <ProtectedRoute>
+                    <EditNetworkPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/calibration" element={
+                  <ProtectedRoute>
+                    <CalibrationPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/recalibrate-steering" element={
+                  <ProtectedRoute>
+                    <RecalibrateSteeringPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/recalibrate-speed" element={
+                  <ProtectedRoute>
+                    <RecalibrateSpeedPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/models" element={
+                  <ProtectedRoute>
+                    <ModelsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/home" element={
+                  <ProtectedRoute>
+                    <HomePage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <HomePage />
+                  </ProtectedRoute>
+                } />
+                <Route path="*" element={<NotFound />} />
+              </>
+            )}
           </Routes>
         </div>
       </Router>

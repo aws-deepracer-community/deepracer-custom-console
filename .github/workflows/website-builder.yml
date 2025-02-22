@@ -22,11 +22,18 @@ jobs:
           npm run build
           cd dist
           rm -f ../../deepracer-console-new.zip && zip -r ../../deepracer-console-new.zip .
-      - name: Commit updated website
+
+      - name: Create a draft release
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "Update website archive file" || echo "No changes to commit"
-          git push
+          gh release create --draft --prerelease --title $GITHUB_REF --target $GITHUB_REF $GITHUB_REF deepracer-console-new.zip
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Commit updated website
+      #   run: |
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add .
+      #     git commit -m "Update website archive file" || echo "No changes to commit"
+      #     git push
           
