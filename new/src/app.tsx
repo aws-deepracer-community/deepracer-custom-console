@@ -49,7 +49,7 @@ export default function App() {
 
             {/* Protected routes */}
             {isDeepracerAws ? (
-              <Route path="/" element={
+              <Route path="*" element={
                 <ProtectedRoute>
                   <UpdateNetworkPage />
                 </ProtectedRoute>
