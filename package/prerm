@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ "$1" == "remove" ]; then
+    if [ -e /opt/aws/deepracer/password.txt ]; then
+        rm /opt/aws/deepracer/password.txt
+    fi
+    if [ -e /opt/aws/deepracer/token.txt ]; then
+        rm /opt/aws/deepracer/token.txt
+    fi
+fi

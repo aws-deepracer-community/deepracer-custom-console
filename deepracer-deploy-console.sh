@@ -9,3 +9,4 @@ sudo cp -a temp_website/static/. /opt/aws/deepracer/lib/device_console/static/ -
 sudo cp temp_website/index.html /opt/aws/deepracer/lib/device_console/templates -f
 sudo cp temp_website/login.html /opt/aws/deepracer/lib/device_console/templates -f
 sudo cp temp_website/manifest.json /opt/aws/deepracer/lib/device_console/templates -f
+rm temp_website -rf
