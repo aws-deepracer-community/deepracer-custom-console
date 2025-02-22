@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/opt/aws/deepracer/nginx/nginx_configure.sh
+/opt/aws/deepracer/nginx/nginx_install_certs.sh
+systemctl restart nginx.service
