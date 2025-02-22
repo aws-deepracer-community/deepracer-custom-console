@@ -87,6 +87,7 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSetti
   const [value, setValue] = React.useState("");
   const [wifiOptions, setWifiOptions] = useState([]);
   const [selectedWifi, setSelectedWifi] = useState<{ value: string } | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
     const fetchWifiOptions = async () => {
@@ -124,11 +125,13 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSetti
 
   const handleConnect = async () => {
     if (selectedWifi && value) {
+      setIsConnecting(true);
       const data = {
         wifi_name: selectedWifi.value,
         wifi_password: value,
       };
       const response = await postApi('wifi_reset', data);
+      setIsConnecting(false);
       if (response && response.success) {
         const ipAddress = response.ip_address.includes(',') ? response.ip_address.split(',')[0] : response.ip_address;
         setFlashbarItems([{
@@ -199,6 +202,9 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSetti
             ) },
             { label: "", value: (
               <Button variant="primary" onClick={handleConnect}>Connect</Button>
+            ) },
+            { label: "", value: isConnecting && (
+              <StatusIndicator type="in-progress">Connecting...</StatusIndicator>
             ) },
           ]}
         />
