@@ -53,6 +53,8 @@ const SteeringContainer = () => {
 
   useEffect(() => {
     const fetchCalibrationData = async () => {
+      await setCalibration();
+      await handleStop();
       const data = await getCalibrationAngle();
       if (data && data.success) {
         setCalibrationData({ mid: data.mid, max: data.max, min: data.min });
@@ -96,6 +98,8 @@ const SpeedContainer = () => {
   
   useEffect(() => {
     const fetchCalibrationData = async () => {
+      await setCalibration();
+      await handleStop();
       const data = await getCalibrationThrottle();
       if (data && data.success) {
         setCalibrationData({ mid: data.mid, max: data.max, min: data.min, polarity: data.polarity });
