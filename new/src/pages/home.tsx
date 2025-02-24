@@ -199,6 +199,10 @@ const HomePage = () => {
     }
   };
 
+  const handleToggleChange = (sensorType: string) => {
+    setCameraFeedType(sensorType);
+  };
+
   const cameraStatusText = sensorStatus.camera_status === 'connected' ? '(Connected)' : '(Not Connected)';
   const stereoStatusText = sensorStatus.stereo_status === 'connected' ? '(Connected)' : '(Not Connected)';
   const lidarStatusText = sensorStatus.lidar_status === 'connected' ? '(Connected)' : '(Not Connected)';
@@ -260,45 +264,36 @@ const HomePage = () => {
                     <p>Camera feed is off</p>
                   )}
                 </div>
-                <Toggle
-                  onChange={toggleCameraFeed}
-                  checked={showCameraFeed}
-                >
-                  {showCameraFeed ? "Turn Off Camera" : "Turn On Camera"}
-                </Toggle>
                 <KeyValuePairs
                           columns={3}
                           items={[
-                            { label: "Mono Camera", value: (<RadioGroup
-                              onChange={handleCameraFeedTypeChange}
-                              value={cameraFeedType}
-                              items={[
-                                {
-                                  value: "mono",
-                                  label: `${cameraStatusText}`,
-                                  disabled: sensorStatus.camera_status === "not_connected",
-                                }
-                              ]}/>) },
-                            { label: "Stereo Camera", value: (<RadioGroup
-                              onChange={handleCameraFeedTypeChange}
-                              value={cameraFeedType}
-                              items={[
-                                {
-                                  value: "stereo",
-                                  label: `${stereoStatusText}`,
-                                  disabled: sensorStatus.stereo_status === "not_connected",
-                                }
-                              ]}/>) },
-                            { label: "LiDAR", value: (<RadioGroup
-                              onChange={handleCameraFeedTypeChange}
-                              value={cameraFeedType}
-                              items={[
-                                {
-                                  value: "lidar",
-                                  label: `${lidarStatusText}`,
-                                  disabled: sensorStatus.lidar_status === "not_connected",
-                                }
-                              ]}/>) }
+                            { label: "Mono Camera", value: (
+                              <Toggle
+                                onChange={() => { handleToggleChange('mono'); toggleCameraFeed(); }}
+                                checked={cameraFeedType === 'mono' && showCameraFeed}
+                                disabled={sensorStatus.camera_status === "not_connected"}
+                              >
+                                {cameraStatusText}
+                              </Toggle>
+                            ) },
+                            { label: "Stereo Camera", value: (
+                              <Toggle
+                                onChange={() => { handleToggleChange('stereo'); toggleCameraFeed(); }}
+                                checked={cameraFeedType === 'stereo' && showCameraFeed}
+                                disabled={sensorStatus.stereo_status === "not_connected"}
+                              >
+                                {stereoStatusText}
+                              </Toggle>
+                            ) },
+                            { label: "LiDAR", value: (
+                              <Toggle
+                                onChange={() => { handleToggleChange('lidar'); toggleCameraFeed(); }}
+                                checked={cameraFeedType === 'lidar' && showCameraFeed}
+                                disabled={sensorStatus.lidar_status === "not_connected"}
+                              >
+                                {lidarStatusText}
+                              </Toggle>
+                            ) }
                           ]}
                         />
               </SpaceBetween>
