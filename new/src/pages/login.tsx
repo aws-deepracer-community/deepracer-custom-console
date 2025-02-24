@@ -93,11 +93,11 @@ export default () => {
         textAlign: 'center',
         width: '100%',
       }}>
-        <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo" style={{ marginTop: '8px' }}></img>
-        <h2>Unlock your AWS DeepRacer vehicle</h2>
+        <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo" style={{ marginTop: '50px' }}></img>
+        <h2 style={{ marginTop: '20px' }}>Unlock your AWS DeepRacer vehicle</h2>
         <p>The default AWS DeepRacer password can be found printed on the bottom of your vehicle.</p>
         <p>If you've recently flashed your car the password may have been reset to deepracer</p>
-        <p><strong>Password</strong></p>
+        <p style={{ marginTop: '20px' }}><strong>Password</strong></p>
         <Input
           onChange={({ detail }) => setValue(detail.value)}
           value={value}
@@ -109,12 +109,17 @@ export default () => {
             }
           }}
         />
-        <Checkbox
-          onChange={({ detail }) => setChecked(detail.checked)}
-          checked={checked}
-        >
-          Show Password
-        </Checkbox>
+        <div style={{ marginTop: '10px' }}>
+          <Checkbox
+            onChange={({ detail }) => setChecked(detail.checked)}
+            checked={checked}
+          >
+            Show Password
+          </Checkbox>
+        </div>
+        <div style={{ marginTop: '10px' }}>
+          <Button variant="primary" onClick={submitLogin}>Access vehicle</Button>
+        </div>
         <p>
           <a 
             href="https://docs.aws.amazon.com/console/deepracer/recover-vehicle-password"
@@ -124,7 +129,6 @@ export default () => {
             Forgot password?
           </a>
         </p>
-        <Button variant="primary" onClick={submitLogin}>Access vehicle</Button>
       </div>
     </TextContent>
   );
