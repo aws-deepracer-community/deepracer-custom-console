@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { TextContent, Toggle, RadioGroup, Modal, Button, ProgressBar } from "@cloudscape-design/components";
+import { TextContent, Toggle, Modal, Button, ProgressBar } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Tabs from "@cloudscape-design/components/tabs";
 import Select from "@cloudscape-design/components/select";
@@ -82,10 +82,6 @@ const HomePage = () => {
 
   const toggleCameraFeed = () => {
     setShowCameraFeed(prevState => !prevState);
-  };
-
-  const handleCameraFeedTypeChange = ({ detail }: { detail: any }) => {
-    setCameraFeedType(detail.value);
   };
 
   const handleModelSelect = ({ detail }: { detail: any }) => {
