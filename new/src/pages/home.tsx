@@ -25,6 +25,7 @@ const HomePage = () => {
   const [progressStatus, setProgressStatus] = useState<'in-progress' | 'success'>('in-progress');
   const [progressValue, setProgressValue] = useState<number>(0)
   const [throttle, setThrottle] = useState(30);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
   let currentProgress = 0;
   const lastJoystickMoveTime = useRef<number>(0);
 
@@ -146,6 +147,7 @@ const HomePage = () => {
             console.log('Model API response:', modelResponse.data);
             setIsModalVisible(false);
             setIsModelLoading(true);
+            setIsModelLoaded(false);
             pollModelLoadingStatus();
         } else {
             console.error('No model selected');
@@ -163,6 +165,7 @@ const HomePage = () => {
         if (response.data.isModelLoading === 'loaded' && response.data.success) {
             setProgressStatus('success');
             setIsModelLoading(false);
+            setIsModelLoaded(true);
         } else {
             if (currentProgress<90) {
               currentProgress+=10;
@@ -346,8 +349,24 @@ const HomePage = () => {
                   />
                 )}
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <Button variant="primary" fullWidth  data-size="large-button" onClick={handleStart}>Start vehicle</Button>
-                  <Button variant="primary" fullWidth data-size="large-button" onClick={handleStop}>Stop vehicle</Button>
+                  <Button 
+                    variant="primary" 
+                    fullWidth 
+                    data-size="large-button-start" 
+                    onClick={handleStart} 
+                    disabled={!isModelLoaded} 
+                  >
+                    Start vehicle
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    fullWidth 
+                    data-size="large-button-stop" 
+                    onClick={handleStop} 
+                    disabled={!isModelLoaded} 
+                  >
+                    Stop vehicle
+                  </Button>
                 </div>
                 <h2>Speed</h2>
                 <p>Adjust maximum speed {throttle}%</p>
@@ -355,18 +374,18 @@ const HomePage = () => {
                 <Button 
                   variant="primary" 
                   onClick={() => handleThrottle('down')} 
-                  iconName="angle-down"
                   data-size="large-button"
                   fullWidth
+                  disabled={!isModelLoaded}
                 >
                   -
                 </Button>
                 <Button 
                   variant="primary" 
                   onClick={() => handleThrottle('up')} 
-                  iconName="angle-up"
                   data-size="large-button"
                   fullWidth
+                  disabled={!isModelLoaded}
                 >
                   +
                 </Button>
@@ -401,7 +420,6 @@ const HomePage = () => {
                 <Button 
                   variant="primary" 
                   onClick={() => handleThrottle('down')} 
-                  iconName="angle-down"
                   data-size="large-button"
                   fullWidth
                 >
@@ -410,7 +428,6 @@ const HomePage = () => {
                 <Button 
                   variant="primary" 
                   onClick={() => handleThrottle('up')} 
-                  iconName="angle-up"
                   data-size="large-button"
                   fullWidth
                 >

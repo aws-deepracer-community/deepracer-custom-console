@@ -25,8 +25,26 @@ body.awsui-dark-mode {
 }
 
 button[data-size="large-button"] {
-  width: 130px;
+  width: 230px;
   height: 130px;
   font-size: 150px;
   text-align: center;
+}
+
+button[data-size="large-button-start"] {
+  width: 230px;
+  height: 130px;
+  font-size: 150px;
+  text-align: center;
+  background-color: green !important;
+  border-color: green !important;
+}
+
+button[data-size="large-button-stop"] {
+  width: 230px;
+  height: 130px;
+  font-size: 150px;
+  text-align: center;
+  background-color: red !important;
+  border-color: red !important;
 }
