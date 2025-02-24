@@ -3,6 +3,7 @@ import BaseAppLayout from "../components/base-app-layout";
 import Button from "@cloudscape-design/components/button";
 import * as React from "react";
 import axios from "axios";
+import Header from "@cloudscape-design/components/header";
 
 // Define the types for models and selectedModels
 interface Model {
@@ -208,7 +209,7 @@ class Models extends React.Component<{}, State> {
                   { id: 'creation_time', header: 'Upload time', cell: item => this.formatDate(item.creation_time) },
                 ]}
                 items={models}
-                header="Model List"
+                header={<Header>Model List</Header>}
                 selectionType="multi"
                 selectedItems={selectedModels}
                 onSelectionChange={this.handleSelectionChange}
