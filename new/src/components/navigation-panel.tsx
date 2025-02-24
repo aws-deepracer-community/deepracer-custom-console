@@ -174,19 +174,21 @@ export default function NavigationPanel() {
             <p key={index}>IP: {ip}</p>
           ))}
         </TextContent>
-        <ProgressBar
-          value={batteryLevel}
-          description="Current Battery Charge"
-          label="Battery Status"
-          status={!hasInitialReading && hasBeenTenSeconds || batteryError ? "error" : "in-progress"}
-          additionalInfo={
-            !hasInitialReading && hasBeenTenSeconds
-              ? "Unable to get battery reading"
-              : batteryError
-              ? "Vehicle battery is not connected"
-              : undefined
-          }
-        />
+        <div style={{ width: "250px" }}>
+          <ProgressBar
+            value={batteryLevel}
+            description="Current Battery Charge"
+            label="Battery Status"
+            status={!hasInitialReading && hasBeenTenSeconds || batteryError ? "error" : "in-progress"}
+            additionalInfo={
+              !hasInitialReading && hasBeenTenSeconds
+                ? "Unable to get battery reading"
+                : batteryError
+                ? "Vehicle battery is not connected"
+                : undefined
+            }
+          />
+        </div>
         <Button onClick={handleLogout}>Logout</Button>
       </div>
     </>
