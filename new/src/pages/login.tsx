@@ -1,4 +1,4 @@
-import { TextContent, Button } from "@cloudscape-design/components";
+import { Button, Container } from "@cloudscape-design/components";
 import * as React from "react";
 import Checkbox from "@cloudscape-design/components/checkbox";
 import axios from 'axios';
@@ -85,51 +85,53 @@ export default () => {
   
 
   return (
-    <TextContent>
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-        width: '100%',
-      }}>
-        <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo" style={{ marginTop: '50px' }}></img>
-        <h2 style={{ marginTop: '20px' }}>Unlock your AWS DeepRacer vehicle</h2>
-        <p>The default AWS DeepRacer password can be found printed on the bottom of your vehicle.</p>
-        <p>If you've recently flashed your car the password may have been reset to deepracer</p>
-        <p style={{ marginTop: '20px' }}><strong>Password</strong></p>
-        <Input
-          onChange={({ detail }) => setValue(detail.value)}
-          value={value}
-          type= {checked ? "text" : "password"}
-          placeholder="Enter your password"
-          onKeyDown={({ detail }) => {
-            if (detail.keyCode === 13) { // 13 is the key code for Enter
-              submitLogin();
-            }
-          }}
-        />
-        <div style={{ marginTop: '10px' }}>
-          <Checkbox
-            onChange={({ detail }) => setChecked(detail.checked)}
-            checked={checked}
-          >
-            Show Password
-          </Checkbox>
-        </div>
-        <div style={{ marginTop: '10px' }}>
-          <Button variant="primary" onClick={submitLogin}>Access vehicle</Button>
-        </div>
-        <p>
-          <a 
-            href="https://docs.aws.amazon.com/console/deepracer/recover-vehicle-password"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Forgot password?
-          </a>
-        </p>
+      <div style={{ maxWidth: '600px', margin: '0 auto', marginTop: '30px' }}>
+        <Container>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+        }}>
+          <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo" style={{ marginTop: '10px' }}></img>
+          <h2 style={{ marginTop: '20px' }}>Unlock your AWS DeepRacer vehicle</h2>
+          <p>The default AWS DeepRacer password can be found printed on the bottom of your vehicle.  If you've recently flashed your car the password may have been reset to 'deepracer'</p>
+          <p style={{ marginTop: '0px' }}><strong>Password</strong></p>
+          <div style={{ width: '100%' }}>
+            <Input
+              onChange={({ detail }) => setValue(detail.value)}
+              value={value}
+              type= {checked ? "text" : "password"}
+              placeholder="Enter your password"
+              onKeyDown={({ detail }) => {
+                if (detail.keyCode === 13) { // 13 is the key code for Enter
+                  submitLogin();
+                }
+              }}
+            />
+          </div>
+          <div style={{ marginTop: '10px',  width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Checkbox
+              onChange={({ detail }) => setChecked(detail.checked)}
+              checked={checked}
+            >
+              Show Password
+            </Checkbox>
+            <div style={{ marginTop: '10px', width: '100%', display: 'flex' }}>
+                <Button variant="primary" onClick={submitLogin} fullWidth={true}>Access vehicle</Button>
+            </div>
+          </div>
+          <p>
+            <a 
+              href="https://docs.aws.amazon.com/console/deepracer/recover-vehicle-password"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Forgot password?
+            </a>
+          </p>
+          </div>
+        </Container>
       </div>
-    </TextContent>
   );
 }
