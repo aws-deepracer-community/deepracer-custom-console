@@ -38,5 +38,9 @@ mv $DIR/dist/opt/aws/deepracer/lib/device_console/*.json $DIR/dist/opt/aws/deepr
 
 dpkg-deb --root-owner-group --build $DIR/dist $DIR/dist/aws-deepracer-community-device-console.deb
 dpkg-name -o $DIR/dist/aws-deepracer-community-device-console.deb
+
+# deb-s3 does not handle filenames with +, so we need to rename the file
 FILE=$(compgen -G $DIR/dist/aws-deepracer-community-device-console*.deb)
-mv $FILE $(echo $FILE | sed -e 's/\+/\-/')
+if [[ $FILE == *"+"* ]]; then
+    mv $FILE $(echo $FILE | sed -e 's/\+/\-/')
+fi
