@@ -29,16 +29,11 @@ const HomePage = () => {
   const checkInitialModelStatus = async () => {
     try {
       const response = await axios.get('api/isModelLoading');
-      if (response.data.isModelLoading === 'loaded' && response.data.success) {
+      if (response.data.isModelLoading === 'loaded') {
         setIsModelLoaded(true);
-        // If the response includes the current model name, set it in the dropdown
-        if (response.data.modelName) {
-          const modelOption = modelOptions.find(
-            (option: any) => option.value === response.data.modelName
-          );
-          if (modelOption) {
-            setSelectedModel(modelOption);
-          }
+        const selectedModelName = localStorage.getItem('selectedModelName');
+        if (selectedModelName) {
+          setSelectedModel({ value: selectedModelName });
         }
       }
     } catch (error) {
@@ -50,7 +45,7 @@ const HomePage = () => {
     const initialize = async () => {
       await fetchSensorStatus();
       await fetchModels();
-      await checkInitialModelStatus(); // Add this line
+      await checkInitialModelStatus();
       setDriveMode('auto');
     };
     
@@ -109,6 +104,7 @@ const HomePage = () => {
   const handleModelSelect = ({ detail }: { detail: any }) => {
     setSelectedModel(detail.selectedOption);
     setIsModalVisible(true);
+    localStorage.setItem('selectedModelName', detail.selectedOption.value);
   };
 
   const handleCancel = () => {
