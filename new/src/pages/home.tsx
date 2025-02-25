@@ -50,6 +50,10 @@ const HomePage = () => {
     };
     
     initialize();
+
+    return () => {
+      handleStop();
+    };
   }, []);
 
   const setDriveMode = async (mode: 'auto' | 'manual') => {
