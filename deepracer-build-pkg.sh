@@ -22,7 +22,7 @@ if [[ $VERSION_TAG == v* ]]; then
     VERSION_TAG=${VERSION_TAG:1}
 fi
 
-VERSION=$VERSION_TAG-$VERSION_COMMITS$VERSION_HASH_SUFFIX
+VERSION=$VERSION_TAG.$VERSION_COMMITS$VERSION_HASH_SUFFIX
 
 rm -rf $DIR/dist/*
 mkdir -p $DIR/dist/opt/aws/deepracer/lib/device_console $DIR/dist/opt/aws/deepracer/lib/device_console/templates $DIR/dist/DEBIAN
