@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { TextContent, Toggle, Modal, Button, ProgressBar } from "@cloudscape-design/components";
+import { TextContent, Toggle, Modal, Button, Flashbar, FlashbarProps } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Tabs from "@cloudscape-design/components/tabs";
 import Select from "@cloudscape-design/components/select";
@@ -21,12 +21,9 @@ const HomePage = () => {
   const [modelOptions, setModelOptions] = useState([]);
   const [selectedModel, setSelectedModel] = useState<{ value: string } | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModelLoading, setIsModelLoading] = useState(false);
-  const [progressStatus, setProgressStatus] = useState<'in-progress' | 'success'>('in-progress');
-  const [progressValue, setProgressValue] = useState<number>(0)
+  const [flashbarItems, setFlashbarItems] = useState<FlashbarProps.MessageDefinition[]>([]);
   const [throttle, setThrottle] = useState(30);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
-  let currentProgress = 0;
   const lastJoystickMoveTime = useRef<number>(0);
 
   useEffect(() => {
@@ -142,8 +139,8 @@ const HomePage = () => {
             const modelResponse = await axios.put(`/api/models/${selectedModel.value}/model`);
             console.log('Model API response:', modelResponse.data);
             setIsModalVisible(false);
-            setIsModelLoading(true);
             setIsModelLoaded(false);
+            showLoadingFlashbar();
             pollModelLoadingStatus();
         } else {
             console.error('No model selected');
@@ -155,26 +152,35 @@ const HomePage = () => {
 
   const pollModelLoadingStatus = async () => {
     try {
-       setProgressStatus('in-progress');
-       setProgressValue(currentProgress);
         const response = await axios.get('api/isModelLoading');
         if (response.data.isModelLoading === 'loaded' && response.data.success) {
-            setProgressStatus('success');
-            setIsModelLoading(false);
+            showSuccessFlashbar();
             setIsModelLoaded(true);
         } else {
-            if (currentProgress<90) {
-              currentProgress+=10;
-            } else {
-              currentProgress = 99;
-            }
-            setProgressValue(currentProgress)
             setTimeout(pollModelLoadingStatus, 1000);
         }
     } catch (error) {
         console.error('Error polling model loading status:', error);
         setTimeout(pollModelLoadingStatus, 1000);
     }
+  };
+
+  const showLoadingFlashbar = () => {
+    setFlashbarItems([{
+      type: 'in-progress',
+      content: 'Model Loading...',
+      dismissible: false,
+    }]);
+  };
+
+  const showSuccessFlashbar = () => {
+    setFlashbarItems([{
+      type: 'success',
+      content: 'Model loaded successfully',
+      dismissible: true,
+      onDismiss: () => setFlashbarItems([]),
+    }]);
+    setTimeout(() => setFlashbarItems([]), 5000);
   };
 
   const handleJoystickMove = (event: any) => {
@@ -219,6 +225,7 @@ const HomePage = () => {
     <BaseAppLayout
       content={
         <div>
+          <Flashbar items={flashbarItems} />
           <TextContent>
             <h1>Control Vehicle</h1>
             <h2>Sensor</h2>
@@ -330,14 +337,6 @@ const HomePage = () => {
                       <p>Your vehicle will be disabled while the new model is loaded</p>
                     </TextContent>
                   </Modal>
-                )}
-                {isModelLoading && (
-                  <ProgressBar
-                    status={progressStatus}
-                    value={progressValue}
-                    label="Loading model..."
-                    description="Can take 5-45s depending on model optimization"
-                  />
                 )}
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <Button 

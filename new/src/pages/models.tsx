@@ -1,4 +1,4 @@
-import { TextContent, Table, Flashbar, FlashbarProps } from "@cloudscape-design/components";
+import { TextContent, Table, Flashbar, FlashbarProps, Modal, Box, SpaceBetween } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Button from "@cloudscape-design/components/button";
 import * as React from "react";
@@ -19,6 +19,7 @@ interface State {
   models: Model[];
   selectedModels: Model[];
   flashMessages: FlashbarProps.MessageDefinition[];
+  isDeleteModalVisible: boolean; // Add state for delete modal visibility
 }
 
 class Models extends React.Component<{}, State> {
@@ -27,7 +28,8 @@ class Models extends React.Component<{}, State> {
   state: State = {
     models: [],
     selectedModels: [],
-    flashMessages: []
+    flashMessages: [],
+    isDeleteModalVisible: false // Add state for delete modal visibility
   };
 
   componentDidMount() {
@@ -55,14 +57,16 @@ class Models extends React.Component<{}, State> {
         'X-CSRF-Token': csrfToken
       });
       if (response.data.success) {
-        this.getModels(); // Refresh the model list after deletion
         this.addFlashMessage("Model deleted successfully", "success");
+        this.getModels(); // Refresh the model list after deletion
+      } else {
+        this.addFlashMessage("Error deleting model", "error");
       }
     } catch (error) {
       console.error("Error deleting models:", error);
-      this.getModels(); // Refresh the model list after deletion
       this.addFlashMessage("Error deleting model", "error");
     }
+    this.setState({ isDeleteModalVisible: false }); // Hide the delete modal
   };
 
   isModelInstalled = (selectedFileName: string) => {
@@ -111,6 +115,9 @@ class Models extends React.Component<{}, State> {
           return;
         }
 
+        // Show loading flash message
+        const loadingMessageId = this.addFlashMessage("Uploading model...", "in-progress");
+
         const uploadResponse = await axios.put("/api/uploadModels", formData, {
           headers: {
             'Content-Disposition': `form-data; name="file"; filename="${file.name}"`,
@@ -118,6 +125,10 @@ class Models extends React.Component<{}, State> {
             'X-CSRF-Token': csrfToken
           }
         });
+
+        // Remove loading flash message
+        this.removeFlashMessage(loadingMessageId);
+
         if (uploadResponse.data.success) {
           this.addFlashMessage("Model uploaded successfully", "success");
           this.getModels(); // Refresh the model list after upload
@@ -153,12 +164,13 @@ class Models extends React.Component<{}, State> {
       id,
       content,
       type,
-      dismissible: true,
-      onDismiss: () => this.removeFlashMessage(id)
+      dismissible: type !== "in-progress",
+      onDismiss: type !== "in-progress" ? () => this.removeFlashMessage(id) : undefined
     };
     this.setState((prevState) => ({
       flashMessages: [...prevState.flashMessages, newMessage]
     }));
+    return id; // Return the id of the new message
   };
 
   removeFlashMessage = (id: string) => {
@@ -175,6 +187,29 @@ class Models extends React.Component<{}, State> {
     );
   }
 
+  renderDeleteModal() {
+    return (
+      <Modal
+        onDismiss={() => this.setState({ isDeleteModalVisible: false })}
+        visible={this.state.isDeleteModalVisible}
+        closeAriaLabel="Close modal"
+        header="Delete Model"
+        footer={
+          <Box float="right">
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button onClick={() => this.setState({ isDeleteModalVisible: false })}>Cancel</Button>
+              <Button variant="primary" onClick={this.deleteModels}>Delete</Button>
+            </SpaceBetween>
+          </Box>
+        }
+      >
+        <TextContent>
+          <p>Are you sure you want to delete? You can't undo deleting.</p>
+        </TextContent>
+      </Modal>
+    );
+  }
+
   render() {
     const { models, selectedModels } = this.state;
 
@@ -183,6 +218,7 @@ class Models extends React.Component<{}, State> {
         content={
           <TextContent>
             {this.renderFlashMessages()}
+            {this.renderDeleteModal()}
             <h1>Models</h1>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2>Reinforcement learning models</h2>
@@ -194,7 +230,7 @@ class Models extends React.Component<{}, State> {
                     onChange={this.handleFileUpload}
                   />
                 <Button onClick={() => this.fileInput?.click()}>Upload Model</Button>
-                <Button onClick={this.deleteModels} disabled={selectedModels.length === 0}>Delete</Button>
+                <Button onClick={() => this.setState({ isDeleteModalVisible: true })} disabled={selectedModels.length === 0}>Delete</Button>
                 <Button onClick={this.getModels}>Refresh</Button>
               </div>
             </div>
