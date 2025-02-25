@@ -6,12 +6,16 @@ VERSION_COMMITS=$(git rev-list --count $VERSION_TAG..HEAD)
 VERSION_HASH=$(git rev-parse --short HEAD)
 
 # Check for uncommitted changes
+
 if [ -n "$(git status --porcelain)" ]; then
     VERSION_HASH_SUFFIX="+$VERSION_HASH-dirty"
 else
-    VERSION_HASH_SUFFIX="+$VERSION_HASH"
+    if [ "$VERSION_COMMITS" -gt 0 ]; then
+        VERSION_HASH_SUFFIX="+$VERSION_HASH"
+    else
+        VERSION_HASH_SUFFIX=""
+    fi
 fi
-
 
 # Remove leading 'v' from version tag if present
 if [[ $VERSION_TAG == v* ]]; then
