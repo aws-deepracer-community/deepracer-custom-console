@@ -26,10 +26,35 @@ const HomePage = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const lastJoystickMoveTime = useRef<number>(0);
 
+  const checkInitialModelStatus = async () => {
+    try {
+      const response = await axios.get('api/isModelLoading');
+      if (response.data.isModelLoading === 'loaded' && response.data.success) {
+        setIsModelLoaded(true);
+        // If the response includes the current model name, set it in the dropdown
+        if (response.data.modelName) {
+          const modelOption = modelOptions.find(
+            (option: any) => option.value === response.data.modelName
+          );
+          if (modelOption) {
+            setSelectedModel(modelOption);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking initial model status:', error);
+    }
+  };
+
   useEffect(() => {
-    fetchSensorStatus();
-    fetchModels();
-    setDriveMode('auto');
+    const initialize = async () => {
+      await fetchSensorStatus();
+      await fetchModels();
+      await checkInitialModelStatus(); // Add this line
+      setDriveMode('auto');
+    };
+    
+    initialize();
   }, []);
 
   const setDriveMode = async (mode: 'auto' | 'manual') => {
