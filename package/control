@@ -1,7 +1,7 @@
-Package: aws-deepracer-device-console-new
+Package: aws-deepracer-community-device-console
 Replaces: aws-deepracer-device-console
 Provides: aws-deepracer-device-console
-Version: 2.5.0.0+community
+Version: 0.0.0.0
 Section: base
 Priority: optional
 Maintainer: AWS DeepRacer Community
