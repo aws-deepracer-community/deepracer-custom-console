@@ -2,3 +2,5 @@ new/dist/
 new/node_modules/
 new/package-lock.json
 dist/
+*.zip
+*.deb
