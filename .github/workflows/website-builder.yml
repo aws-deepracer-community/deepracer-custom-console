@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Install Node
         run: |
@@ -32,8 +34,9 @@ jobs:
 
       - name: Create a draft release
         run: |
-          DEBFILE=$(compgen -G dist/aws-deepracer-device-console*.deb)
-          gh release create --draft --prerelease --title "Branch: ${{ github.ref_name }}, Job: ${{ github.run_id }}" --target ${{ github.ref_name }} --notes "Draft Release from Branch: ${{ github.ref_name }}, Action Job id: ${{ github.run_id }} Auto-generated draft release from workflow https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" v0.${{ github.run_id }}  deepracer-console-new.zip $DEBFILE
+          DEBFILE=$(compgen -G dist/aws-deepracer-community-device-console*.deb)
+          echo "DEBFILE: $DEBFILE"
+          gh release create --draft --prerelease --title "Branch: ${{ github.ref_name }}, Job: ${{ github.run_id }}" --target ${{ github.ref_name }} --generate-notes --notes "Draft Release from Branch: ${{ github.ref_name }}, Action Job id: ${{ github.run_id }} Auto-generated draft release from workflow https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" v0.${{ github.run_id }}  deepracer-console-new.zip $DEBFILE
           rm deepracer-console-new.zip
           rm $DEBFILE
         env:
