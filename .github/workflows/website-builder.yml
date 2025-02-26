@@ -49,12 +49,16 @@ jobs:
       - name: Update assets on the release
         if: ${{ github.ref_type == 'tag' }}
         run: |
+            set -x
             GITREF=${{ github.ref_name }}
             ZIPFILE=aws-deepracer-community-device-console-${GITREF//\//-}.zip
             DEBFILE=$(compgen -G dist/aws-deepracer-community-device-console*.deb)
-            RELEASE_INFO=$(gh release view ${{ github.ref_name }})
-            ASSETS=$(echo $RELEASE_INFO | grep -oP '(?<=assets: ).*')
-            gh release delete-assets ${{ github.ref_name }} $ASSETS
+            gh release view ${{ github.ref_name }} > release_info.txt
+            for ASSET in $(grep ^asset: release_info.txt | sed 's/asset://')
+            do
+              echo "Deleting asset $ASSET"
+              gh release delete-asset ${{ github.ref_name }} $ASSET
+            done
             gh release upload --clobber ${{ github.ref_name }} $ZIPFILE $DEBFILE
             rm $ZIPFILE
             rm $DEBFILE
