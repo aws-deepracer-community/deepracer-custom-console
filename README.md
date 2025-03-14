@@ -23,9 +23,9 @@ How to install on your car: -
 - ssh to your car
 - run ```'git clone https://github.com/aws-deepracer-community/deepracer-custom-console'```
 - run ```'cd deepracer-custom-console'```
-- run ```'curl -L -o deepracer-console-new.zip https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v0.1/deepracer-console-new.zip'``` (or the latest tagged version you want to install) to download the zip package
-- run ```'sudo ./deepracer-backup-console'``` to take a backup of the original UI
-- run ```'sudo ./deepracer-deploy-console'``` to install the new Cloudscape UI
+- run ```'curl -L -o deepracer-console-new.zip https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.0/aws-deepracer-community-device-console-v2.2.0.zip'``` (or the latest tagged version you want to install) to download the zip package
+- run ```'sudo ./deepracer-backup-console.sh'``` to take a backup of the original UI
+- run ```'sudo ./deepracer-deploy-console.sh'``` to install the new Cloudscape UI
 - run ```'sudo systemctl restart deepracer-core.service'``` to restart the DeepRacer service
 - run ```'sudo systemctl restart nginx'``` to restart nginx
 - Open your browser and navigate to the IP address of the car and login using your password
