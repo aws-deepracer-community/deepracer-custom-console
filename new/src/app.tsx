@@ -46,6 +46,24 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/test_login" element={<LoginPage />} />
             <Route path="/logout" element={<LoginPage />} />
+            <Route path="/logs" element={<LogsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/edit-network" element={<EditNetworkPage />} />
+            <Route path="/calibration" element={<CalibrationPage />} />
+            <Route path="/recalibrate-steering" element={<RecalibrateSteeringPage />} />
+            <Route path="/ground" element={<RecalibrateSteeringPage />} />
+            <Route path="/center" element={<RecalibrateSteeringPage />} />
+            <Route path="/left" element={<RecalibrateSteeringPage />} />
+            <Route path="/right" element={<RecalibrateSteeringPage />} />
+            <Route path="/recalibrate-speed" element={<RecalibrateSpeedPage />} />
+            <Route path="/raise" element={<RecalibrateSpeedPage />} />
+            <Route path="/stopped" element={<RecalibrateSpeedPage />} />
+            <Route path="/direction" element={<RecalibrateSpeedPage />} />
+            <Route path="/forward" element={<RecalibrateSpeedPage />} />
+            <Route path="/backward" element={<RecalibrateSpeedPage />} />
+            <Route path="/models" element={<ModelsPage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/" element={<HomePage />} />
 
             {/* Protected routes */}
             {isDeepracerAws ? (
