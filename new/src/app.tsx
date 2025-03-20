@@ -81,7 +81,52 @@ export default function App() {
                     <RecalibrateSteeringPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/ground" element={
+                  <ProtectedRoute>
+                    <RecalibrateSteeringPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/center" element={
+                  <ProtectedRoute>
+                    <RecalibrateSteeringPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/left" element={
+                  <ProtectedRoute>
+                    <RecalibrateSteeringPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/right" element={
+                  <ProtectedRoute>
+                    <RecalibrateSteeringPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="/recalibrate-speed" element={
+                  <ProtectedRoute>
+                    <RecalibrateSpeedPage />
+                  </ProtectedRoute>
+                } />
+               <Route path="/raise" element={
+                  <ProtectedRoute>
+                    <RecalibrateSpeedPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/stopped" element={
+                  <ProtectedRoute>
+                    <RecalibrateSpeedPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/direction" element={
+                  <ProtectedRoute>
+                    <RecalibrateSpeedPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/forward" element={
+                  <ProtectedRoute>
+                    <RecalibrateSpeedPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/backward" element={
                   <ProtectedRoute>
                     <RecalibrateSpeedPage />
                   </ProtectedRoute>

@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Install Node
         run: |
@@ -18,12 +20,14 @@ jobs:
 
       - name: Build website
         run: |
+          GITREF=${{ github.ref_name }}
+          ZIPFILE=aws-deepracer-community-device-console-${GITREF//\//-}.zip
           pwd
           cd new
           npm install
           npm run build
           cd dist
-          rm -f ../../deepracer-console-new.zip && zip -r ../../deepracer-console-new.zip .
+          rm -f ../../$ZIPFILE && zip -r ../../$ZIPFILE .
           cd ../../
 
       - name: Create deb package
@@ -31,10 +35,32 @@ jobs:
           ./deepracer-build-pkg.sh
 
       - name: Create a draft release
+        if: ${{ github.ref_type == 'branch' }}
         run: |
-          DEBFILE=$(compgen -G dist/aws-deepracer-device-console*.deb)
-          gh release create --draft --prerelease --title "Branch: ${{ github.ref_name }}, Job: ${{ github.run_id }}" --target ${{ github.ref_name }} --notes "Draft Release from Branch: ${{ github.ref_name }}, Action Job id: ${{ github.run_id }} Auto-generated draft release from workflow https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" v0.${{ github.run_id }}  deepracer-console-new.zip $DEBFILE
-          rm deepracer-console-new.zip
-          rm $DEBFILE
+            GITREF=${{ github.ref_name }}
+            ZIPFILE=aws-deepracer-community-device-console-${GITREF//\//-}.zip
+            DEBFILE=$(compgen -G dist/aws-deepracer-community-device-console*.deb)
+            gh release create --draft --prerelease --title "Branch: ${{ github.ref_name }}, Job: ${{ github.run_id }}" --target ${{ github.ref_name }} --generate-notes --notes "Draft Release from Branch: ${{ github.ref_name }}, Action Job id: ${{ github.run_id }} Auto-generated draft release from workflow https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" v${{ github.run_id }} $ZIPFILE $DEBFILE
+            rm $ZIPFILE
+            rm $DEBFILE
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update assets on the release
+        if: ${{ github.ref_type == 'tag' }}
+        run: |
+            set -x
+            GITREF=${{ github.ref_name }}
+            ZIPFILE=aws-deepracer-community-device-console-${GITREF//\//-}.zip
+            DEBFILE=$(compgen -G dist/aws-deepracer-community-device-console*.deb)
+            gh release view ${{ github.ref_name }} > release_info.txt
+            for ASSET in $(grep ^asset: release_info.txt | sed 's/asset://')
+            do
+              echo "Deleting asset $ASSET"
+              gh release delete-asset ${{ github.ref_name }} $ASSET
+            done
+            gh release upload --clobber ${{ github.ref_name }} $ZIPFILE $DEBFILE
+            rm $ZIPFILE
+            rm $DEBFILE
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
