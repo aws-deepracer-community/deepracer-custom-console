@@ -1,6 +1,7 @@
 import {
   SideNavigation,
   SideNavigationProps,
+  SpaceBetween,
 } from "@cloudscape-design/components";
 import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
 import { useState, useEffect } from "react";
@@ -8,10 +9,10 @@ import { useOnFollow } from "../common/hooks/use-on-follow";
 import { APP_NAME } from "../common/constants";
 import { useLocation } from "react-router-dom";
 import Button from "@cloudscape-design/components/button";
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import ProgressBar from "@cloudscape-design/components/progress-bar";
-import TextContent from "@cloudscape-design/components/text-content";
+import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 
 export default function NavigationPanel() {
   const location = useLocation();
@@ -21,7 +22,7 @@ export default function NavigationPanel() {
   const navigate = useNavigate();
   const [batteryLevel, setBatteryLevel] = useState<number>(0);
   const [batteryError, setBatteryError] = useState<boolean>(false);
-  const [ssid, setSsid] = useState<string>('');
+  const [ssid, setSsid] = useState<string>("");
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
   const [hasInitialReading, setHasInitialReading] = useState<boolean>(false);
   const [pageLoadTime] = useState<number>(Date.now());
@@ -29,12 +30,12 @@ export default function NavigationPanel() {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.get('/redirect_login');
-      console.log('Vehicle Logged Out:', response.data);
+      const response = await axios.get("/redirect_login");
+      console.log("Vehicle Logged Out:", response.data);
     } catch (error) {
-      console.error('Error logging out vehicle:', error);
+      console.error("Error logging out vehicle:", error);
     }
-    navigate('/login');
+    navigate("/login");
   };
 
   const updateBatteryStatus = async () => {
@@ -53,25 +54,27 @@ export default function NavigationPanel() {
 
   const getBatteryStatus = async () => {
     try {
-      const response = await axios.get('/api/get_battery_level');
+      const response = await axios.get("/api/get_battery_level");
       return response.data;
     } catch (error) {
-      console.error('Error fetching battery status:', error);
+      console.error("Error fetching battery status:", error);
       return null;
     }
   };
 
   const getNetworkStatus = async () => {
     try {
-      const response = await axios.get('/api/get_network_details');
+      const response = await axios.get("/api/get_network_details");
       if (response.data && response.data.success) {
         setSsid(response.data.SSID);
         // Split the IP addresses string and trim whitespace
-        setIpAddresses(response.data.ip_address.split(',').map((ip: string) => ip.trim()));
+        setIpAddresses(
+          response.data.ip_address.split(",").map((ip: string) => ip.trim())
+        );
       }
       return response.data;
     } catch (error) {
-      console.error('Error fetching network status:', error);
+      console.error("Error fetching network status:", error);
       return null;
     }
   };
@@ -81,11 +84,11 @@ export default function NavigationPanel() {
     getNetworkStatus();
     const interval = setInterval(updateBatteryStatus, 10000);
     const network_interval = setInterval(getNetworkStatus, 10000);
-    
+
     // Return a cleanup function that clears both intervals
     return () => {
-        clearInterval(interval);
-        clearInterval(network_interval);
+      clearInterval(interval);
+      clearInterval(network_interval);
     };
   }, []);
 
@@ -132,7 +135,7 @@ export default function NavigationPanel() {
         href: "https://docs.aws.amazon.com/console/deepracer/train-model",
         external: true,
       },
-      { type: "divider" },
+      { type: "divider" }
     );
     return items;
   });
@@ -153,45 +156,61 @@ export default function NavigationPanel() {
 
   return (
     <>
-      <SideNavigation
-        onFollow={onFollow}
-        onChange={onChange}
-        header={{ href: "/", text: APP_NAME }}
-        activeHref={location.pathname}
-        items={items.map((value, idx) => {
-          if (value.type === "section") {
-            const collapsed =
-              navigationPanelState.collapsedSections?.[idx] === true;
-            value.defaultExpanded = !collapsed;
-          }
-          return value;
-        })}
-      />
-      <div style={{ marginLeft: "20px" }}>
-        <TextContent>
-          <p>SSID: {ssid}</p>
-          {ipAddresses.map((ip, index) => (
-            <p key={index}>IP: {ip}</p>
-          ))}
-        </TextContent>
-        <div style={{ width: "250px" }}>
-          <ProgressBar
-            value={batteryLevel}
-            description="Current Battery Charge"
-            label="Battery Status"
-            status={!hasInitialReading && hasBeenTenSeconds || batteryError ? "error" : "in-progress"}
-            additionalInfo={
-              !hasInitialReading && hasBeenTenSeconds
-                ? "Unable to get battery reading"
-                : batteryError
-                ? "Vehicle battery is not connected"
-                : undefined
+      <SpaceBetween size="xxs" direction="vertical">
+        <SideNavigation
+          onFollow={onFollow}
+          onChange={onChange}
+          header={{ href: "/", text: APP_NAME }}
+          activeHref={location.pathname}
+          items={items.map((value, idx) => {
+            if (value.type === "section") {
+              const collapsed =
+                navigationPanelState.collapsedSections?.[idx] === true;
+              value.defaultExpanded = !collapsed;
             }
-          />
+            return value;
+          })}
+        />
+        <div style={{ marginLeft: "25px", marginTop: "-20px" }}>
+          <SpaceBetween size="l" direction="vertical">
+            <KeyValuePairs
+              items={[
+                { label: "SSID", value: ssid || "Not connected" },
+                {
+                  label: "IP Addresses",
+                  value:
+                    ipAddresses.length > 0
+                      ? ipAddresses.join(", ")
+                      : "No IP address",
+                },
+                {
+                  label: "Battery Status",
+                  value: (
+                    <ProgressBar
+                      value={batteryLevel}
+                      description="Current Battery Charge"
+                      status={
+                        (!hasInitialReading && hasBeenTenSeconds) ||
+                        batteryError
+                          ? "error"
+                          : "in-progress"
+                      }
+                      additionalInfo={
+                        !hasInitialReading && hasBeenTenSeconds
+                          ? "Unable to get battery reading"
+                          : batteryError
+                          ? "Vehicle battery is not connected"
+                          : undefined
+                      }
+                    />
+                  ),
+                },
+              ]}
+            />
+            <Button onClick={handleLogout}>Logout</Button>
+          </SpaceBetween>
         </div>
-        <Button onClick={handleLogout}>Logout</Button>
-      </div>
+      </SpaceBetween>
     </>
   );
-  
 }

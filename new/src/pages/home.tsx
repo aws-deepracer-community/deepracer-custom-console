@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import {
+  Grid,
   Toggle,
   Modal,
   Button,
@@ -12,6 +13,7 @@ import {
   Container,
   KeyValuePairs,
   Header,
+  ProgressBar
 } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import axios from "axios";
@@ -35,6 +37,7 @@ const HomePage = () => {
   >([]);
   const [throttle, setThrottle] = useState(30);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const [isInferenceRunning, setIsInferenceRunning] = useState(false);
   const lastJoystickMoveTime = useRef<number>(0);
 
   const checkInitialModelStatus = async () => {
@@ -132,6 +135,7 @@ const HomePage = () => {
 
   const handleStart = async () => {
     try {
+      setIsInferenceRunning(true);
       const response = await axios.post("/api/start_stop", {
         start_stop: "start",
       });
@@ -143,6 +147,7 @@ const HomePage = () => {
 
   const handleStop = async () => {
     try {
+      setIsInferenceRunning(false);
       const response = await axios.post("/api/start_stop", {
         start_stop: "stop",
       });
@@ -219,7 +224,8 @@ const HomePage = () => {
     setFlashbarItems([
       {
         type: "in-progress",
-        content: "Model Loading...",
+        loading: true,
+        content: "Model loading...",
         dismissible: false,
       },
     ]);
@@ -298,10 +304,14 @@ const HomePage = () => {
           <Flashbar items={flashbarItems} />
 
           <Header variant="h1">Control Vehicle</Header>
-
-          <SpaceBetween size="l" direction="horizontal">
-            <Container header={<Header variant="h2">Camera Feed</Header>}>
-              <SpaceBetween size="l">
+          <Grid
+            gridDefinition={[
+              { colspan: { default: 8, xl: 8, l: 6, m: 6 } },
+              { colspan: { default: 5, xl: 5, l: 5, m: 5 } },
+            ]}
+          >
+            <Container header={<Header variant="h2">Camera Feed</Header>} fitHeight>
+              <SpaceBetween size="s">
                 <div
                   style={{
                     border: "1px solid #d5dbdb",
@@ -309,7 +319,9 @@ const HomePage = () => {
                     overflow: "hidden",
                     borderRadius: "4px",
                     textAlign: "center",
-                    padding: showCameraFeed ? "0" : "20px",
+                    padding: showCameraFeed ? "0" : "0",
+                    width: "482px",
+                    height: "362px",
                   }}
                 >
                   {showCameraFeed ? (
@@ -396,11 +408,11 @@ const HomePage = () => {
                   label: "Autonomous Mode",
                   id: "autonomous",
                   content: (
-                    <Container>
-                      <SpaceBetween size="l">
-                        <div>
-                          <Header variant="h2">Models</Header>
-                          <Box variant="p" color="text-body-secondary">
+                    <>
+                      <SpaceBetween size="m" direction="vertical">
+                        <Header variant="h2">Model</Header>
+                        <SpaceBetween size="xxs" direction="vertical">
+                          <Box color="text-body-secondary">
                             Choose a model to autonomously drive
                           </Box>
                           <Select
@@ -409,16 +421,14 @@ const HomePage = () => {
                             onChange={handleModelSelect}
                             placeholder="Select a model"
                             expandToViewport
+                            triggerVariant="option"
                           />
-                          <Box
-                            variant="p"
-                            color="text-body-secondary"
-                            padding={{ top: "s" }}
-                          >
-                            Sensor and vehicle configuration must match
+                          <Box variant="small" color="text-body-secondary">
+                            Vehicle's sensor configuration must match the
+                            model's sensor configuration to enable autonomous
+                            driving.
                           </Box>
-                        </div>
-
+                        </SpaceBetween>
                         {isModalVisible && (
                           <Modal
                             onDismiss={handleCancel}
@@ -445,89 +455,84 @@ const HomePage = () => {
                             </Box>
                           </Modal>
                         )}
-
-                        <SpaceBetween size="xs" direction="horizontal">
+                        <Header variant="h2">Control Vehicle</Header>
+                        <SpaceBetween size="l" direction="horizontal">
                           <Button
                             variant="primary"
-                            fullWidth
                             data-testid="start-vehicle"
                             onClick={handleStart}
-                            disabled={!isModelLoaded}
+                            disabled={!isModelLoaded || isInferenceRunning}
                           >
                             Start vehicle
                           </Button>
                           <Button
-                            variant="primary"
-                            fullWidth
+                            variant="normal"
                             data-testid="stop-vehicle"
                             onClick={handleStop}
-                            disabled={!isModelLoaded}
+                            disabled={!isModelLoaded || !isInferenceRunning}
                           >
                             Stop vehicle
                           </Button>
                         </SpaceBetween>
 
-                        <div>
-                          <Header variant="h2">Speed</Header>
-                          <Box variant="p" color="text-body-secondary">
-                            Adjust maximum speed {throttle}%
-                          </Box>
-                          <SpaceBetween size="xs" direction="horizontal">
-                            <Button
-                              variant="normal"
-                              onClick={() => handleThrottle("down")}
-                              data-testid="decrease-speed"
-                              fullWidth
-                              disabled={!isModelLoaded}
+                        <ProgressBar
+                          value={throttle}
+                          additionalInfo="All speeds are multiplied with the factor. If the car does not move, then gradually increase the factor."
+                          label="Adjust speed factor"
+                        />
+                        <SpaceBetween size="l" direction="horizontal">
+                          <Button
+                            variant="normal"
+                            onClick={() => handleThrottle("down")}
+                            data-testid="decrease-speed"
+                            fullWidth
+                            disabled={!isModelLoaded}
+                          >
+                            <svg
+                              width="96"
+                              height="96"
+                              viewBox="0 0 96 96"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
-                              <svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M19 13H5v-2h14v2z"
-                                  fill="currentColor"
-                                />
-                              </svg>
-                            </Button>
-                            <Button
-                              variant="normal"
-                              onClick={() => handleThrottle("up")}
-                              data-testid="increase-speed"
-                              fullWidth
-                              disabled={!isModelLoaded}
+                              <path
+                                d="M76 52H20v-8h56v8z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onClick={() => handleThrottle("up")}
+                            data-testid="increase-speed"
+                            fullWidth
+                            disabled={!isModelLoaded}
+                          >
+                            <svg
+                              width="96"
+                              height="96"
+                              viewBox="0 0 96 96"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
-                              <svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                                  fill="currentColor"
-                                />
-                              </svg>
-                            </Button>
-                          </SpaceBetween>
-                        </div>
+                              <path
+                                d="M76 52H52v24h-8V52H20v-8h24V20h8v24h24v8z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </Button>
+                        </SpaceBetween>
                       </SpaceBetween>
-                    </Container>
+                    </>
                   ),
                 },
                 {
                   label: "Manual Mode",
                   id: "manual",
                   content: (
-                    <Container>
-                      <SpaceBetween size="l">
-                        <div>
+                      <SpaceBetween size="m" direction="vertical">
                           <Header variant="h2">Drive</Header>
-                          <Box variant="p" color="text-body-secondary">
+                          <Box color="text-body-secondary">
                             Drive the vehicle manually using the joystick
                           </Box>
                           <Box
@@ -543,64 +548,62 @@ const HomePage = () => {
                               stop={handleStop}
                             />
                           </Box>
-                        </div>
 
-                        <div>
                           <Header variant="h2">Speed</Header>
-                          <Box variant="p" color="text-body-secondary">
-                            Adjust maximum speed {throttle}%
-                          </Box>
-                          <SpaceBetween size="xs" direction="horizontal">
-                            <Button
-                              iconName="remove"
-                              variant="normal"
-                              onClick={() => handleThrottle("down")}
-                              data-testid="decrease-speed"
-                              fullWidth
+                          <ProgressBar
+                          value={throttle}
+                          additionalInfo="All speeds are multiplied with the factor. If the car does not move, then gradually increase the factor."
+                          label="Adjust speed factor"
+                        />
+                        <SpaceBetween size="l" direction="horizontal">
+                          <Button
+                            variant="normal"
+                            onClick={() => handleThrottle("down")}
+                            data-testid="decrease-speed"
+                            fullWidth
+                            disabled={!isModelLoaded}
+                          >
+                            <svg
+                              width="96"
+                              height="96"
+                              viewBox="0 0 96 96"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
-                              <svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M19 13H5v-2h14v2z"
-                                  fill="currentColor"
-                                />
-                              </svg>
-                            </Button>
-                            <Button
-                              variant="normal"
-                              onClick={() => handleThrottle("up")}
-                              data-testid="increase-speed"
-                              fullWidth
+                              <path
+                                d="M76 52H20v-8h56v8z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onClick={() => handleThrottle("up")}
+                            data-testid="increase-speed"
+                            fullWidth
+                            disabled={!isModelLoaded}
+                          >
+                            <svg
+                              width="96"
+                              height="96"
+                              viewBox="0 0 96 96"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
-                              {" "}
-                              <svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                                  fill="currentColor"
-                                />
-                              </svg>
-                            </Button>
+                              <path
+                                d="M76 52H52v24h-8V52H20v-8h24V20h8v24h24v8z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </Button>
                           </SpaceBetween>
-                        </div>
                       </SpaceBetween>
-                    </Container>
                   ),
                 },
               ]}
               variant="container"
             />
-          </SpaceBetween>
+          </Grid>
         </SpaceBetween>
       }
     />
