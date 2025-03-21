@@ -1,30 +1,29 @@
-import {
-  SideNavigation,
-  SideNavigationProps,
-  SpaceBetween,
-} from "@cloudscape-design/components";
-import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
-import { useState, useEffect } from "react";
-import { useOnFollow } from "../common/hooks/use-on-follow";
-import { APP_NAME } from "../common/constants";
-import { useLocation } from "react-router-dom";
+import { SideNavigation, SideNavigationProps, SpaceBetween } from "@cloudscape-design/components";
 import Button from "@cloudscape-design/components/button";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import ProgressBar from "@cloudscape-design/components/progress-bar";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
+import ProgressBar from "@cloudscape-design/components/progress-bar";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { APP_NAME } from "../common/constants";
+import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
+import { useOnFollow } from "../common/hooks/use-on-follow";
 
-export default function NavigationPanel() {
+interface BatteryProps {
+  battery: {
+    level: number;
+    error: boolean;
+    hasInitialReading: boolean;
+  };
+}
+
+export default function NavigationPanel({ battery }: BatteryProps) {
   const location = useLocation();
   const onFollow = useOnFollow();
-  const [navigationPanelState, setNavigationPanelState] =
-    useNavigationPanelState();
+  const [navigationPanelState, setNavigationPanelState] = useNavigationPanelState();
   const navigate = useNavigate();
-  const [batteryLevel, setBatteryLevel] = useState<number>(0);
-  const [batteryError, setBatteryError] = useState<boolean>(false);
   const [ssid, setSsid] = useState<string>("");
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
-  const [hasInitialReading, setHasInitialReading] = useState<boolean>(false);
   const [pageLoadTime] = useState<number>(Date.now());
   const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
 
@@ -38,56 +37,27 @@ export default function NavigationPanel() {
     navigate("/login");
   };
 
-  const updateBatteryStatus = async () => {
-    const batteryData = await getBatteryStatus();
-    if (batteryData && batteryData.success) {
-      setHasInitialReading(true);
-      if (batteryData.battery_level === -1) {
-        setBatteryError(true);
-        setBatteryLevel(0);
-      } else {
-        setBatteryError(false);
-        setBatteryLevel((batteryData.battery_level / 10) * 100);
-      }
-    }
-  };
-
-  const getBatteryStatus = async () => {
-    try {
-      const response = await axios.get("/api/get_battery_level");
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching battery status:", error);
-      return null;
-    }
-  };
-
-  const getNetworkStatus = async () => {
-    try {
-      const response = await axios.get("/api/get_network_details");
-      if (response.data && response.data.success) {
-        setSsid(response.data.SSID);
-        // Split the IP addresses string and trim whitespace
-        setIpAddresses(
-          response.data.ip_address.split(",").map((ip: string) => ip.trim())
-        );
-      }
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching network status:", error);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    updateBatteryStatus();
+    const getNetworkStatus = async () => {
+      try {
+        const response = await axios.get("/api/get_network_details");
+        if (response.data && response.data.success) {
+          setSsid(response.data.SSID);
+          // Split the IP addresses string and trim whitespace
+          setIpAddresses(response.data.ip_address.split(",").map((ip: string) => ip.trim()));
+        }
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching network status:", error);
+        return null;
+      }
+    };
+
     getNetworkStatus();
-    const interval = setInterval(updateBatteryStatus, 10000);
     const network_interval = setInterval(getNetworkStatus, 10000);
 
     // Return a cleanup function that clears both intervals
     return () => {
-      clearInterval(interval);
       clearInterval(network_interval);
     };
   }, []);
@@ -140,11 +110,7 @@ export default function NavigationPanel() {
     return items;
   });
 
-  const onChange = ({
-    detail,
-  }: {
-    detail: SideNavigationProps.ChangeDetail;
-  }) => {
+  const onChange = ({ detail }: { detail: SideNavigationProps.ChangeDetail }) => {
     const sectionIndex = items.indexOf(detail.item);
     setNavigationPanelState({
       collapsedSections: {
@@ -164,8 +130,7 @@ export default function NavigationPanel() {
           activeHref={location.pathname}
           items={items.map((value, idx) => {
             if (value.type === "section") {
-              const collapsed =
-                navigationPanelState.collapsedSections?.[idx] === true;
+              const collapsed = navigationPanelState.collapsedSections?.[idx] === true;
               value.defaultExpanded = !collapsed;
             }
             return value;
@@ -178,27 +143,23 @@ export default function NavigationPanel() {
                 { label: "SSID", value: ssid || "Not connected" },
                 {
                   label: "IP Addresses",
-                  value:
-                    ipAddresses.length > 0
-                      ? ipAddresses.join(", ")
-                      : "No IP address",
+                  value: ipAddresses.length > 0 ? ipAddresses.join(", ") : "No IP address",
                 },
                 {
                   label: "Battery Status",
                   value: (
                     <ProgressBar
-                      value={batteryLevel}
+                      value={battery.level}
                       description="Current Battery Charge"
                       status={
-                        (!hasInitialReading && hasBeenTenSeconds) ||
-                        batteryError
+                        (!battery.hasInitialReading && hasBeenTenSeconds) || battery.error
                           ? "error"
                           : "in-progress"
                       }
                       additionalInfo={
-                        !hasInitialReading && hasBeenTenSeconds
+                        !battery.hasInitialReading && hasBeenTenSeconds
                           ? "Unable to get battery reading"
-                          : batteryError
+                          : battery.error
                           ? "Vehicle battery is not connected"
                           : undefined
                       }

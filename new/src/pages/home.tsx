@@ -1,23 +1,22 @@
-import { useEffect, useState, useRef } from "react";
 import {
-  Grid,
-  Toggle,
-  Modal,
-  Button,
-  Flashbar,
-  FlashbarProps,
-  Tabs,
-  Select,
   Box,
-  SpaceBetween,
+  Button,
   Container,
-  KeyValuePairs,
+  FlashbarProps,
+  Grid,
   Header,
-  ProgressBar
+  KeyValuePairs,
+  Modal,
+  ProgressBar,
+  Select,
+  SpaceBetween,
+  Tabs,
+  Toggle,
 } from "@cloudscape-design/components";
-import BaseAppLayout from "../components/base-app-layout";
 import axios from "axios";
+import { useEffect, useRef, useState } from "react";
 import { Joystick } from "react-joystick-component";
+import BaseAppLayout from "../components/base-app-layout";
 
 const HomePage = () => {
   const [showCameraFeed, setShowCameraFeed] = useState(false);
@@ -28,13 +27,9 @@ const HomePage = () => {
     lidar_status: "not_connected",
   });
   const [modelOptions, setModelOptions] = useState([]);
-  const [selectedModel, setSelectedModel] = useState<{ value: string } | null>(
-    null
-  );
+  const [selectedModel, setSelectedModel] = useState<{ value: string } | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [flashbarItems, setFlashbarItems] = useState<
-    FlashbarProps.MessageDefinition[]
-  >([]);
+  const [flashbarItems, setFlashbarItems] = useState<FlashbarProps.MessageDefinition[]>([]);
   const [throttle, setThrottle] = useState(30);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isInferenceRunning, setIsInferenceRunning] = useState(false);
@@ -189,9 +184,7 @@ const HomePage = () => {
       handleStop();
 
       if (selectedModel) {
-        const modelResponse = await axios.put(
-          `/api/models/${selectedModel.value}/model`
-        );
+        const modelResponse = await axios.put(`/api/models/${selectedModel.value}/model`);
         console.log("Model API response:", modelResponse.data);
         setIsModalVisible(false);
         setIsModelLoaded(false);
@@ -270,39 +263,29 @@ const HomePage = () => {
   };
 
   const cameraStatusText =
-    sensorStatus.camera_status === "connected"
-      ? "(Connected)"
-      : "(Not Connected)";
+    sensorStatus.camera_status === "connected" ? "(Connected)" : "(Not Connected)";
   const stereoStatusText =
-    sensorStatus.stereo_status === "connected"
-      ? "(Connected)"
-      : "(Not Connected)";
+    sensorStatus.stereo_status === "connected" ? "(Connected)" : "(Not Connected)";
   const lidarStatusText =
-    sensorStatus.lidar_status === "connected"
-      ? "(Connected)"
-      : "(Not Connected)";
+    sensorStatus.lidar_status === "connected" ? "(Connected)" : "(Not Connected)";
 
   let cameraFeedSrc;
   switch (cameraFeedType) {
     case "stereo":
-      cameraFeedSrc =
-        "route?topic=/object_detection_pkg/detection_display&width=480&height=360";
+      cameraFeedSrc = "route?topic=/object_detection_pkg/detection_display&width=480&height=360";
       break;
     case "lidar":
-      cameraFeedSrc =
-        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360";
+      cameraFeedSrc = "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360";
       break;
     default:
-      cameraFeedSrc =
-        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360";
+      cameraFeedSrc = "route?topic=/camera_pkg/display_mjpeg&width=480&height=360";
   }
 
   return (
     <BaseAppLayout
+      pageNotifications={flashbarItems}
       content={
         <SpaceBetween size="l">
-          <Flashbar items={flashbarItems} />
-
           <Header variant="h1">Control Vehicle</Header>
           <Grid
             gridDefinition={[
@@ -352,9 +335,7 @@ const HomePage = () => {
                             toggleCameraFeed();
                           }}
                           checked={cameraFeedType === "mono" && showCameraFeed}
-                          disabled={
-                            sensorStatus.camera_status === "not_connected"
-                          }
+                          disabled={sensorStatus.camera_status === "not_connected"}
                         >
                           {cameraStatusText}
                         </Toggle>
@@ -368,12 +349,8 @@ const HomePage = () => {
                             handleToggleChange("stereo");
                             toggleCameraFeed();
                           }}
-                          checked={
-                            cameraFeedType === "stereo" && showCameraFeed
-                          }
-                          disabled={
-                            sensorStatus.stereo_status === "not_connected"
-                          }
+                          checked={cameraFeedType === "stereo" && showCameraFeed}
+                          disabled={sensorStatus.stereo_status === "not_connected"}
                         >
                           {stereoStatusText}
                         </Toggle>
@@ -388,9 +365,7 @@ const HomePage = () => {
                             toggleCameraFeed();
                           }}
                           checked={cameraFeedType === "lidar" && showCameraFeed}
-                          disabled={
-                            sensorStatus.lidar_status === "not_connected"
-                          }
+                          disabled={sensorStatus.lidar_status === "not_connected"}
                         >
                           {lidarStatusText}
                         </Toggle>
@@ -424,9 +399,8 @@ const HomePage = () => {
                             triggerVariant="option"
                           />
                           <Box variant="small" color="text-body-secondary">
-                            Vehicle's sensor configuration must match the
-                            model's sensor configuration to enable autonomous
-                            driving.
+                            Vehicle's sensor configuration must match the model's sensor
+                            configuration to enable autonomous driving.
                           </Box>
                         </SpaceBetween>
                         {isModalVisible && (
@@ -439,10 +413,7 @@ const HomePage = () => {
                               <Box float="right">
                                 <SpaceBetween direction="horizontal" size="xs">
                                   <Button onClick={handleCancel}>Cancel</Button>
-                                  <Button
-                                    variant="primary"
-                                    onClick={handleLoadModelClick}
-                                  >
+                                  <Button variant="primary" onClick={handleLoadModelClick}>
                                     Load Model
                                   </Button>
                                 </SpaceBetween>
@@ -450,8 +421,7 @@ const HomePage = () => {
                             }
                           >
                             <Box variant="p">
-                              Your vehicle will be disabled while the new model
-                              is loaded
+                              Your vehicle will be disabled while the new model is loaded
                             </Box>
                           </Modal>
                         )}
@@ -485,7 +455,6 @@ const HomePage = () => {
                             variant="normal"
                             onClick={() => handleThrottle("down")}
                             data-testid="decrease-speed"
-                            fullWidth
                             disabled={!isModelLoaded}
                           >
                             <svg
@@ -495,17 +464,13 @@ const HomePage = () => {
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <path
-                                d="M76 52H20v-8h56v8z"
-                                fill="currentColor"
-                              />
+                              <path d="M76 52H20v-8h56v8z" fill="currentColor" />
                             </svg>
                           </Button>
                           <Button
                             variant="primary"
                             onClick={() => handleThrottle("up")}
                             data-testid="increase-speed"
-                            fullWidth
                             disabled={!isModelLoaded}
                           >
                             <svg
@@ -530,74 +495,64 @@ const HomePage = () => {
                   label: "Manual Mode",
                   id: "manual",
                   content: (
-                      <SpaceBetween size="m" direction="vertical">
-                          <Header variant="h2">Drive</Header>
-                          <Box color="text-body-secondary">
-                            Drive the vehicle manually using the joystick
-                          </Box>
-                          <Box
-                            textAlign="center"
-                            padding={{ top: "m", bottom: "m" }}
-                          >
-                            <Joystick
-                              size={100}
-                              baseColor="#eaeded"
-                              stickColor="#545b64"
-                              start={handleStart}
-                              move={handleJoystickMove}
-                              stop={handleStop}
-                            />
-                          </Box>
-
-                          <Header variant="h2">Speed</Header>
-                          <ProgressBar
-                          value={throttle}
-                          additionalInfo="All speeds are multiplied with the factor. If the car does not move, then gradually increase the factor."
-                          label="Adjust speed factor"
+                    <SpaceBetween size="m" direction="vertical">
+                      <Header variant="h2">Drive</Header>
+                      <Box color="text-body-secondary">
+                        Drive the vehicle manually using the joystick
+                      </Box>
+                      <Box textAlign="center" padding={{ top: "m", bottom: "m" }}>
+                        <Joystick
+                          size={100}
+                          baseColor="#eaeded"
+                          stickColor="#545b64"
+                          start={handleStart}
+                          move={handleJoystickMove}
+                          stop={handleStop}
                         />
-                        <SpaceBetween size="l" direction="horizontal">
-                          <Button
-                            variant="normal"
-                            onClick={() => handleThrottle("down")}
-                            data-testid="decrease-speed"
-                            fullWidth
-                            disabled={!isModelLoaded}
+                      </Box>
+
+                      <Header variant="h2">Speed</Header>
+                      <ProgressBar
+                        value={throttle}
+                        additionalInfo="All speeds are multiplied with the factor. If the car does not move, then gradually increase the factor."
+                        label="Adjust speed factor"
+                      />
+                      <SpaceBetween size="l" direction="horizontal">
+                        <Button
+                          variant="normal"
+                          onClick={() => handleThrottle("down")}
+                          data-testid="decrease-speed"
+                        >
+                          <svg
+                            width="96"
+                            height="96"
+                            viewBox="0 0 96 96"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
                           >
-                            <svg
-                              width="96"
-                              height="96"
-                              viewBox="0 0 96 96"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M76 52H20v-8h56v8z"
-                                fill="currentColor"
-                              />
-                            </svg>
-                          </Button>
-                          <Button
-                            variant="primary"
-                            onClick={() => handleThrottle("up")}
-                            data-testid="increase-speed"
-                            fullWidth
-                            disabled={!isModelLoaded}
+                            <path d="M76 52H20v-8h56v8z" fill="currentColor" />
+                          </svg>
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={() => handleThrottle("up")}
+                          data-testid="increase-speed"
+                        >
+                          <svg
+                            width="96"
+                            height="96"
+                            viewBox="0 0 96 96"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
                           >
-                            <svg
-                              width="96"
-                              height="96"
-                              viewBox="0 0 96 96"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M76 52H52v24h-8V52H20v-8h24V20h8v24h24v8z"
-                                fill="currentColor"
-                              />
-                            </svg>
-                          </Button>
-                          </SpaceBetween>
+                            <path
+                              d="M76 52H52v24h-8V52H20v-8h24V20h8v24h24v8z"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </Button>
                       </SpaceBetween>
+                    </SpaceBetween>
                   ),
                 },
               ]}
