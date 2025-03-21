@@ -301,7 +301,6 @@ const HomePage = () => {
                     backgroundColor: "#f2f3f3",
                     overflow: "hidden",
                     borderRadius: "4px",
-                    textAlign: "center",
                     padding: showCameraFeed ? "0" : "0",
                     width: "482px",
                     height: "362px",
@@ -318,9 +317,17 @@ const HomePage = () => {
                       style={{ border: "none" }}
                     />
                   ) : (
-                    <Box color="text-status-inactive" fontSize="body-m">
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                        color: "#5f6b7a",
+                      }}
+                    >
                       Camera feed is off
-                    </Box>
+                    </div>
                   )}
                 </div>
                 <KeyValuePairs
@@ -501,6 +508,7 @@ const HomePage = () => {
                         Drive the vehicle manually using the joystick
                       </Box>
                       <Box textAlign="center" padding={{ top: "m", bottom: "m" }}>
+                        <div style={{ justifyContent: "center", display: "flex" }}>
                         <Joystick
                           size={100}
                           baseColor="#eaeded"
@@ -508,7 +516,7 @@ const HomePage = () => {
                           start={handleStart}
                           move={handleJoystickMove}
                           stop={handleStop}
-                        />
+                        /></div>
                       </Box>
 
                       <Header variant="h2">Speed</Header>
