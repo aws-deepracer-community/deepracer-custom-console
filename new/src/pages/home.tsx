@@ -275,11 +275,22 @@ const HomePage = () => {
       cameraFeedSrc = "route?topic=/object_detection_pkg/detection_display&width=480&height=360";
       break;
     case "lidar":
-      cameraFeedSrc = "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360";
+      cameraFeedSrc =
+        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&qos_profile=sensor_data&default_transport=compressed";
       break;
     default:
-      cameraFeedSrc = "route?topic=/camera_pkg/display_mjpeg&width=480&height=360";
+      cameraFeedSrc =
+        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data&default_transport=compressed";
   }
+  const cameraImgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    if (showCameraFeed && cameraImgRef.current) {
+      cameraImgRef.current.src = cameraFeedSrc;
+    } else if (!showCameraFeed && cameraImgRef.current) {
+      cameraImgRef.current.src = "";
+    }
+  }, [showCameraFeed, cameraFeedSrc]);
 
   return (
     <BaseAppLayout
@@ -289,8 +300,8 @@ const HomePage = () => {
           <Header variant="h1">Control Vehicle</Header>
           <Grid
             gridDefinition={[
-              { colspan: { default: 8, xl: 8, l: 6, m: 6 } },
-              { colspan: { default: 5, xl: 5, l: 5, m: 5 } },
+              { colspan: { default: 12, m: 7, s: 7 } },
+              { colspan: { default: 12, m: 5, s: 5 } },
             ]}
           >
             <Container header={<Header variant="h2">Camera Feed</Header>} fitHeight>
@@ -306,29 +317,12 @@ const HomePage = () => {
                     height: "362px",
                   }}
                 >
-                  {showCameraFeed ? (
-                    <iframe
-                      src={cameraFeedSrc}
-                      width="482"
-                      height="362"
-                      frameBorder="0"
-                      allowFullScreen
-                      title="Video Feed"
-                      style={{ border: "none" }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        height: "100%",
-                        color: "#5f6b7a",
-                      }}
-                    >
-                      Camera feed is off
-                    </div>
-                  )}
+                  <img
+                    ref={cameraImgRef}
+                    width="482"
+                    height="362"
+                    style={{ border: "none", display: showCameraFeed ? "block" : "none" }}
+                  />
                 </div>
                 <KeyValuePairs
                   columns={3}
@@ -509,14 +503,15 @@ const HomePage = () => {
                       </Box>
                       <Box textAlign="center" padding={{ top: "m", bottom: "m" }}>
                         <div style={{ justifyContent: "center", display: "flex" }}>
-                        <Joystick
-                          size={100}
-                          baseColor="#eaeded"
-                          stickColor="#545b64"
-                          start={handleStart}
-                          move={handleJoystickMove}
-                          stop={handleStop}
-                        /></div>
+                          <Joystick
+                            size={100}
+                            baseColor="#eaeded"
+                            stickColor="#545b64"
+                            start={handleStart}
+                            move={handleJoystickMove}
+                            stop={handleStop}
+                          />
+                        </div>
                       </Box>
 
                       <Header variant="h2">Speed</Header>
