@@ -67,6 +67,7 @@ const HomePage = () => {
 
   const setDriveMode = async (mode: "auto" | "manual") => {
     try {
+      setIsInferenceRunning(false);
       const response = await axios.post("/api/drive_mode", {
         drive_mode: mode,
       });
