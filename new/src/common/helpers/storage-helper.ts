@@ -1,7 +1,7 @@
 import { Mode, applyMode } from "@cloudscape-design/global-styles";
 import { NavigationPanelState } from "../types";
 
-const PREFIX = "example-app";
+const PREFIX = "deepracer";
 const THEME_STORAGE_NAME = `${PREFIX}-theme`;
 const NAVIGATION_PANEL_STATE_STORAGE_NAME = `${PREFIX}-navigation-panel-state`;
 
