@@ -2,7 +2,6 @@ import {
   Button,
   Container,
   SpaceBetween,
-  Form,
   FormField,
   Box,
   Checkbox,
@@ -38,6 +37,9 @@ export default () => {
       }
     };
 
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("epwd")) return;
+
     handleLogout();
   }, []);
 
@@ -57,45 +59,76 @@ export default () => {
       }
     };
 
+    if (csrfToken) return;
     generateCsrfToken();
-  }, []);
+  }, [csrfToken, setCsrfToken]);
 
   // Modified submitLogin to explicitly include the CSRF token
-  const submitLogin = async () => {
-    console.log("Attempting login...");
-    setError("");
+  const submitLogin = React.useCallback(
+    async (password: string) => {
+      console.log("Attempting login...");
+      setError("");
 
-    if (!value) {
-      setError("Password cannot be empty");
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("password", value);
-      console.log("CSRF Token:", csrfToken);
-      const response = await axios.post("/login", formData, {
-        headers: {
-          "X-CSRF-Token": csrfToken,
-        },
-        withCredentials: true, // This is crucial for cookie handling
-      });
-
-      if (response.data === "failure") {
-        setError("Login failed - invalid credentials");
-        setValue("");
-      } else {
-        console.log("Login successful");
-        // The cookies will be automatically stored by the browser
-        // You can verify the cookies are set using:
-        console.log("Cookies set:", document.cookie);
-        navigate("/home");
+      if (!password) {
+        setError("Password cannot be empty");
+        return;
       }
-    } catch (error) {
-      setError("Login error. Please try again.");
-      console.error("Login error:", error);
+
+      try {
+        const formData = new FormData();
+        formData.append("password", password);
+        console.log("CSRF Token:", csrfToken);
+        const response = await axios.post("/login", formData, {
+          headers: {
+            "X-CSRF-Token": csrfToken,
+          },
+          withCredentials: true, // This is crucial for cookie handling
+        });
+
+        if (response.data === "failure") {
+          setError("Login failed - invalid credentials");
+          setValue("");
+        } else {
+          console.log("Login successful");
+          // The cookies will be automatically stored by the browser
+          // You can verify the cookies are set using:
+          console.log("Cookies set:", document.cookie);
+          navigate("/home");
+        }
+      } catch (error) {
+        setError("Login error. Please try again.");
+        console.error("Login error:", error);
+      }
+    },
+    [csrfToken, navigate]
+  );
+
+  // Add a useEffect to check for password in URL and auto-login
+  React.useEffect(() => {
+    // Wait until CSRF token is available
+    if (!csrfToken) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("epwd")) {
+      let urlPassword = urlParams.get("epwd");
+      if (urlPassword === null) {
+        urlPassword = "";
+      }
+      console.debug("Auto-login password found!"); // for troubleshooting
+
+      const url = new URL(window.location.href);
+      url.searchParams.delete("epwd");
+      window.history.pushState({}, "", url);
+
+      if (urlPassword && urlPassword.length > 0) {
+        setValue(urlPassword);
+
+        setTimeout(() => {
+          submitLogin(urlPassword);
+        }, 500);
+      }
     }
-  };
+  }, [csrfToken, setValue, submitLogin]);
 
   return (
     <Box padding="l">
@@ -108,28 +141,26 @@ export default () => {
         ]}
       >
         <Container>
-          <Form>
-            <SpaceBetween size="l">
-              <Box textAlign="center">
-                <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo" />
-              </Box>
+          <SpaceBetween size="l">
+            <Box textAlign="center">
+              <img src="./static/AWS_logo_RGB.svg" width="100" alt="AWS Logo" />
+            </Box>
 
-              <Box variant="h1" textAlign="center">
-                Unlock your AWS DeepRacer vehicle
-              </Box>
+            <Box variant="h1" textAlign="center">
+              Unlock your AWS DeepRacer vehicle
+            </Box>
 
-              <Box textAlign="center">
-                The default AWS DeepRacer password can be found printed on the bottom of your
-                vehicle. If you've recently flashed your car the password may have been reset to
-                'deepracer'
-              </Box>
+            <Box textAlign="center">
+              The default AWS DeepRacer password can be found printed on the bottom of your vehicle.
+              If you've recently flashed your car the password may have been reset to 'deepracer'.
+            </Box>
 
-              {error && (
-                <Alert type="error" dismissible={true} onDismiss={() => setError("")}>
-                  {error}
-                </Alert>
-              )}
-
+            {error && (
+              <Alert type="error" dismissible={true} onDismiss={() => setError("")}>
+                {error}
+              </Alert>
+            )}
+            <form>
               <FormField label="Password" stretch={true}>
                 <Input
                   onChange={({ detail }) => setValue(detail.value)}
@@ -139,30 +170,30 @@ export default () => {
                   onKeyDown={({ detail }) => {
                     if (detail.keyCode === 13) {
                       // 13 is the key code for Enter
-                      submitLogin();
+                      submitLogin(value);
                     }
                   }}
                 />
               </FormField>
+            </form>
 
-              <Checkbox onChange={({ detail }) => setChecked(detail.checked)} checked={checked}>
-                Show Password
-              </Checkbox>
+            <Checkbox onChange={({ detail }) => setChecked(detail.checked)} checked={checked}>
+              Show Password
+            </Checkbox>
 
-              <Button variant="primary" onClick={submitLogin} fullWidth={true}>
-                Access vehicle
-              </Button>
+            <Button variant="primary" onClick={() => submitLogin(value)} fullWidth={true}>
+              Access vehicle
+            </Button>
 
-              <Box textAlign="center">
-                <Link
-                  href="https://docs.aws.amazon.com/console/deepracer/recover-vehicle-password"
-                  external
-                >
-                  Forgot password?
-                </Link>
-              </Box>
-            </SpaceBetween>
-          </Form>
+            <Box textAlign="center">
+              <Link
+                href="https://docs.aws.amazon.com/console/deepracer/recover-vehicle-password"
+                external
+              >
+                Forgot password?
+              </Link>
+            </Box>
+          </SpaceBetween>
         </Container>
       </Grid>
     </Box>
