@@ -1,7 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const car_ip = 'https://192.168.0.82/';
+let car_ip = 'https://192.168.0.82/';
+if (process.env.CAR_IP) {
+  car_ip = process.env.CAR_IP;
+}
+console.log('car_ip:', car_ip);
 
 // https://vitejs.dev/config/
 export default defineConfig({
