@@ -304,15 +304,15 @@ const HomePage = () => {
   let cameraFeedSrc;
   switch (cameraFeedType) {
     case "stereo":
-      cameraFeedSrc = "route?topic=/object_detection_pkg/detection_display&width=480&height=360";
+      cameraFeedSrc = "route?topic=/object_detection_pkg/detection_display&width=480&height=360&qos_profile=sensor_data";
       break;
     case "lidar":
       cameraFeedSrc =
-        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&";
+        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&qos_profile=sensor_data";
       break;
     default:
       cameraFeedSrc =
-        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&";
+        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
   }
   const cameraImgRef = useRef<HTMLImageElement | null>(null);
 
