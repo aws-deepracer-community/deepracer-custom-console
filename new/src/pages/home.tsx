@@ -308,11 +308,11 @@ const HomePage = () => {
       break;
     case "lidar":
       cameraFeedSrc =
-        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&qos_profile=sensor_data&default_transport=compressed";
+        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&";
       break;
     default:
       cameraFeedSrc =
-        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data&default_transport=compressed";
+        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&";
   }
   const cameraImgRef = useRef<HTMLImageElement | null>(null);
 
