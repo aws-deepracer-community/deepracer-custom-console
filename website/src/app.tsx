@@ -13,6 +13,7 @@ import RecalibrateSpeedPage from "./pages/recalibrate-speed";
 import LoginPage from "./pages/login";
 import EditNetworkPage from "./pages/edit-network";
 import UpdateNetworkPage from "./pages/update-network";
+import SystemUnavailablePage from "./pages/system-unavailable";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -23,9 +24,21 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     );
   };
 
+  const isSystemAvailable = async () => {
+    try {
+      const response = await fetch('/api/logs/SYS/200');
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  };
+
   if (!isAuthenticated()) {
-    // Redirect to login if not authenticated
     return <Navigate to="/login" replace />;
+  }
+
+  if (!isSystemAvailable()) {
+    return <Navigate to="/system-unavailable" replace />;
   }
 
   return children;
@@ -44,6 +57,7 @@ export default function App() {
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/system-unavailable" element={<SystemUnavailablePage />} />
             <Route path="/test_login" element={<LoginPage />} />
             <Route path="/logout" element={<LoginPage />} />
 
