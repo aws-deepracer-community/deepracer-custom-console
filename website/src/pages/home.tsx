@@ -17,6 +17,33 @@ import axios from "axios";
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { Joystick } from "react-joystick-component";
 import BaseAppLayout from "../components/base-app-layout";
+import { ApiHelper } from '../common/helpers/api-helper';
+
+// Add interfaces for API responses
+interface SensorStatusResponse {
+  success: boolean;
+  camera_status: string;
+  stereo_status: string;
+  lidar_status: string;
+}
+
+// Update the ModelsResponse interface
+interface ModelsResponse {
+  models: Array<{
+    model_folder_name: string;
+    model_sensors: string[];
+    is_select_disabled: boolean;
+  }>;
+}
+
+interface ModelLoadingResponse {
+  success: boolean;
+  isModelLoading: string;
+}
+
+interface DriveResponse {
+  success: boolean;
+}
 
 const HomePage = () => {
   const [showCameraFeed, setShowCameraFeed] = useState(false);
@@ -26,7 +53,7 @@ const HomePage = () => {
     stereo_status: "not_connected",
     lidar_status: "not_connected",
   });
-  const [modelOptions, setModelOptions] = useState([]);
+  const [modelOptions, setModelOptions] = useState<{ label: string; value: string; description: string; disabled: boolean }[]>([]);
   const [selectedModel, setSelectedModel] = useState<{ value: string } | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flashbarItems, setFlashbarItems] = useState<FlashbarProps.MessageDefinition[]>([]);
@@ -68,15 +95,13 @@ const HomePage = () => {
 
   const checkInitialModelStatus = async () => {
     try {
-      const response = await axios.get("api/isModelLoading");
+      const response = await ApiHelper.get<ModelLoadingResponse>('isModelLoading');
       const selectedModelName = localStorage.getItem("selectedModelName");
       if (selectedModelName) {
         setSelectedModel({ value: selectedModelName });
-        // If we have a selected model and the model is loaded, set isModelLoaded to true
-        if (response.data.isModelLoading === "loaded") {
+        if (response?.isModelLoading === "loaded") {
           setIsModelLoaded(true);
         } else {
-          // If model is still loading, start polling
           pollModelLoadingStatus();
         }
       }
@@ -103,10 +128,10 @@ const HomePage = () => {
   const setDriveMode = async (mode: "auto" | "manual") => {
     try {
       setIsInferenceRunning(false);
-      const response = await axios.post("/api/drive_mode", {
+      const response = await ApiHelper.post<DriveResponse>('drive_mode', {
         drive_mode: mode,
       });
-      console.log(`Drive mode set to ${mode}:`, response.data);
+      console.log(`Drive mode set to ${mode}:`, response);
     } catch (error) {
       console.error(`Error setting drive mode to ${mode}:`, error);
     }
@@ -121,29 +146,24 @@ const HomePage = () => {
   };
 
   const fetchSensorStatus = async () => {
-    try {
-      const response = await fetch("/api/get_sensor_status");
-      const data = await response.json();
-      if (data.success) {
-        setSensorStatus(data);
-      }
-    } catch (error) {
-      console.error("Error fetching sensor status:", error);
+    const data = await ApiHelper.get<SensorStatusResponse>('get_sensor_status');
+    if (data?.success) {
+      setSensorStatus(data);
     }
   };
 
   const fetchModels = async () => {
     try {
-      const response = await axios.get("/api/models");
-      const models = response.data.models;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const options = models.map((model: any) => ({
-        label: model.model_folder_name,
-        value: model.model_folder_name,
-        description: model.model_sensors.join(", "),
-        disabled: model.is_select_disabled,
-      }));
-      setModelOptions(options);
+      const response = await ApiHelper.get<ModelsResponse>('models');
+      if (response) {
+        const options = response.models.map(model => ({
+          label: model.model_folder_name,
+          value: model.model_folder_name,
+          description: model.model_sensors.join(", "),
+          disabled: model.is_select_disabled,
+        }));
+        setModelOptions(options);
+      }
     } catch (error) {
       console.error("Error fetching models:", error);
     }
@@ -167,10 +187,10 @@ const HomePage = () => {
   const handleStart = async () => {
     try {
       setIsInferenceRunning(true);
-      const response = await axios.post("/api/start_stop", {
+      const response = await ApiHelper.post<DriveResponse>('start_stop', {
         start_stop: "start",
       });
-      console.log("Vehicle started:", response.data);
+      console.log("Vehicle started:", response);
     } catch (error) {
       console.error("Error starting vehicle:", error);
     }
@@ -179,10 +199,10 @@ const HomePage = () => {
   const handleStop = async () => {
     try {
       setIsInferenceRunning(false);
-      const response = await axios.post("/api/start_stop", {
+      const response = await ApiHelper.post<DriveResponse>('start_stop', {
         start_stop: "stop",
       });
-      console.log("Vehicle stopped:", response.data);
+      console.log("Vehicle stopped:", response);
     } catch (error) {
       console.error("Error stopping vehicle:", error);
     }
@@ -190,28 +210,11 @@ const HomePage = () => {
 
   const handleThrottle = (direction: "up" | "down") => {
     setThrottle((prevThrottle) => {
-      if (direction === "up") {
-        try {
-          const response = axios.post("/api/max_nav_throttle", {
-            throttle: prevThrottle + 1,
-          });
-          console.log("Vehicle stopped:", response);
-        } catch (error) {
-          console.error("Error stopping vehicle:", error);
-        }
-        return prevThrottle + 1;
-      } else if (direction === "down") {
-        try {
-          const response = axios.post("/api/max_nav_throttle", {
-            throttle: prevThrottle - 1,
-          });
-          console.log("Vehicle stopped:", response);
-        } catch (error) {
-          console.error("Error stopping vehicle:", error);
-        }
-        return prevThrottle - 1;
-      }
-      return prevThrottle;
+      const newThrottle = direction === "up" ? prevThrottle + 1 : prevThrottle - 1;
+      ApiHelper.post<DriveResponse>('max_nav_throttle', {
+        throttle: newThrottle,
+      });
+      return newThrottle;
     });
   };
 
@@ -220,15 +223,14 @@ const HomePage = () => {
       handleStop();
 
       if (selectedModel) {
-        const modelResponse = await axios.put(`/api/models/${selectedModel.value}/model`);
-        console.log("Model API response:", modelResponse.data);
-        setIsModalVisible(false);
-        setIsModelLoaded(false);
-        localStorage.setItem("selectedModelName", selectedModel.value); // Ensure we save the model name
-        showLoadingFlashbar();
-        pollModelLoadingStatus();
-      } else {
-        console.error("No model selected");
+        const modelResponse = await ApiHelper.post<DriveResponse>(`models/${selectedModel.value}/model`, {});
+        if (modelResponse?.success) {
+          setIsModalVisible(false);
+          setIsModelLoaded(false);
+          localStorage.setItem("selectedModelName", selectedModel.value);
+          showLoadingFlashbar();
+          pollModelLoadingStatus();
+        }
       }
     } catch (error) {
       console.error("Error calling API:", error);
@@ -236,16 +238,11 @@ const HomePage = () => {
   };
 
   const pollModelLoadingStatus = async () => {
-    try {
-      const response = await axios.get("api/isModelLoading");
-      if (response.data.isModelLoading === "loaded" && response.data.success) {
-        showSuccessFlashbar();
-        setIsModelLoaded(true);
-      } else {
-        setTimeout(pollModelLoadingStatus, 1000);
-      }
-    } catch (error) {
-      console.error("Error polling model loading status:", error);
+    const response = await ApiHelper.get<ModelLoadingResponse>('isModelLoading');
+    if (response?.isModelLoading === "loaded" && response?.success) {
+      showSuccessFlashbar();
+      setIsModelLoaded(true);
+    } else {
       setTimeout(pollModelLoadingStatus, 1000);
     }
   };
