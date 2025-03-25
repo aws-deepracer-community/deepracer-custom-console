@@ -69,11 +69,15 @@ const HomePage = () => {
   const checkInitialModelStatus = async () => {
     try {
       const response = await axios.get("api/isModelLoading");
-      if (response.data.isModelLoading === "loaded") {
-        setIsModelLoaded(true);
-        const selectedModelName = localStorage.getItem("selectedModelName");
-        if (selectedModelName) {
-          setSelectedModel({ value: selectedModelName });
+      const selectedModelName = localStorage.getItem("selectedModelName");
+      if (selectedModelName) {
+        setSelectedModel({ value: selectedModelName });
+        // If we have a selected model and the model is loaded, set isModelLoaded to true
+        if (response.data.isModelLoading === "loaded") {
+          setIsModelLoaded(true);
+        } else {
+          // If model is still loading, start polling
+          pollModelLoadingStatus();
         }
       }
     } catch (error) {
@@ -220,6 +224,7 @@ const HomePage = () => {
         console.log("Model API response:", modelResponse.data);
         setIsModalVisible(false);
         setIsModelLoaded(false);
+        localStorage.setItem("selectedModelName", selectedModel.value); // Ensure we save the model name
         showLoadingFlashbar();
         pollModelLoadingStatus();
       } else {
