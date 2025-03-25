@@ -4,6 +4,7 @@ import Button from "@cloudscape-design/components/button";
 import * as React from "react";
 import axios from "axios";
 import Header from "@cloudscape-design/components/header";
+import { ApiHelper } from '../common/helpers/api-helper';
 
 // Define the types for models and selectedModels
 interface Model {
@@ -13,6 +14,16 @@ interface Model {
   action_space_type: string;
   size: string;
   creation_time: number;
+}
+
+// Add interfaces for API responses
+interface DeleteModelsResponse {
+  success: boolean;
+}
+
+interface ModelInstalledResponse {
+  success: boolean;
+  message?: string;
 }
 
 interface State {
@@ -38,8 +49,10 @@ class Models extends React.Component<{}, State> {
 
   getModels = async () => {
     try {
-      const response = await axios.get("/api/uploaded_model_list");
-      this.setState({ models: response.data });
+      const response = await ApiHelper.get<Model[]>('uploaded_model_list');
+      if (response) {
+        this.setState({ models: response });
+      }
     } catch (error) {
       console.error("Error fetching models:", error);
     }
@@ -51,31 +64,25 @@ class Models extends React.Component<{}, State> {
       console.error('CSRF token meta tag not found');
       return;
     }
-    try {
-      const response = await axios.post("/api/deleteModels", {
-        filenames: this.state.selectedModels.map(model => model.name),
-        'X-CSRF-Token': csrfToken
-      });
-      if (response.data.success) {
-        this.addFlashMessage("Model deleted successfully", "success");
-        this.getModels(); // Refresh the model list after deletion
-      } else {
-        this.addFlashMessage("Error deleting model", "error");
-      }
-    } catch (error) {
-      console.error("Error deleting models:", error);
+    
+    const response = await ApiHelper.post<DeleteModelsResponse>('deleteModels', {
+      filenames: this.state.selectedModels.map(model => model.name),
+      'X-CSRF-Token': csrfToken
+    });
+
+    if (response?.success) {
+      this.addFlashMessage("Model deleted successfully", "success");
+      this.getModels();
+    } else {
       this.addFlashMessage("Error deleting model", "error");
     }
-    this.setState({ isDeleteModalVisible: false }); // Hide the delete modal
+    this.setState({ isDeleteModalVisible: false });
   };
 
-  isModelInstalled = (selectedFileName: string) => {
+  isModelInstalled = async (selectedFileName: string) => {
     const modelName = selectedFileName.endsWith('.tar.gz') ? selectedFileName.slice(0, -7) : selectedFileName;
-    return axios.get('/api/is_model_installed', {
-      params: {
-        filename: modelName
-      }
-    });
+    const response = await ApiHelper.get<ModelInstalledResponse>(`is_model_installed?filename=${modelName}`);
+    return response;
   };
 
   getCsrfToken = () => {
@@ -98,50 +105,43 @@ class Models extends React.Component<{}, State> {
     }
 
     try {
-      const response = await this.isModelInstalled(file.name);
-      console.log('isModelInstalled response:', response.data); // Debugging log
-      if (response.data.success) {
-        this.addFlashMessage(response.data.message, "error");
+      const modelInstalledResponse = await this.isModelInstalled(file.name);
+      if (modelInstalledResponse?.success) {
+        this.addFlashMessage(modelInstalledResponse.message ?? "Model already installed", "error");
         return;
-      } 
+      }
+
+      const csrfToken = this.getCsrfToken();
+      if (!csrfToken) {
+        this.addFlashMessage("CSRF token not found", "error");
+        return;
+      }
+
+      const loadingMessageId = this.addFlashMessage("Uploading model...", "in-progress");
 
       const formData = new FormData();
       formData.append("file", file);
 
-      try {
-        const csrfToken = this.getCsrfToken();
-        if (!csrfToken) {
-          this.addFlashMessage("CSRF token not found", "error");
-          return;
+      // Note: Using axios directly here since ApiHelper doesn't support FormData uploads
+      const uploadResponse = await axios.put("/api/uploadModels", formData, {
+        headers: {
+          'Content-Disposition': `form-data; name="file"; filename="${file.name}"`,
+          'Content-Type': 'application/x-gzip',
+          'X-CSRF-Token': csrfToken
         }
+      });
 
-        // Show loading flash message
-        const loadingMessageId = this.addFlashMessage("Uploading model...", "in-progress");
+      this.removeFlashMessage(loadingMessageId);
 
-        const uploadResponse = await axios.put("/api/uploadModels", formData, {
-          headers: {
-            'Content-Disposition': `form-data; name="file"; filename="${file.name}"`,
-            'Content-Type': 'application/x-gzip',
-            'X-CSRF-Token': csrfToken
-          }
-        });
-
-        // Remove loading flash message
-        this.removeFlashMessage(loadingMessageId);
-
-        if (uploadResponse.data.success) {
-          this.addFlashMessage("Model uploaded successfully", "success");
-          this.getModels(); // Refresh the model list after upload
-        } else {
-          this.addFlashMessage(uploadResponse.data.message, "error");
-        }
-      } catch (uploadError: any) {
-        console.error('Error uploading model:', uploadError);
-        this.addFlashMessage(uploadError.message, "error");
+      if (uploadResponse.data.success) {
+        this.addFlashMessage("Model uploaded successfully", "success");
+        this.getModels();
+      } else {
+        this.addFlashMessage(uploadResponse.data.message ?? "Upload failed", "error");
       }
     } catch (error: any) {
-      console.error('Error checking if model is installed:', error);
-      this.addFlashMessage(error.message, "error");
+      console.error('Error:', error);
+      this.addFlashMessage(error.message ?? "Upload failed", "error");
     }
   };
 
