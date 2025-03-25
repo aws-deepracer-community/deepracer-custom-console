@@ -96,6 +96,11 @@ export default () => {
           navigate("/home");
         }
       } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          console.error("System unavailable - backend returned 400");
+          navigate("/system-unavailable");
+          return;
+        }
         setError("Login error. Please try again.");
         console.error("Login error:", error);
       }
