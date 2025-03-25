@@ -1,42 +1,48 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import BaseAppLayout from "../components/base-app-layout";
 import Circle from '@uiw/react-color-circle';
 import { TextContent, Modal, Checkbox, Alert, Form, FormField, Input, Container, Header, SpaceBetween, Button, KeyValuePairs, StatusIndicator, InputProps } from "@cloudscape-design/components";
+import { ApiHelper } from '../common/helpers/api-helper';
+
+// Add interfaces for API responses
+interface NetworkResponse {
+  success: boolean;
+  SSID: string;
+  ip_address: string;
+  is_usb_connected: string;
+}
+
+interface PasswordResponse {
+  success: boolean;
+}
+
+interface SshResponse {
+  success: boolean;
+  isSshEnabled?: string;
+  isDefaultSshPasswordChanged?: string;
+}
+
+interface DeviceInfoResponse {
+  success: boolean;
+  hardware_version: string;
+  software_version: string;
+}
+
+interface SoftwareUpdateResponse {
+  success: boolean;
+  status: string;
+}
+
+interface LedColorResponse {
+  success: boolean;
+  red?: number;
+  green?: number;
+  blue?: number;
+}
 
 var sshPasswordInputType: InputProps.Type = "password";
 var devicePasswordInputType: InputProps.Type = 'password';
-
-const getApi = async (path: string) => {
-  try {
-    const response = await axios.get('/api/' + path);
-    return response.data;
-  } catch (error) {
-    if (error.response.status === 401) {
-      console.log('Unauthorized');
-      window.location.href = '/login';
-      return null;
-    }
-    console.error('Error getting api' + path + ':', error);
-    return null;
-  }
-};
-
-const postApi = async (path: string, data: any) => {
-  try {
-    const response = await axios.post('/api/' + path, data)
-    return response.data;
-  } catch (error) {
-    if (error.response.status === 401) {
-      console.log('Unauthorized');
-      window.location.href = '/login';
-      return null;
-    }
-    console.error('Error getting api' + path + ':', error);
-    return null;
-  }
-};
 
 var oldPasswordError=true;
 const validateOldPassword = (oldPassword: string) => {
@@ -99,8 +105,8 @@ const NetworkSettingsContainer = () => {
 
   useEffect(() => {
     const fetchNetworkSettingsData = async () => {
-      const data = await getApi('get_network_details');
-      if (data && data.success) {
+      const data = await ApiHelper.get<NetworkResponse>('get_network_details');
+      if (data?.success) {
         setNetworkData({ SSID: data.SSID, ip_address: data.ip_address, is_usb_connected: data.is_usb_connected });
       }
     };
@@ -193,7 +199,7 @@ const DeviceConsolePasswordContainer = () => {
     }
     if ( ! oldPasswordError && ! newPasswordError && ! confirmPasswordError) {
       setdevicePasswordChanging(true);
-      changePassword = await postApi('password', { old_password: deviceOldPassword, new_password: deviceNewPassword });
+      changePassword = await ApiHelper.post<PasswordResponse>('password', { old_password: deviceOldPassword, new_password: deviceNewPassword });
     }
     if (changePassword && changePassword.success) {
         //console.log('password changed');
@@ -291,9 +297,9 @@ const DeviceSshContainer = () => {
   const [sshPasswordChanging, setsshPasswordChanging] = useState(false);
 
   const getIsSshDefaultPasswordChanged = async () => {
-    const data = await getApi('isSshDefaultPasswordChanged');
-    if (data && data.success) {
-      setsshDefaultPasswordChanged(data.isDefaultSshPasswordChanged);
+    const data = await ApiHelper.get<SshResponse>('isSshDefaultPasswordChanged');
+    if (data?.success) {
+      setsshDefaultPasswordChanged(data.isDefaultSshPasswordChanged === 'true');
     }
   }
 
@@ -320,12 +326,12 @@ const DeviceSshContainer = () => {
     }
     if (sshDefaultPasswordChanged && ! oldPasswordError && ! newPasswordError && ! confirmPasswordError) {
       setsshPasswordChanging(true);
-      changePassword = await postApi('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
+      changePassword = await ApiHelper.post<PasswordResponse>('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
     }
     else if (! sshDefaultPasswordChanged && ! newPasswordError && ! confirmPasswordError) {
       // TODO need to check this after flash
       setsshPasswordChanging(true);
-      changePassword = await postApi('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
+      changePassword = await ApiHelper.post<PasswordResponse>('resetSshPassword', { oldPassword: sshOldPassword, newPassword: sshNewPassword });
     }
     if (changePassword && changePassword.success) {
         //console.log('password changed');
@@ -367,11 +373,11 @@ const DeviceSshContainer = () => {
 
   const disbleSsh = async () => {
     setsshDisabling(true)
-    const setSsh = await getApi('disableSsh');
-    if (setSsh && setSsh.success) {
-      var data = await getApi('isSshEnabled');
-      if (data && data.success) {
-        setSshData({ isSshEnabled: data.isSshEnabled });
+    const setSsh = await ApiHelper.get<SshResponse>('disableSsh');
+    if (setSsh?.success) {
+      var data = await ApiHelper.get<SshResponse>('isSshEnabled');
+      if (data?.success) {
+        setSshData({ isSshEnabled: data.isSshEnabled ?? 'Unknown' });
       }
     };
     setsshDisabling(false)
@@ -379,11 +385,11 @@ const DeviceSshContainer = () => {
 
   const enableSsh = async () => {
     setsshEnabling(true)
-    const setSsh = await getApi('enableSsh');
-    if (setSsh && setSsh.success) {
-      var data = await getApi('isSshEnabled');
-      if (data && data.success) {
-        setSshData({ isSshEnabled: data.isSshEnabled });
+    const setSsh = await ApiHelper.get<SshResponse>('enableSsh');
+    if (setSsh?.success) {
+      var data = await ApiHelper.get<SshResponse>('isSshEnabled');
+      if (data?.success) {
+        setSshData({ isSshEnabled: data.isSshEnabled ?? 'Unknown' });
       }
     };
     setsshEnabling(false)
@@ -391,9 +397,9 @@ const DeviceSshContainer = () => {
 
   useEffect(() => {
     const fetchSshSettingsData = async () => {
-      const data = await getApi('isSshEnabled');
-      if (data && data.success) {
-        setSshData({ isSshEnabled: data.isSshEnabled });
+      const data = await ApiHelper.get<SshResponse>('isSshEnabled');
+      if (data?.success) {
+        setSshData({ isSshEnabled: data.isSshEnabled ?? 'Unknown' });
       }
     };
     fetchSshSettingsData();
@@ -488,13 +494,13 @@ const DeviceSshContainer = () => {
 const LedColorContainer = () => {
   const [hex, setHex] = useState('#000000');
   const setLedColor = async (color: any) => {
-    const setled = await postApi('set_led_color', { red: color.rgb.r, green: color.rgb.g, blue: color.rgb.b });
+    const setled = await ApiHelper.post<LedColorResponse>('set_led_color', { red: color.rgb.r, green: color.rgb.g, blue: color.rgb.b });
     if (setled && setled.success) {
       console.log('Set led color:', setled);
     }
   }
   const turnOffLed = async () => {
-    const ledoff = await postApi('set_led_color', { red: 0, green: 0, blue: 0 });
+    const ledoff = await ApiHelper.post<LedColorResponse>('set_led_color', { red: 0, green: 0, blue: 0 });
     setHex('#000000');
     if ( ledoff && ledoff.success) {
       console.log('Set led color off:', ledoff);
@@ -504,10 +510,10 @@ const LedColorContainer = () => {
   useEffect(() => {
     const fetchLedData = async () => {
       // must be in calibration mode to get led color
-      const setCalibration = await getApi('set_calibration_mode');
+      const setCalibration = await ApiHelper.get<{ success: boolean }>('set_calibration_mode');
       if (setCalibration && setCalibration.success) {
         //console.log('Set calibration:', setCalibration);
-        const ledData = await getApi('get_led_color');
+        const ledData = await ApiHelper.get<LedColorResponse>('get_led_color');
         if (ledData && ledData.success) {
           var hexFromRgb = getColorRgb({r: ledData.red, g: ledData.green, b: ledData.blue});
           //console.log(ledData)
@@ -578,13 +584,13 @@ const AboutContainer = () => {
 
   useEffect(() => {
     const fetchDeviceInfo = async () => {
-      const deviceData = await getApi('get_device_info');
-      if (deviceData && deviceData.success) {
+      const deviceData = await ApiHelper.get<DeviceInfoResponse>('get_device_info');
+      if (deviceData?.success) {
         setDeviceInfo({ hardware_version: deviceData.hardware_version, software_version: deviceData.software_version });
       }
-      const softwareData = await getApi('is_software_update_available');
-      const mandatoryData = await getApi('get_mandatory_update_status');
-      if (softwareData && softwareData.success && mandatoryData && mandatoryData.success) {
+      const softwareData = await ApiHelper.get<SoftwareUpdateResponse>('is_software_update_available');
+      const mandatoryData = await ApiHelper.get<SoftwareUpdateResponse>('get_mandatory_update_status');
+      if (softwareData?.success && mandatoryData?.success) {
         setsoftwareInfo({ software_update_available: softwareData.status, mandatory_update: mandatoryData.status });
       }
 
