@@ -1,14 +1,18 @@
 import React from "react";
-import axios from "axios";
 import { TextContent } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Button from "@cloudscape-design/components/button";
+import { ApiHelper } from '../common/helpers/api-helper';
 
 interface LogsPageProps {}
 
 interface LogsPageState {
   sysLogs: string;
   sysLogCopied: boolean;
+}
+
+interface LogsResponse {
+  data: string;
 }
 
 class LogsPage extends React.Component<LogsPageProps, LogsPageState> {
@@ -27,14 +31,11 @@ class LogsPage extends React.Component<LogsPageProps, LogsPageState> {
     this.getSysLogs();
   }
 
-  getSysLogs = () => {
-    axios.get('/api/logs/SYS/200')
-      .then(response => {
-        this.setState({ sysLogs: response.data.data });
-      })
-      .catch(error => {
-        console.error("There was an error fetching the logs!", error);
-      });
+  getSysLogs = async () => {
+    const response = await ApiHelper.get<LogsResponse>('logs/SYS/200');
+    if (response) {
+      this.setState({ sysLogs: response.data });
+    }
   };
 
   sysLogCopyBtnClicked = () => {
