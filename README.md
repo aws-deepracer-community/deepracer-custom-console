@@ -22,7 +22,7 @@ Whether you're a casual racer or a DeepRacer developer, this custom console prov
 
 - Find the latest release - https://github.com/aws-deepracer-community/deepracer-custom-console/releases
 - SSH to your car
-- Run `curl -L -o deepracer-console-new.deb https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.1/aws-deepracer-community-device-console_2.2.1.0_all.deb`
+- Run `curl -L -o deepracer-console-new.deb https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.2/aws-deepracer-community-device-console_2.2.2_all.deb`
 - Run `sudo dpkg -i deepracer-console-new.deb`
 - Open your browser and navigate to the IP address of the car and login using your password
 
@@ -36,7 +36,7 @@ If you should need to restore the original UI run:
 - SSH to your car
 - Run `git clone https://github.com/aws-deepracer-community/deepracer-custom-console`
 - Run `cd deepracer-custom-console`
-- Run `curl -L -o deepracer-console-new.zip https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.1/aws-deepracer-community-device-console-v2.2.1.zip` (or the latest tagged version you want to install) to download the zip package
+- Run `curl -L -o deepracer-console-new.zip https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.2/aws-deepracer-community-device-console-v2.2.1.zip` (or the latest tagged version you want to install) to download the zip package
 - Run `sudo ./deepracer-backup-console.sh` to take a backup of the original UI
 - Run `sudo ./deepracer-deploy-console.sh` to install the new Cloudscape UI
 - Run `sudo systemctl restart deepracer-core.service` to restart the DeepRacer service
