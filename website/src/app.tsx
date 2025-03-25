@@ -14,6 +14,7 @@ import LoginPage from "./pages/login";
 import EditNetworkPage from "./pages/edit-network";
 import UpdateNetworkPage from "./pages/update-network";
 import SystemUnavailablePage from "./pages/system-unavailable";
+import axios from "axios";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -26,9 +27,10 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   const isSystemAvailable = async () => {
     try {
-      const response = await fetch('/api/logs/SYS/200');
-      return response.ok;
+      const response = await axios.get("/api/logs/SYS/200");
+      return response;
     } catch (error) {
+      console.error("Error checking system availability:", error);
       return false;
     }
   };
