@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - .github/workflows/website-builder.yml
-      - new/**
+      - website/**
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
           GITREF=${{ github.ref_name }}
           ZIPFILE=aws-deepracer-community-device-console-${GITREF//\//-}.zip
           pwd
-          cd new
+          cd website
           npm install
           npm run build
           cd dist

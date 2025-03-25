@@ -1,3 +1,0 @@
-[console_scripts]
-status_led_node = status_led_pkg.status_led_node:main
-

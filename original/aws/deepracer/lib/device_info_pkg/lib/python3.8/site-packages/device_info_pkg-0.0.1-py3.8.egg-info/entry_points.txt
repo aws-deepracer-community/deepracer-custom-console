@@ -1,3 +1,0 @@
-[console_scripts]
-device_info_node = device_info_pkg.device_info_node:main
-

@@ -1,3 +1,0 @@
-[console_scripts]
-webserver_publisher_node = webserver_pkg.webserver_publisher_node:main
-

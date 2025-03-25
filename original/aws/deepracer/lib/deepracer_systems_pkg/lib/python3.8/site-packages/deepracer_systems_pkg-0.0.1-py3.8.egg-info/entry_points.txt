@@ -1,7 +1,0 @@
-[console_scripts]
-deepracer_systems_scripts_node = deepracer_systems_pkg.deepracer_systems_scripts_module.deepracer_systems_scripts_node:main
-model_loader_node = deepracer_systems_pkg.model_loader_module.model_loader_node:main
-network_monitor_node = deepracer_systems_pkg.network_monitor_module.network_monitor_node:main
-otg_control_node = deepracer_systems_pkg.otg_module.otg_control_node:main
-software_update_node = deepracer_systems_pkg.software_update_module.software_update_node:main
-

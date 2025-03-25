@@ -1,4 +1,0 @@
-# Path to the directory where the model files are present.
-string model_path
-# action=1 (For upload the model) & action=0 for deleting the model.
-int32  action

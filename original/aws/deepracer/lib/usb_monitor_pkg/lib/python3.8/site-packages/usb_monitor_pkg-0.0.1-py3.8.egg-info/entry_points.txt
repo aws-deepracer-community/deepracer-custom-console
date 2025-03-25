@@ -1,3 +1,0 @@
-[console_scripts]
-usb_monitor_node = usb_monitor_pkg.usb_monitor_node:main
-

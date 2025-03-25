@@ -1,6 +1,0 @@
-source;share/usb_monitor_pkg/hook/pythonpath.ps1
-source;share/usb_monitor_pkg/hook/pythonpath.dsv
-source;share/usb_monitor_pkg/hook/pythonpath.sh
-source;share/usb_monitor_pkg/hook/ament_prefix_path.ps1
-source;share/usb_monitor_pkg/hook/ament_prefix_path.dsv
-source;share/usb_monitor_pkg/hook/ament_prefix_path.sh

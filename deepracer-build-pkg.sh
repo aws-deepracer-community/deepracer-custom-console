@@ -40,7 +40,7 @@ sed -i "s/Version: 0.0.0.0/Version: $VERSION/" $DIR/dist/DEBIAN/control
 cp $DIR/package/postinst dist/DEBIAN/
 cp $DIR/package/prerm dist/DEBIAN/
 
-cp -r $DIR/new/dist/* $DIR/dist/opt/aws/deepracer/lib/device_console
+cp -r $DIR/website/dist/* $DIR/dist/opt/aws/deepracer/lib/device_console
 mv $DIR/dist/opt/aws/deepracer/lib/device_console/*.html $DIR/dist/opt/aws/deepracer/lib/device_console/templates
 mv $DIR/dist/opt/aws/deepracer/lib/device_console/*.json $DIR/dist/opt/aws/deepracer/lib/device_console/static
 
