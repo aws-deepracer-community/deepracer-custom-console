@@ -1,61 +1,50 @@
 import { useEffect, useState, useRef } from 'react';
 import { TextContent, Container, Grid, ColumnLayout, Button, SpaceBetween } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
-import axios from 'axios';
 import AnchorNavigation from "@cloudscape-design/components/anchor-navigation";
 import Alert from "@cloudscape-design/components/alert";
 import { useNavigate } from 'react-router-dom';
 import Slider from "@cloudscape-design/components/slider";
+import { ApiHelper } from '../common/helpers/api-helper';
+
+// Add interfaces for API responses
+interface CalibrationResponse {
+  success: boolean;
+  mid?: string;
+  max?: string;
+  min?: string;
+  polarity?: string;
+}
+
+interface AdjustWheelsResponse {
+  success: boolean;
+}
 
 const handleStop = async () => {
-  try {
-    const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
-    console.log('Vehicle stopped:', response.data);
-  } catch (error) {
-    console.error('Error stopping vehicle:', error);
-  }
+  await ApiHelper.post<CalibrationResponse>('start_stop', { start_stop: 'stop' });
 };
 
 const setSteeringAngle = async (angle: number) => {
-  try {
-    const response = await axios.put('api/adjust_calibrating_wheels/angle', { pwm: angle });
-    console.log('Vehicle stopped:', response.data);
-  } catch (error) {
-    console.error('Error stopping vehicle:', error);
-  }
+  await ApiHelper.post<AdjustWheelsResponse>('adjust_calibrating_wheels/angle', { 
+    pwm: angle 
+  });
 };
 
 const setCalibration = async () => {
-  try {
-    const response = await axios.get('/api/set_calibration_mode');
-    console.log('Set calibration:', response.data);
-  } catch (error) {
-    console.error('Error setting calibration mode:', error);
-  }
+  await ApiHelper.get<CalibrationResponse>('set_calibration_mode');
 };
 
 const getCalibrationAngle = async () => {
-  try {
-    const response = await axios.get('/api/get_calibration/angle');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching calibration angle:', error);
-    return null;
-  }
+  return await ApiHelper.get<CalibrationResponse>('get_calibration/angle');
 };
 
 const setCalibrationAngle = async (center: number, left: number, right: number, polar: number) => {
-  try {
-    const response = await axios.post('/api/set_calibration/angle', { 
-      mid: center, 
-      min: left, 
-      max: right, 
-      polarity: polar 
-    });
-    console.log('Set calibration angle:', response.data);
-  } catch (error) {
-    console.error('Error setting calibration angle:', error);
-  }
+  return await ApiHelper.post<CalibrationResponse>('set_calibration/angle', { 
+    mid: center, 
+    min: left, 
+    max: right, 
+    polarity: polar 
+  });
 };
 
 export default function RecalibrateSteeringPage() {

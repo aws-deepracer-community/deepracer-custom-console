@@ -1,62 +1,51 @@
 import { useEffect, useState, useRef } from 'react';
 import { TextContent, Container, Grid, ColumnLayout, Button, SpaceBetween } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
-import axios from 'axios';
+import { ApiHelper } from '../common/helpers/api-helper';
 import AnchorNavigation from "@cloudscape-design/components/anchor-navigation";
 import Slider from "@cloudscape-design/components/slider";
 import { useNavigate } from 'react-router-dom';
 import Alert from "@cloudscape-design/components/alert";
 import Toggle from "@cloudscape-design/components/toggle";
 
+// Add interfaces for API responses
+interface CalibrationResponse {
+  success: boolean;
+  mid?: string;
+  max?: string;
+  min?: string;
+  polarity?: string;
+}
+
+interface AdjustWheelsResponse {
+  success: boolean;
+}
+
 const handleStop = async () => {
-  try {
-    const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
-    console.log('Vehicle stopped:', response.data);
-  } catch (error) {
-    console.error('Error stopping vehicle:', error);
-  }
+  await ApiHelper.post<CalibrationResponse>('start_stop', { start_stop: 'stop' });
 };
 
 const setCalibration = async () => {
-  try {
-    const response = await axios.get('/api/set_calibration_mode');
-    console.log('Set calibration:', response.data);
-  } catch (error) {
-    console.error('Error setting calibration mode:', error);
-  }
+  await ApiHelper.get<CalibrationResponse>('set_calibration_mode');
 };
 
 const getCalibrationThrottle = async () => {
-  try {
-    const response = await axios.get('/api/get_calibration/throttle');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching calibration throttle:', error);
-    return null;
-  }
+  return await ApiHelper.get<CalibrationResponse>('get_calibration/throttle');
 };
 
 const setCalibrationThrottle = async (stopped: number, forward: number, backward: number, polar: number) => {
-  try {
-    const response = await axios.post('/api/set_calibration/throttle', { 
-      mid: stopped, 
-      min: polar == 1 ? backward : -forward, 
-      max: polar == 1 ? forward : -backward,  
-      polarity: polar 
-    });
-    console.log('Set calibration throttle:', response.data);
-  } catch (error) {
-    console.error('Error setting calibration throttle:', error);
-  }
+  return await ApiHelper.post<CalibrationResponse>('set_calibration/throttle', { 
+    mid: stopped, 
+    min: polar == 1 ? backward : -forward, 
+    max: polar == 1 ? forward : -backward,  
+    polarity: polar 
+  });
 };
 
 const adjustCalibratingWheelsThrottle = async (throttleValue: number) => {
-  try {
-    const response = await axios.post('/api/adjust_calibrating_wheels/throttle', { pwm: throttleValue });
-    console.log('Adjusted calibrating wheels throttle:', response.data);
-  } catch (error) {
-    console.error('Error adjusting calibrating wheels throttle:', error);
-  }
+  return await ApiHelper.post<AdjustWheelsResponse>('adjust_calibrating_wheels/throttle', { 
+    pwm: throttleValue 
+  });
 };
 
 export default function RecalibrateSpeedPage() {

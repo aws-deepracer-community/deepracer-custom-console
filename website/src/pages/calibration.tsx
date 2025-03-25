@@ -6,45 +6,31 @@ import Header from "@cloudscape-design/components/header";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Button from "@cloudscape-design/components/button";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ApiHelper } from '../common/helpers/api-helper';
+
+interface CalibrationResponse {
+  success: boolean;
+  mid: string;
+  max: string;
+  min: string;
+  polarity?: string;
+}
 
 const handleStop = async () => {
-  try {
-    const response = await axios.post('/api/start_stop', { start_stop: 'stop' });
-    console.log('Vehicle stopped:', response.data);
-  } catch (error) {
-    console.error('Error stopping vehicle:', error);
-  }
+  await ApiHelper.post<{ success: boolean }>('start_stop', { start_stop: 'stop' });
 };
 
 const setCalibration = async () => {
-  try {
-    const response = await axios.get('/api/set_calibration_mode');
-    console.log('Set calibration:', response.data);
-  } catch (error) {
-    console.error('Error setting calibration mode:', error);
-  }
+  await ApiHelper.get<{ success: boolean }>('set_calibration_mode');
 };
 
 const getCalibrationAngle = async () => {
-  try {
-    const response = await axios.get('/api/get_calibration/angle');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching calibration angle:', error);
-    return null;
-  }
+  return await ApiHelper.get<CalibrationResponse>('get_calibration/angle');
 };
 
 const getCalibrationThrottle = async () => {
-  try {
-    const response = await axios.get('/api/get_calibration/throttle');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching calibration throttle:', error);
-    return null;
-  }
+  return await ApiHelper.get<CalibrationResponse>('get_calibration/throttle');
 };
 
 const SteeringContainer = () => {
@@ -56,7 +42,7 @@ const SteeringContainer = () => {
       await setCalibration();
       await handleStop();
       const data = await getCalibrationAngle();
-      if (data && data.success) {
+      if (data?.success) {
         setCalibrationData({ mid: data.mid, max: data.max, min: data.min });
       }
     };
@@ -101,7 +87,7 @@ const SpeedContainer = () => {
       await setCalibration();
       await handleStop();
       const data = await getCalibrationThrottle();
-      if (data && data.success) {
+      if (data?.success) {
         setCalibrationData({ mid: data.mid, max: data.max, min: data.min, polarity: data.polarity });
       }
     };
