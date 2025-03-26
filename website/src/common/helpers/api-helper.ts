@@ -11,6 +11,11 @@ export abstract class ApiHelper {
         window.location.href = '/login';
         return null;
       }
+      if ((error.response?.status >= 500 && error.response?.status < 600) || error.code === 'ERR_CONNECTION_REFUSED') {
+        console.log('Unable to connect to server');
+        window.location.href = '/#/system-unavailable';
+        return null;
+      }
       console.error('Error getting api ' + path + ':', error);
       return null;
     }
@@ -24,6 +29,11 @@ export abstract class ApiHelper {
       if (error.response?.status === 401) {
         console.log('Unauthorized');
         window.location.href = '/login';
+        return null;
+      }
+      if ((error.response?.status >= 500 && error.response?.status < 600) || error.code === 'ERR_CONNECTION_REFUSED') {
+        console.log('Unable to connect to server');
+        window.location.href = '/#/system-unavailable';
         return null;
       }
       console.error('Error posting to api ' + path + ':', error);

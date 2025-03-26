@@ -1,6 +1,33 @@
-import { Box, Container,SpaceBetween, Grid } from '@cloudscape-design/components';
+import { Box, Container, SpaceBetween, Grid } from '@cloudscape-design/components';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ApiHelper } from '../common/helpers/api-helper';
 
 export function SystemUnavailablePage() {
+  const navigate = useNavigate();
+  const setIsPolling = useState(true)[1];
+
+  useEffect(() => {
+    const checkSystem = async () => {
+      try {
+        const response = await ApiHelper.get('logs/SYS/200');
+        if (response) {
+          setIsPolling(false);
+          navigate('/home');
+        }
+      } catch (error) {
+        // System still unavailable, continue polling
+      }
+    };
+
+    const pollInterval = setInterval(checkSystem, 5000); // Poll every 5 seconds
+
+    return () => {
+      clearInterval(pollInterval);
+      setIsPolling(false);
+    };
+  }, [navigate]);
+
   return (
     <Box padding="l">
       <Grid
