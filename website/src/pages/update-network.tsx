@@ -1,37 +1,48 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { TextContent, Container, Header, SpaceBetween, KeyValuePairs, StatusIndicator, Button, Flashbar } from "@cloudscape-design/components";
 import Select from "@cloudscape-design/components/select";
 import Input from "@cloudscape-design/components/input";
 import Checkbox from "@cloudscape-design/components/checkbox";
 import * as React from "react";
-import { ApiHelper } from '../common/helpers/api-helper';
 
-// Add interfaces for API responses
-interface NetworkResponse {
-  success: boolean;
-  SSID: string;
-  ip_address: string;
-  is_usb_connected: string;
-}
+const getApi = async (path: string) => {
+  try {
+    const response = await axios.get('/api/' + path);
+    return response.data;
+  } catch (error) {
+    if (error.response.status === 401) {
+      console.log('Unauthorized');
+      window.location.href = '/login';
+      return null;
+    }
+    console.error('Error getting api' + path + ':', error);
+    return null;
+  }
+};
 
-interface WifiNetwork {
-  ssid: string;
-  security_info: string;
-  strength: number;
-}
-
-interface WifiResetResponse {
-  success: boolean;
-  ip_address: string;
-}
+const postApi = async (path: string, data: any) => {
+  try {
+    const response = await axios.post('/api/' + path, data);
+    return response.data;
+  } catch (error) {
+    if (error.response.status === 401) {
+      console.log('Unauthorized');
+      window.location.href = '/login';
+      return null;
+    }
+    console.error('Error posting to api' + path + ':', error);
+    return null;
+  }
+};
 
 const NetworkSettingsContainer = () => {
   const [networkData, setNetworkData] = useState({ SSID: 'Unknown', ip_address: 'Unknown', is_usb_connected: 'Unknown' });
 
   useEffect(() => {
     const fetchNetworkSettingsData = async () => {
-      const data = await ApiHelper.get<NetworkResponse>('get_network_details');
-      if (data?.success) {
+      const data = await getApi('get_network_details');
+      if (data && data.success) {
         setNetworkData({ SSID: data.SSID, ip_address: data.ip_address, is_usb_connected: data.is_usb_connected });
       }
     };
@@ -74,31 +85,35 @@ interface UpdateNetworkSettingsContainerProps {
 const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSettingsContainerProps) => {
   const [checked, setChecked] = React.useState(false);
   const [value, setValue] = React.useState("");
-  const [wifiOptions, setWifiOptions] = useState<readonly { label: JSX.Element; value: string }[]>([]);
+  const [wifiOptions, setWifiOptions] = useState([]);
   const [selectedWifi, setSelectedWifi] = useState<{ value: string } | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
     const fetchWifiOptions = async () => {
-      const data = await ApiHelper.get<WifiNetwork[]>('available_wifi_info');
+      const data = await getApi('available_wifi_info');
       if (data) {
-        const options = data.map(network => ({
-          label: (
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <img 
-                src={network.strength === 1 ? 'static/wifi-signal-low.svg' : 
-                     network.strength === 2 ? 'static/wifi-signal-medium.svg' : 
-                     'static/wifi-signal-high.svg'} 
-                alt="Signal strength" 
-                style={{ width: '20px', height: '20px' }} 
-              />
-              <span>{network.ssid}</span>
-              <span style={{ marginLeft: 'auto' }}>({network.security_info})</span>
-            </div>
-          ),
-          value: network.ssid,
-        }));
-        setWifiOptions(options as { label: JSX.Element; value: string }[]);
+        const options = data.map((network: { ssid: string, security_info: string, strength: number }) => {
+          let iconUrl = '';
+          if (network.strength === 1) {
+            iconUrl = 'static/wifi-signal-low.svg';
+          } else if (network.strength === 2) {
+            iconUrl = 'static/wifi-signal-medium.svg';
+          } else if (network.strength === 3) {
+            iconUrl = 'static/wifi-signal-high.svg';
+          }
+          return {
+            label: (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <img src={iconUrl} alt="Signal strength" style={{ width: '20px', height: '20px' }} />
+                <span>{network.ssid}</span>
+                <span style={{ marginLeft: 'auto' }}>({network.security_info})</span>
+              </div>
+            ),
+            value: network.ssid,
+          };
+        });
+        setWifiOptions(options);
       }
     };
     fetchWifiOptions();
@@ -111,16 +126,14 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSetti
   const handleConnect = async () => {
     if (selectedWifi && value) {
       setIsConnecting(true);
-      const response = await ApiHelper.post<WifiResetResponse>('wifi_reset', {
+      const data = {
         wifi_name: selectedWifi.value,
         wifi_password: value,
-      });
-
+      };
+      const response = await postApi('wifi_reset', data);
       setIsConnecting(false);
-      if (response?.success) {
-        const ipAddress = response.ip_address.includes(',') ? 
-          response.ip_address.split(',')[0] : response.ip_address;
-        
+      if (response && response.success) {
+        const ipAddress = response.ip_address.includes(',') ? response.ip_address.split(',')[0] : response.ip_address;
         setFlashbarItems([{
           type: 'success',
           header: `Successfully connected to Wifi network: ${selectedWifi.value}.`,
@@ -135,7 +148,7 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSetti
       } else {
         setFlashbarItems([{
           type: 'error',
-          header: `Could not connect to the Wi-Fi network: ${selectedWifi.value}. Check your network ID and password and try again.`,
+          header: `Could not connect to the Wi-Fi network: ${selectedWifi.value}.  Check your network ID and password and try again.`,
           dismissible: true,
           onDismiss: () => setFlashbarItems([]),
         }]);
