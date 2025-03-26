@@ -11,9 +11,9 @@ import Toggle from "@cloudscape-design/components/toggle";
 // Add interfaces for API responses
 interface CalibrationResponse {
   success: boolean;
-  mid?: string;
-  max?: string;
-  min?: string;
+  mid: string;
+  max: string;
+  min: string;
   polarity?: string;
 }
 
@@ -166,12 +166,12 @@ export default function RecalibrateSpeedPage() {
     const fetchCalibrationValues = async () => {
       const calibrationData = await getCalibrationThrottle();
       if (calibrationData) {
-        setStoppedValue(calibrationData.mid);
-        setForwardValue(Math.abs(calibrationData.min)); // Show absolute value initially
-        setBackwardValue(-Math.abs(calibrationData.max)); // Show negative value initially
-        setPolarity(calibrationData.polarity);
-        setOriginalStopped(calibrationData.mid);
-        setChecked(calibrationData.polarity === -1);
+        setStoppedValue(parseFloat(calibrationData.mid));
+        setForwardValue(Math.abs(parseFloat(calibrationData.min))); // Show absolute value initially
+        setBackwardValue(-Math.abs(parseFloat(calibrationData.max))); // Show negative value initially
+        setPolarity(calibrationData.polarity ? parseInt(calibrationData.polarity, 10) : 0);
+        setOriginalStopped(parseFloat(calibrationData.mid));
+        setChecked(parseInt(calibrationData.polarity || '0', 10) === -1);
       }
     };
 

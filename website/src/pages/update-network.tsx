@@ -74,7 +74,7 @@ interface UpdateNetworkSettingsContainerProps {
 const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSettingsContainerProps) => {
   const [checked, setChecked] = React.useState(false);
   const [value, setValue] = React.useState("");
-  const [wifiOptions, setWifiOptions] = useState([]);
+  const [wifiOptions, setWifiOptions] = useState<readonly { label: JSX.Element; value: string }[]>([]);
   const [selectedWifi, setSelectedWifi] = useState<{ value: string } | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
@@ -98,7 +98,7 @@ const UpdateNetworkSettingsContainer = ({ setFlashbarItems }: UpdateNetworkSetti
           ),
           value: network.ssid,
         }));
-        setWifiOptions(options);
+        setWifiOptions(options as { label: JSX.Element; value: string }[]);
       }
     };
     fetchWifiOptions();

@@ -146,13 +146,13 @@ export default function RecalibrateSteeringPage() {
     const fetchCalibrationValues = async () => {
       const calibrationData = await getCalibrationAngle();
       if (calibrationData) {
-        setCenterValue(calibrationData.mid);
-        setLeftValue(calibrationData.max);
-        setRightValue(calibrationData.min);
-        setPolarity(calibrationData.polarity);
-        setOriginalCenter(calibrationData.mid);
-        setOriginalLeft(calibrationData.max);
-        setOriginalRight(calibrationData.min);
+        setCenterValue(calibrationData.mid ? parseInt(calibrationData.mid, 10) : 0);
+        setLeftValue(calibrationData.max ? parseInt(calibrationData.max, 10) : 0);
+        setRightValue(calibrationData.min ? parseInt(calibrationData.min, 10) : 0);
+        setPolarity(calibrationData.polarity ? parseInt(calibrationData.polarity, 10) : 0);
+        setOriginalCenter(calibrationData.mid ? parseInt(calibrationData.mid, 10) : 0);
+        setOriginalLeft(calibrationData.max ? parseInt(calibrationData.max, 10) : 0);
+        setOriginalRight(calibrationData.min ? parseInt(calibrationData.min, 10) : 0);
       }
     };
 

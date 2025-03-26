@@ -14,7 +14,7 @@ interface CalibrationResponse {
   mid: string;
   max: string;
   min: string;
-  polarity?: string;
+  polarity: string;
 }
 
 const handleStop = async () => {
