@@ -146,11 +146,22 @@ const HomePage = () => {
   };
 
   const fetchSensorStatus = async () => {
-    const data = await ApiHelper.get<SensorStatusResponse>('get_sensor_status');
-    if (data?.success) {
-      setSensorStatus(data);
+    try {
+      const data = await ApiHelper.get<SensorStatusResponse>('get_sensor_status');
+      if (data?.success) {
+        setSensorStatus(data);
+      }
+    } catch (error) {
+      console.error("Error fetching sensor status:", error);
     }
   };
+
+  useEffect(() => {
+    const intervalId = setInterval(fetchSensorStatus, 10000);
+    
+    // Cleanup on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   const fetchModels = async () => {
     try {
