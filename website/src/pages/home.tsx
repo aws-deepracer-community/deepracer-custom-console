@@ -229,6 +229,16 @@ const HomePage = () => {
     });
   };
 
+  const handleThrottleFive = (direction: "up" | "down") => {
+    setThrottle((prevThrottle) => {
+      const newThrottle = direction === "up" ? prevThrottle + 5 : prevThrottle - 5;
+      ApiHelper.post<DriveResponse>('max_nav_throttle', {
+        throttle: newThrottle,
+      });
+      return newThrottle;
+    });
+  };
+
   const handleLoadModelClick = async () => {
     try {
       handleStop();
@@ -538,6 +548,44 @@ const HomePage = () => {
                                   d="M76 52H52v24h-8V52H20v-8h24V20h8v24h24v8z"
                                   fill="currentColor"
                                 />
+                              </svg>
+                            </Button>
+                          </SpaceBetween>
+                          <SpaceBetween size="l" direction="horizontal">
+                            <Button
+                              variant="normal"
+                              onClick={() => handleThrottleFive("down")}
+                              data-testid="decrease-speed"
+                              disabled={!isModelLoaded}
+                            >
+                              <svg
+                                width="96"
+                                height="96"
+                                viewBox="0 0 96 96"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <text x="48" y="48" fill="currentColor" font-size="48" font-family="Arial, sans-serif" font-weight="bold">
+                                  -5
+                                </text>
+                              </svg>
+                            </Button>
+                            <Button
+                              variant="primary"
+                              onClick={() => handleThrottleFive("up")}
+                              data-testid="increase-speed"
+                              disabled={!isModelLoaded}
+                            >
+                              <svg
+                                width="96"
+                                height="96"
+                                viewBox="0 0 96 96"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <text x="48" y="48" fill="currentColor" font-size="48" font-family="Arial, sans-serif" font-weight="bold">
+                                  +5
+                                </text>
                               </svg>
                             </Button>
                           </SpaceBetween>
