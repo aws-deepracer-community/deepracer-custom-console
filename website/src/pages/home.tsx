@@ -565,7 +565,16 @@ const HomePage = () => {
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
-                                <text x="48" y="48" fill="currentColor" font-size="48" font-family="Arial, sans-serif" font-weight="bold">
+                                <text 
+                                  x="48" 
+                                  y="48" 
+                                  fill="currentColor" 
+                                  font-size="80" 
+                                  font-family="Arial, sans-serif" 
+                                  font-weight="bold"
+                                  text-anchor="middle"
+                                  dominant-baseline="central"
+                                >
                                   -5
                                 </text>
                               </svg>
@@ -583,7 +592,16 @@ const HomePage = () => {
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
-                                <text x="48" y="48" fill="currentColor" font-size="48" font-family="Arial, sans-serif" font-weight="bold">
+                                <text 
+                                  x="48" 
+                                  y="48" 
+                                  fill="currentColor" 
+                                  font-size="80" 
+                                  font-family="Arial, sans-serif" 
+                                  font-weight="bold"
+                                  text-anchor="middle"
+                                  dominant-baseline="central"
+                                >
                                   +5
                                 </text>
                               </svg>
