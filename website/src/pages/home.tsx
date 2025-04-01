@@ -61,6 +61,7 @@ const HomePage = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isInferenceRunning, setIsInferenceRunning] = useState(false);
   const lastJoystickMoveTime = useRef<number>(0);
+  const [showEmergencyStop, setShowEmergencyStop] = useState(false);
 
   // Add state for tracking scrollbars
   const [defaultExpandCameraSection, setDefaultExpandCameraSection] = useState(true);
@@ -110,11 +111,22 @@ const HomePage = () => {
     }
   };
 
+  const checkEmergencyStop = async () => {
+    try {
+      const response = await ApiHelper.get<DriveResponse>('emergency_stop');
+      setShowEmergencyStop(!!response?.success);
+    } catch (error) {
+      console.error("Emergency stop not available:", error);
+      setShowEmergencyStop(false);
+    }
+  };
+
   useEffect(() => {
     const initialize = async () => {
       await fetchSensorStatus();
       await fetchModels();
       await checkInitialModelStatus();
+      await checkEmergencyStop();
       setDriveMode("auto");
     };
 
@@ -216,6 +228,16 @@ const HomePage = () => {
       console.log("Vehicle stopped:", response);
     } catch (error) {
       console.error("Error stopping vehicle:", error);
+    }
+  };
+
+  const handleEmergencyStop = async () => {
+    try {
+      setIsInferenceRunning(false);
+      const response = await ApiHelper.post<DriveResponse>('emergency_stop', {});
+      console.log("Emergency stop activated:", response);
+    } catch (error) {
+      console.error("Error in emergency stop:", error);
     }
   };
 
@@ -608,28 +630,30 @@ const HomePage = () => {
                             </Button>
                           </SpaceBetween>
                           <SpaceBetween size="l" direction="horizontal">
-                            <Button
-                              variant="normal"
-                              //onClick={() => emergencyStop()}
-                              data-testid="emergency-stop"
-                              data-size="large-button-stop"
-                              disabled={!isModelLoaded}
-                            >
-                              <svg height="96" width="255" xmlns="http://www.w3.org/2000/svg">
-                                <text 
-                                  x="127.5" 
-                                  y="44" 
-                                  fill="currentColor" 
-                                  font-size="60" 
-                                  font-family="Arial, sans-serif" 
-                                  font-weight="bold"
-                                  text-anchor="middle"
-                                  dominant-baseline="central"
-                                >
-                                  STOP!
-                                </text>
-                              </svg>
-                            </Button>
+                            {showEmergencyStop && (
+                              <Button
+                                variant="normal"
+                                onClick={handleEmergencyStop}
+                                data-testid="emergency-stop"
+                                data-size="large-button-stop"
+                                disabled={!isModelLoaded}
+                              >
+                                <svg height="96" width="255" xmlns="http://www.w3.org/2000/svg">
+                                  <text 
+                                    x="127.5" 
+                                    y="44" 
+                                    fill="currentColor" 
+                                    font-size="60" 
+                                    font-family="Arial, sans-serif" 
+                                    font-weight="bold"
+                                    text-anchor="middle"
+                                    dominant-baseline="central"
+                                  >
+                                    STOP!
+                                  </text>
+                                </svg>
+                              </Button>
+                            )}
                           </SpaceBetween>
                         </SpaceBetween>
                       </>
@@ -699,65 +723,66 @@ const HomePage = () => {
                           </Button>
                         </SpaceBetween>
                         <SpaceBetween size="l" direction="horizontal">
+                          <Button
+                            variant="normal"
+                            onClick={() => handleThrottleFive("down")}
+                            data-testid="decrease-speed"
+                            disabled={!isModelLoaded}
+                          >
+                            <svg
+                              width="96"
+                              height="96"
+                              viewBox="0 0 96 96"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <text 
+                                x="48" 
+                                y="48" 
+                                fill="currentColor" 
+                                font-size="80" 
+                                font-family="Arial, sans-serif" 
+                                font-weight="bold"
+                                text-anchor="middle"
+                                dominant-baseline="central"
+                              >
+                                -5
+                              </text>
+                            </svg>
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onClick={() => handleThrottleFive("up")}
+                            data-testid="increase-speed"
+                            disabled={!isModelLoaded}
+                          >
+                            <svg
+                              width="96"
+                              height="96"
+                              viewBox="0 0 96 96"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <text 
+                                x="48" 
+                                y="48" 
+                                fill="currentColor" 
+                                font-size="80" 
+                                font-family="Arial, sans-serif" 
+                                font-weight="bold"
+                                text-anchor="middle"
+                                dominant-baseline="central"
+                              >
+                                +5
+                              </text>
+                            </svg>
+                          </Button>
+                        </SpaceBetween>
+                        <SpaceBetween size="l" direction="horizontal">
+                          {showEmergencyStop && (
                             <Button
                               variant="normal"
-                              onClick={() => handleThrottleFive("down")}
-                              data-testid="decrease-speed"
-                              disabled={!isModelLoaded}
-                            >
-                              <svg
-                                width="96"
-                                height="96"
-                                viewBox="0 0 96 96"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <text 
-                                  x="48" 
-                                  y="48" 
-                                  fill="currentColor" 
-                                  font-size="80" 
-                                  font-family="Arial, sans-serif" 
-                                  font-weight="bold"
-                                  text-anchor="middle"
-                                  dominant-baseline="central"
-                                >
-                                  -5
-                                </text>
-                              </svg>
-                            </Button>
-                            <Button
-                              variant="primary"
-                              onClick={() => handleThrottleFive("up")}
-                              data-testid="increase-speed"
-                              disabled={!isModelLoaded}
-                            >
-                              <svg
-                                width="96"
-                                height="96"
-                                viewBox="0 0 96 96"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <text 
-                                  x="48" 
-                                  y="48" 
-                                  fill="currentColor" 
-                                  font-size="80" 
-                                  font-family="Arial, sans-serif" 
-                                  font-weight="bold"
-                                  text-anchor="middle"
-                                  dominant-baseline="central"
-                                >
-                                  +5
-                                </text>
-                              </svg>
-                            </Button>
-                          </SpaceBetween>
-                          <SpaceBetween size="l" direction="horizontal">
-                            <Button
-                              variant="normal"
-                              //onClick={() => emergencyStop()}
+                              onClick={handleEmergencyStop}
                               data-testid="emergency-stop"
                               data-size="large-button-stop"
                               disabled={!isModelLoaded}
@@ -777,7 +802,8 @@ const HomePage = () => {
                                 </text>
                               </svg>
                             </Button>
-                          </SpaceBetween>
+                          )}
+                        </SpaceBetween>
                       </SpaceBetween>
                     ),
                   },
