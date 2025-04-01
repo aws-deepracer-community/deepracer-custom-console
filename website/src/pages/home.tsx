@@ -113,7 +113,7 @@ const HomePage = () => {
 
   const checkEmergencyStop = async () => {
     try {
-      const response = await ApiHelper.get<DriveResponse>('emergency_stop');
+      const response = await ApiHelper.get<DriveResponse>('emergency_stop_exists');
       setShowEmergencyStop(!!response?.success);
     } catch (error) {
       console.error("Emergency stop not available:", error);
@@ -231,14 +231,10 @@ const HomePage = () => {
     }
   };
 
-  const handleEmergencyStop = async () => {
-    try {
-      setIsInferenceRunning(false);
-      const response = await ApiHelper.post<DriveResponse>('emergency_stop', {});
-      console.log("Emergency stop activated:", response);
-    } catch (error) {
-      console.error("Error in emergency stop:", error);
-    }
+  const handleEmergencyStop = () => {
+    setIsInferenceRunning(false);
+    ApiHelper.post<DriveResponse>('emergency_stop', {})
+      .catch(error => console.error("Error in emergency stop:", error));
   };
 
   const handleThrottle = (direction: "up" | "down") => {
@@ -642,7 +638,7 @@ const HomePage = () => {
                                   <text 
                                     x="127.5" 
                                     y="44" 
-                                    fill="currentColor" 
+                                    fill={isModelLoaded ? "white" : "currentColor"}
                                     font-size="60" 
                                     font-family="Arial, sans-serif" 
                                     font-weight="bold"
@@ -791,7 +787,7 @@ const HomePage = () => {
                                 <text 
                                   x="127.5" 
                                   y="44" 
-                                  fill="currentColor" 
+                                  fill={isModelLoaded ? "white" : "currentColor"}
                                   font-size="60" 
                                   font-family="Arial, sans-serif" 
                                   font-weight="bold"
