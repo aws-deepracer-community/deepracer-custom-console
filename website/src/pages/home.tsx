@@ -569,6 +569,9 @@ const HomePage = () => {
                               </svg>
                             </Button>
                           </SpaceBetween>
+                          <Box variant="small" color="text-body-secondary">
+                              Use -5 / +5 with caution, increased risk of crashing!
+                            </Box>
                           <SpaceBetween size="l" direction="horizontal">
                             <Button
                               variant="normal"
