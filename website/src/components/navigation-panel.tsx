@@ -198,7 +198,7 @@ export default function NavigationPanel({ battery }: BatteryProps) {
                 },
               ]}
             />
-            <div style={{ marginRight: "20px" }}>
+            <div style={{ marginRight: "20px", marginBottom: "20px" }}>
             <SpaceBetween size="s" direction="vertical">
             {showEmergencyStop && (
               <Button
