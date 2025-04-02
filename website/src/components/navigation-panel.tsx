@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { APP_NAME } from "../common/constants";
 import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
 import { useOnFollow } from "../common/hooks/use-on-follow";
+import { ApiHelper } from '../common/helpers/api-helper';
 
 interface BatteryProps {
   battery: {
@@ -15,6 +16,10 @@ interface BatteryProps {
     error: boolean;
     hasInitialReading: boolean;
   };
+}
+
+interface DriveResponse {
+  success: boolean;
 }
 
 export default function NavigationPanel({ battery }: BatteryProps) {
@@ -26,6 +31,7 @@ export default function NavigationPanel({ battery }: BatteryProps) {
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
   const [pageLoadTime] = useState<number>(Date.now());
   const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
+  const [showEmergencyStop, setShowEmergencyStop] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -35,6 +41,19 @@ export default function NavigationPanel({ battery }: BatteryProps) {
       console.error("Error logging out vehicle:", error);
     }
     navigate("/login");
+  };
+
+  const handleEmergencyStop = () => {
+    try {
+      const response = ApiHelper.post<DriveResponse>('start_stop', {
+        start_stop: "stop",
+      });
+      console.log("Vehicle stopped:", response);
+    } catch (error) {
+      console.error("Error stopping vehicle:", error);
+    }
+    ApiHelper.post<DriveResponse>('emergency_stop', {})
+      .catch(error => console.error("Error in emergency stop:", error));
   };
 
   useEffect(() => {
@@ -53,7 +72,18 @@ export default function NavigationPanel({ battery }: BatteryProps) {
       }
     };
 
+    const checkEmergencyStop = async () => {
+      try {
+        const response = await ApiHelper.get<DriveResponse>('emergency_stop_exists');
+        setShowEmergencyStop(!!response?.success);
+      } catch (error) {
+        console.error("Emergency stop not available:", error);
+        setShowEmergencyStop(false);
+      }
+    };
+
     getNetworkStatus();
+    checkEmergencyStop();
     const network_interval = setInterval(getNetworkStatus, 10000);
 
     // Return a cleanup function that clears both intervals
@@ -168,7 +198,20 @@ export default function NavigationPanel({ battery }: BatteryProps) {
                 },
               ]}
             />
-            <Button onClick={handleLogout}>Logout</Button>
+            <div style={{ marginRight: "20px" }}>
+            <SpaceBetween size="s" direction="vertical">
+            {showEmergencyStop && (
+              <Button
+                variant="normal"
+                onClick={handleEmergencyStop}
+                data-testid="emergency-stop"
+                fullWidth={true}
+              >Emergency Stop
+              </Button>
+            )}
+            <Button fullWidth={true} onClick={handleLogout}>Logout </Button>
+            </SpaceBetween>
+            </div>
           </SpaceBetween>
         </div>
       </SpaceBetween>

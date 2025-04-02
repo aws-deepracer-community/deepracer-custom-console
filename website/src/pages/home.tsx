@@ -61,7 +61,6 @@ const HomePage = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isInferenceRunning, setIsInferenceRunning] = useState(false);
   const lastJoystickMoveTime = useRef<number>(0);
-  const [showEmergencyStop, setShowEmergencyStop] = useState(false);
 
   // Add state for tracking scrollbars
   const [defaultExpandCameraSection, setDefaultExpandCameraSection] = useState(true);
@@ -111,22 +110,11 @@ const HomePage = () => {
     }
   };
 
-  const checkEmergencyStop = async () => {
-    try {
-      const response = await ApiHelper.get<DriveResponse>('emergency_stop_exists');
-      setShowEmergencyStop(!!response?.success);
-    } catch (error) {
-      console.error("Emergency stop not available:", error);
-      setShowEmergencyStop(false);
-    }
-  };
-
   useEffect(() => {
     const initialize = async () => {
       await fetchSensorStatus();
       await fetchModels();
       await checkInitialModelStatus();
-      await checkEmergencyStop();
       setDriveMode("auto");
     };
 
@@ -229,12 +217,6 @@ const HomePage = () => {
     } catch (error) {
       console.error("Error stopping vehicle:", error);
     }
-  };
-
-  const handleEmergencyStop = () => {
-    setIsInferenceRunning(false);
-    ApiHelper.post<DriveResponse>('emergency_stop', {})
-      .catch(error => console.error("Error in emergency stop:", error));
   };
 
   const handleThrottle = (direction: "up" | "down") => {
@@ -628,32 +610,6 @@ const HomePage = () => {
                               </svg>
                             </Button>
                           </SpaceBetween>
-                          <SpaceBetween size="l" direction="horizontal">
-                            {showEmergencyStop && (
-                              <Button
-                                variant="normal"
-                                onClick={handleEmergencyStop}
-                                data-testid="emergency-stop"
-                                data-size="large-button-stop"
-                                disabled={!isModelLoaded}
-                              >
-                                <svg height="96" width="255" xmlns="http://www.w3.org/2000/svg">
-                                  <text 
-                                    x="127.5" 
-                                    y="44" 
-                                    fill={isModelLoaded ? "white" : "currentColor"}
-                                    font-size="60" 
-                                    font-family="Arial, sans-serif" 
-                                    font-weight="bold"
-                                    text-anchor="middle"
-                                    dominant-baseline="central"
-                                  >
-                                    STOP!
-                                  </text>
-                                </svg>
-                              </Button>
-                            )}
-                          </SpaceBetween>
                         </SpaceBetween>
                       </>
                     ),
@@ -776,32 +732,6 @@ const HomePage = () => {
                               </text>
                             </svg>
                           </Button>
-                        </SpaceBetween>
-                        <SpaceBetween size="l" direction="horizontal">
-                          {showEmergencyStop && (
-                            <Button
-                              variant="normal"
-                              onClick={handleEmergencyStop}
-                              data-testid="emergency-stop"
-                              data-size="large-button-stop"
-                              disabled={!isModelLoaded}
-                            >
-                              <svg height="96" width="255" xmlns="http://www.w3.org/2000/svg">
-                                <text 
-                                  x="127.5" 
-                                  y="44" 
-                                  fill={isModelLoaded ? "white" : "currentColor"}
-                                  font-size="60" 
-                                  font-family="Arial, sans-serif" 
-                                  font-weight="bold"
-                                  text-anchor="middle"
-                                  dominant-baseline="central"
-                                >
-                                  STOP!
-                                </text>
-                              </svg>
-                            </Button>
-                          )}
                         </SpaceBetween>
                       </SpaceBetween>
                     ),
