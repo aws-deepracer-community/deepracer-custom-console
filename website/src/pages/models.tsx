@@ -31,6 +31,7 @@ interface State {
   selectedModels: Model[];
   flashMessages: FlashbarProps.MessageDefinition[];
   isDeleteModalVisible: boolean; // Add state for delete modal visibility
+  isUploading: boolean; // Add state for upload progress
 }
 
 class Models extends React.Component<{}, State> {
@@ -39,8 +40,9 @@ class Models extends React.Component<{}, State> {
   state: State = {
     models: [],
     selectedModels: [],
-    flashMessages: [],
-    isDeleteModalVisible: false // Add state for delete modal visibility
+    flashMessages: [], // Initialize flashMessages as an empty array
+    isDeleteModalVisible: false, // Add state for delete modal visibility
+    isUploading: false // Initialize upload progress state
   };
 
   componentDidMount() {
