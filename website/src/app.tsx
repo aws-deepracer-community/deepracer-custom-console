@@ -14,14 +14,13 @@ import LoginPage from "./pages/login";
 import EditNetworkPage from "./pages/edit-network";
 import UpdateNetworkPage from "./pages/update-network";
 import SystemUnavailablePage from "./pages/system-unavailable";
+import { ContextProvider } from "./components/context-provider";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const isAuthenticated = () => {
-    const cookies = document.cookie.split(';');
-    return cookies.some(cookie => 
-      cookie.trim().startsWith('deepracer_token=')
-    );
+    const cookies = document.cookie.split(";");
+    return cookies.some((cookie) => cookie.trim().startsWith("deepracer_token="));
   };
 
   if (!isAuthenticated()) {
@@ -33,126 +32,185 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 export default function App() {
   const Router = USE_BROWSER_ROUTER ? BrowserRouter : HashRouter;
-  const isDeepracerAws = window.location.hostname === 'deepracer.aws';
+  const isDeepracerAws = window.location.hostname === "deepracer.aws";
 
   return (
     <div style={{ height: "100%" }}>
-      <Router>
-        <GlobalHeader />
-        <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
-        <div>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/system-unavailable" element={<SystemUnavailablePage />} />
-            <Route path="/test_login" element={<LoginPage />} />
-            <Route path="/logout" element={<LoginPage />} />
+      <ContextProvider>
+        <Router>
+          <GlobalHeader />
+          <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
+          <div>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/system-unavailable" element={<SystemUnavailablePage />} />
+              <Route path="/test_login" element={<LoginPage />} />
+              <Route path="/logout" element={<LoginPage />} />
 
-            {/* Protected routes */}
-            {isDeepracerAws ? (
-              <Route path="*" element={
-                <ProtectedRoute>
-                  <UpdateNetworkPage />
-                </ProtectedRoute>
-              } />
-            ) : (
-              <>
-                <Route path="/logs" element={
-                  <ProtectedRoute>
-                    <LogsPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <SettingsPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/edit-network" element={
-                  <ProtectedRoute>
-                    <EditNetworkPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/calibration" element={
-                  <ProtectedRoute>
-                    <CalibrationPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/recalibrate-steering" element={
-                  <ProtectedRoute>
-                    <RecalibrateSteeringPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/ground" element={
-                  <ProtectedRoute>
-                    <RecalibrateSteeringPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/center" element={
-                  <ProtectedRoute>
-                    <RecalibrateSteeringPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/left" element={
-                  <ProtectedRoute>
-                    <RecalibrateSteeringPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/right" element={
-                  <ProtectedRoute>
-                    <RecalibrateSteeringPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/recalibrate-speed" element={
-                  <ProtectedRoute>
-                    <RecalibrateSpeedPage />
-                  </ProtectedRoute>
-                } />
-               <Route path="/raise" element={
-                  <ProtectedRoute>
-                    <RecalibrateSpeedPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/stopped" element={
-                  <ProtectedRoute>
-                    <RecalibrateSpeedPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/direction" element={
-                  <ProtectedRoute>
-                    <RecalibrateSpeedPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/forward" element={
-                  <ProtectedRoute>
-                    <RecalibrateSpeedPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/backward" element={
-                  <ProtectedRoute>
-                    <RecalibrateSpeedPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/models" element={
-                  <ProtectedRoute>
-                    <ModelsPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/home" element={
-                  <ProtectedRoute>
-                    <HomePage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <HomePage />
-                  </ProtectedRoute>
-                } />
-                <Route path="*" element={<NotFound />} />
-              </>
-            )}
-          </Routes>
-        </div>
-      </Router>
+              {/* Protected routes */}
+              {isDeepracerAws ? (
+                <Route
+                  path="*"
+                  element={
+                    <ProtectedRoute>
+                      <UpdateNetworkPage />
+                    </ProtectedRoute>
+                  }
+                />
+              ) : (
+                <>
+                  <Route
+                    path="/logs"
+                    element={
+                      <ProtectedRoute>
+                        <LogsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <SettingsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/edit-network"
+                    element={
+                      <ProtectedRoute>
+                        <EditNetworkPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/calibration"
+                    element={
+                      <ProtectedRoute>
+                        <CalibrationPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/recalibrate-steering"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSteeringPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/ground"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSteeringPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/center"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSteeringPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/left"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSteeringPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/right"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSteeringPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/recalibrate-speed"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSpeedPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/raise"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSpeedPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/stopped"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSpeedPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/direction"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSpeedPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/forward"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSpeedPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/backward"
+                    element={
+                      <ProtectedRoute>
+                        <RecalibrateSpeedPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/models"
+                    element={
+                      <ProtectedRoute>
+                        <ModelsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/home"
+                    element={
+                      <ProtectedRoute>
+                        <HomePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <HomePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </>
+              )}
+            </Routes>
+          </div>
+        </Router>
+      </ContextProvider>
     </div>
   );
 }

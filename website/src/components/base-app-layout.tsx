@@ -1,79 +1,29 @@
 import { AppLayout, AppLayoutProps, Flashbar, FlashbarProps } from "@cloudscape-design/components";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
 import NavigationPanel from "./navigation-panel";
+import { useBattery } from "../common/hooks/use-battery";
 
 interface BaseAppLayoutProps extends AppLayoutProps {
   pageNotifications?: FlashbarProps.MessageDefinition[];
 }
 
 export default function BaseAppLayout(props: BaseAppLayoutProps) {
-  const { pageNotifications: pageNotifications, ...restProps } = props;
+  const { pageNotifications, ...restProps } = props;
   const [navigationPanelState, setNavigationPanelState] = useNavigationPanelState();
-  const [batteryLevel, setBatteryLevel] = useState<number>(0);
-  const [batteryError, setBatteryError] = useState<boolean>(false);
-  const [batteryWarningDismissed, setBatteryWarningDismissed] = useState(false);
-  const [batteryErrorDismissed, setBatteryErrorDismissed] = useState(false);
-  const [hasInitialReading, setHasInitialReading] = useState(false);
   const [pageLoadTime] = useState<number>(Date.now());
   const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
-
-  useEffect(() => {
-    let isSubscribed = true; // Track if component is mounted
-
-    const updateBatteryStatus = async () => {
-      try {
-        const batteryData = await getBatteryStatus();
-        // Only update state if component is still mounted
-        if (isSubscribed && batteryData) {
-          if (batteryData.success) {
-            setHasInitialReading(true);
-            if (batteryData.battery_level === -1) {
-              setBatteryError(true);
-              setBatteryLevel(0);
-              setBatteryWarningDismissed(false);
-              setBatteryErrorDismissed(false);
-            } else {
-              setBatteryError(false);
-              setBatteryLevel((batteryData.battery_level / 10) * 100);
-              setBatteryErrorDismissed(false);
-              if (batteryData.battery_level <= 4) {
-                setBatteryWarningDismissed(false);
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error updating battery status:", error);
-        if (isSubscribed) {
-          setBatteryError(true);
-          setBatteryLevel(0);
-          setBatteryWarningDismissed(false);
-          setBatteryErrorDismissed(false);
-        }
-      }
-    };
-
-    const getBatteryStatus = async () => {
-      try {
-        const response = await axios.get("/api/get_battery_level");
-        return response.data;
-      } catch (error) {
-        console.error("Error fetching battery status:", error);
-        return null;
-      }
-    };
-
-    updateBatteryStatus();
-    const interval = setInterval(updateBatteryStatus, 10000);
-
-    // Cleanup function
-    return () => {
-      isSubscribed = false;
-      clearInterval(interval);
-    };
-  }, []);
+  
+  // Use the battery context instead of local state
+  const {
+    batteryLevel,
+    batteryError,
+    hasInitialReading,
+    batteryWarningDismissed,
+    batteryErrorDismissed,
+    setBatteryWarningDismissed,
+    setBatteryErrorDismissed
+  } = useBattery();
 
   return (
     <AppLayout

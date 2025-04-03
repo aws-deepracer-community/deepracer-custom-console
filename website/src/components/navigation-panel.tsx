@@ -3,12 +3,14 @@ import Button from "@cloudscape-design/components/button";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import ProgressBar from "@cloudscape-design/components/progress-bar";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { APP_NAME } from "../common/constants";
 import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
 import { useOnFollow } from "../common/hooks/use-on-follow";
-import { ApiHelper } from '../common/helpers/api-helper';
+import { ApiHelper } from "../common/helpers/api-helper";
+import { useNetwork } from "../common/hooks/use-network";
+import { useSupportedApis } from "../common/hooks/use-supported-apis";
 
 interface BatteryProps {
   battery: {
@@ -27,11 +29,10 @@ export default function NavigationPanel({ battery }: BatteryProps) {
   const onFollow = useOnFollow();
   const [navigationPanelState, setNavigationPanelState] = useNavigationPanelState();
   const navigate = useNavigate();
-  const [ssid, setSsid] = useState<string>("");
-  const [ipAddresses, setIpAddresses] = useState<string[]>([]);
+  const { ssid, ipAddresses } = useNetwork();
+  const { isEmergencyStopSupported } = useSupportedApis();
   const [pageLoadTime] = useState<number>(Date.now());
   const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
-  const [showEmergencyStop, setShowEmergencyStop] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -45,58 +46,17 @@ export default function NavigationPanel({ battery }: BatteryProps) {
 
   const handleEmergencyStop = () => {
     try {
-      const response = ApiHelper.post<DriveResponse>('start_stop', {
+      const response = ApiHelper.post<DriveResponse>("start_stop", {
         start_stop: "stop",
       });
       console.log("Vehicle stopped:", response);
     } catch (error) {
       console.error("Error stopping vehicle:", error);
     }
-    ApiHelper.post<DriveResponse>('emergency_stop', {})
-      .catch(error => console.error("Error in emergency stop:", error));
+    ApiHelper.post<DriveResponse>("emergency_stop", {}).catch((error) =>
+      console.error("Error in emergency stop:", error)
+    );
   };
-
-  useEffect(() => {
-    let isSubscribed = true;
-
-    const getNetworkStatus = async () => {
-      try {
-        const response = await axios.get("/api/get_network_details");
-        if (response.data?.success && isSubscribed) {
-          setSsid(response.data.SSID);
-          setIpAddresses(response.data.ip_address.split(",").map((ip: string) => ip.trim()));
-        }
-      } catch (error) {
-        console.error("Error fetching network status:", error);
-        if (isSubscribed) {
-          setSsid("");
-          setIpAddresses([]);
-        }
-      }
-    };
-
-    getNetworkStatus();
-    const networkInterval = setInterval(getNetworkStatus, 10000);
-
-    return () => {
-      isSubscribed = false;
-      clearInterval(networkInterval);
-    };
-  }, []);
-
-  useEffect(() => {
-    const checkEmergencyStop = async () => {
-      try {
-        const response = await ApiHelper.get<{ apis_supported: string[], success: boolean }>('supported_apis');
-        setShowEmergencyStop(!!response?.success && response.apis_supported.includes('/api/emergency_stop'));
-      } catch (error) {
-        console.error("Emergency stop not available:", error);
-        setShowEmergencyStop(false);
-      }
-    };
-
-    checkEmergencyStop();
-  }, []);
 
   const [items] = useState<SideNavigationProps.Item[]>(() => {
     const items: SideNavigationProps.Item[] = [
@@ -205,18 +165,21 @@ export default function NavigationPanel({ battery }: BatteryProps) {
               ]}
             />
             <div style={{ marginRight: "20px", marginBottom: "20px" }}>
-            <SpaceBetween size="s" direction="vertical">
-            {showEmergencyStop && (
-              <Button
-                variant="normal"
-                onClick={handleEmergencyStop}
-                data-testid="emergency-stop"
-                fullWidth={true}
-              >Emergency Stop
-              </Button>
-            )}
-            <Button fullWidth={true} onClick={handleLogout}>Logout </Button>
-            </SpaceBetween>
+              <SpaceBetween size="s" direction="vertical">
+                {isEmergencyStopSupported && (
+                  <Button
+                    variant="normal"
+                    onClick={handleEmergencyStop}
+                    data-testid="emergency-stop"
+                    fullWidth={true}
+                  >
+                    Emergency Stop
+                  </Button>
+                )}
+                <Button fullWidth={true} onClick={handleLogout}>
+                  Logout{" "}
+                </Button>
+              </SpaceBetween>
             </div>
           </SpaceBetween>
         </div>
