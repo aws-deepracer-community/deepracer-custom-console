@@ -74,8 +74,8 @@ export default function NavigationPanel({ battery }: BatteryProps) {
 
     const checkEmergencyStop = async () => {
       try {
-        const response = await ApiHelper.get<DriveResponse>('emergency_stop_exists');
-        setShowEmergencyStop(!!response?.success);
+        const response = await ApiHelper.get<{ apis_supported: string[], success: boolean }>('supported_apis');
+        setShowEmergencyStop(!!response?.success && response.apis_supported.includes('/api/emergency_stop'));
       } catch (error) {
         console.error("Emergency stop not available:", error);
         setShowEmergencyStop(false);
