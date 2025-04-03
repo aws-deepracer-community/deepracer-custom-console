@@ -577,11 +577,11 @@ const HomePage = () => {
                                   x="48" 
                                   y="48" 
                                   fill="currentColor" 
-                                  font-size="80" 
-                                  font-family="OpenSans" 
-                                  font-weight="bold"
-                                  text-anchor="middle"
-                                  dominant-baseline="central"
+                                  fontSize="80" 
+                                  fontFamily="OpenSans" 
+                                  fontWeight="bold"
+                                  textAnchor="middle"
+                                  dominantBaseline="central"
                                 >
                                   -5
                                 </text>
@@ -604,11 +604,11 @@ const HomePage = () => {
                                   x="48" 
                                   y="48" 
                                   fill="currentColor" 
-                                  font-size="80" 
-                                  font-family="OpenSans" 
-                                  font-weight="bold"
-                                  text-anchor="middle"
-                                  dominant-baseline="central"
+                                  fontSize="80" 
+                                  fontFamily="OpenSans" 
+                                  fontWeight="bold"
+                                  textAnchor="middle"
+                                  dominantBaseline="central"
                                 >
                                   +5
                                 </text>
