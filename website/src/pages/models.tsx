@@ -36,7 +36,7 @@ interface ModelInstalledResponse {
 
 const Models = () => {
   // State from the Models context
-  const { reloadModels, modelFlashbarItems } = useModels();
+  const { reloadModels } = useModels();
 
   // Local state
   const [models, setModels] = useState<Model[]>([]);
@@ -51,7 +51,7 @@ const Models = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Combined flashbar messages
-  const flashMessages = [...modelFlashbarItems, ...localFlashMessages];
+  const flashMessages = [ ...localFlashMessages];
 
   const getModels = useCallback(async () => {
     try {
@@ -233,7 +233,7 @@ const Models = () => {
 
   return (
     <BaseAppLayout
-      pageNotifications={flashMessages} // Combined model context flashbar items and local ones
+      additionalNotifications={flashMessages} // Combined model context flashbar items and local ones
       content={
         <SpaceBetween size="l" direction="vertical">
           {renderDeleteModal()}

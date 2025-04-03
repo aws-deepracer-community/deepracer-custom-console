@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { FlashbarProps } from "@cloudscape-design/components";
 
 // Constants
 const BATTERY_INTERVAL_MS = 10000;
@@ -13,6 +14,8 @@ interface BatteryState {
   batteryErrorDismissed: boolean;
   setBatteryWarningDismissed: (dismissed: boolean) => void;
   setBatteryErrorDismissed: (dismissed: boolean) => void;
+  // Add battery flashbar items
+  batteryFlashbarItems: FlashbarProps.MessageDefinition[];
 }
 
 export const BatteryContext = createContext<BatteryState | null>(null);
@@ -32,6 +35,51 @@ export const useBatteryProvider = () => {
   const [batteryWarningDismissed, setBatteryWarningDismissed] = useState(false);
   const [batteryErrorDismissed, setBatteryErrorDismissed] = useState(false);
   const [hasInitialReading, setHasInitialReading] = useState(false);
+  const [pageLoadTime] = useState<number>(Date.now());
+  
+  // Battery notifications state
+  const [batteryFlashbarItems, setBatteryFlashbarItems] = useState<FlashbarProps.MessageDefinition[]>([]);
+
+  // Update battery notifications whenever relevant state changes
+  useEffect(() => {
+    const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
+    const notifications: FlashbarProps.MessageDefinition[] = [];
+
+    // Battery error notification
+    if ((batteryError || (!hasInitialReading && hasBeenTenSeconds)) && !batteryErrorDismissed) {
+      notifications.push({
+        type: "error" as FlashbarProps.Type,
+        content: !hasInitialReading && hasBeenTenSeconds
+          ? "Unable to get battery reading"
+          : "Vehicle battery is not connected",
+        dismissible: true,
+        dismissLabel: "Dismiss message",
+        id: "battery-error",
+        onDismiss: () => setBatteryErrorDismissed(true),
+      });
+    }
+
+    // Battery warning notification
+    if (batteryLevel <= 40 && !batteryError && !batteryWarningDismissed && hasInitialReading) {
+      notifications.push({
+        type: "warning" as FlashbarProps.Type,
+        content: `Battery Level is at ${batteryLevel}%`,
+        dismissible: true,
+        dismissLabel: "Dismiss message",
+        id: "battery-warning",
+        onDismiss: () => setBatteryWarningDismissed(true),
+      });
+    }
+
+    setBatteryFlashbarItems(notifications);
+  }, [
+    batteryLevel, 
+    batteryError, 
+    hasInitialReading, 
+    batteryWarningDismissed, 
+    batteryErrorDismissed, 
+    pageLoadTime
+  ]);
 
   // Battery status management
   useEffect(() => {
@@ -115,6 +163,7 @@ export const useBatteryProvider = () => {
     batteryErrorDismissed,
     setBatteryWarningDismissed,
     setBatteryErrorDismissed,
+    batteryFlashbarItems,
   };
 
   return batteryContextValue;

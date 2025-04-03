@@ -56,7 +56,6 @@ const HomePage = () => {
     isModelLoaded,
     setSelectedModel,
     loadModel,
-    modelFlashbarItems, // Get flashbar items from context
   } = useModels();
 
   // Check for scrollbars after render and on resize
@@ -267,7 +266,8 @@ const HomePage = () => {
 
   return (
     <BaseAppLayout
-      pageNotifications={modelFlashbarItems} // Use the flashbar items from context
+      // Any page-specific notifications can be passed as additionalNotifications
+      // additionalNotifications={[{...}]}  // Only if you have page-specific notifications
       content={
         <div ref={divLayoutRef}>
           <SpaceBetween size="l">
