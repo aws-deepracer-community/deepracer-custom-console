@@ -1,10 +1,18 @@
-import { TextContent, Table, Flashbar, FlashbarProps, Modal, Box, SpaceBetween } from "@cloudscape-design/components";
+import {
+  TextContent,
+  Table,
+  FlashbarProps,
+  Modal,
+  Box,
+  SpaceBetween,
+} from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Button from "@cloudscape-design/components/button";
-import * as React from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import Header from "@cloudscape-design/components/header";
-import { ApiHelper } from '../common/helpers/api-helper';
+import { ApiHelper } from "../common/helpers/api-helper";
+import { useModels } from "../common/hooks/use-models";
 
 // Define the types for models and selectedModels
 interface Model {
@@ -26,105 +34,113 @@ interface ModelInstalledResponse {
   message?: string;
 }
 
-interface State {
-  models: Model[];
-  selectedModels: Model[];
-  flashMessages: FlashbarProps.MessageDefinition[];
-  isDeleteModalVisible: boolean; // Add state for delete modal visibility
-  isUploading: boolean; // Add state for upload progress
-}
+const Models = () => {
+  // State from the Models context
+  const { reloadModels, modelFlashbarItems } = useModels();
 
-class Models extends React.Component<{}, State> {
-  fileInput: HTMLInputElement | null = null;
+  // Local state
+  const [models, setModels] = useState<Model[]>([]);
+  const [selectedModels, setSelectedModels] = useState<Model[]>([]);
+  const [localFlashMessages, setLocalFlashMessages] = useState<FlashbarProps.MessageDefinition[]>(
+    []
+  );
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  state: State = {
-    models: [],
-    selectedModels: [],
-    flashMessages: [], // Initialize flashMessages as an empty array
-    isDeleteModalVisible: false, // Add state for delete modal visibility
-    isUploading: false // Initialize upload progress state
-  };
+  // Ref for file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  componentDidMount() {
-    this.getModels();
-  }
+  // Combined flashbar messages
+  const flashMessages = [...modelFlashbarItems, ...localFlashMessages];
 
-  getModels = async () => {
+  const getModels = useCallback(async () => {
     try {
-      const response = await ApiHelper.get<Model[]>('uploaded_model_list');
+      const response = await ApiHelper.get<Model[]>("uploaded_model_list");
       if (response) {
-        this.setState({ models: response });
+        setModels(response);
       }
+      // Also reload models in the context to keep everything in sync
+      reloadModels();
     } catch (error) {
       console.error("Error fetching models:", error);
     }
-  };
+  }, [reloadModels, setModels]);
 
-  deleteModels = async () => {
-    const csrfToken = this.getCsrfToken();
+  // List all the models on loading this page
+  useEffect(() => {
+    getModels();
+  }, [getModels]);
+
+  const deleteModels = async () => {
+    const csrfToken = getCsrfToken();
     if (!csrfToken) {
-      console.error('CSRF token meta tag not found');
+      console.error("CSRF token meta tag not found");
       return;
     }
-    
-    const response = await ApiHelper.post<DeleteModelsResponse>('deleteModels', {
-      filenames: this.state.selectedModels.map(model => model.name),
-      'X-CSRF-Token': csrfToken
+
+    const response = await ApiHelper.post<DeleteModelsResponse>("deleteModels", {
+      filenames: selectedModels.map((model) => model.name),
+      "X-CSRF-Token": csrfToken,
     });
 
     if (response?.success) {
-      this.addFlashMessage("Model deleted successfully", "success");
-      this.getModels();
+      addFlashMessage("Model deleted successfully", "success");
+      getModels();
     } else {
-      this.addFlashMessage("Error deleting model", "error");
+      addFlashMessage("Error deleting model", "error");
     }
-    this.setState({ isDeleteModalVisible: false });
+    setIsDeleteModalVisible(false);
   };
 
-  isModelInstalled = async (selectedFileName: string) => {
-    const modelName = selectedFileName.endsWith('.tar.gz') ? selectedFileName.slice(0, -7) : selectedFileName;
-    const response = await ApiHelper.get<ModelInstalledResponse>(`is_model_installed?filename=${modelName}`);
+  const isModelInstalled = async (selectedFileName: string) => {
+    const modelName = selectedFileName.endsWith(".tar.gz")
+      ? selectedFileName.slice(0, -7)
+      : selectedFileName;
+    const response = await ApiHelper.get<ModelInstalledResponse>(
+      `is_model_installed?filename=${modelName}`
+    );
     return response;
   };
 
-  getCsrfToken = () => {
+  const getCsrfToken = () => {
     const metaTag = document.querySelector('meta[name="csrf-token"]');
     if (metaTag) {
-      return metaTag.getAttribute('content');
+      return metaTag.getAttribute("content");
     } else {
-      console.error('CSRF token meta tag not found');
+      console.error("CSRF token meta tag not found");
       return null;
     }
   };
 
-  handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       // Reset input value to allow uploading same file again
-      if (this.fileInput) {
-        this.fileInput.value = '';
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
 
       if (!file.name.endsWith(".tar.gz")) {
-        this.addFlashMessage("Incorrect model format, please select a tar.gz file", "error");
+        addFlashMessage("Incorrect model format, please select a tar.gz file", "error");
         return;
       }
 
-      const modelInstalledResponse = await this.isModelInstalled(file.name);
+      const modelInstalledResponse = await isModelInstalled(file.name);
       if (modelInstalledResponse?.success) {
-        this.addFlashMessage(modelInstalledResponse.message ?? "Model already installed", "error");
+        addFlashMessage(modelInstalledResponse.message ?? "Model already installed", "error");
         return;
       }
 
-      const csrfToken = this.getCsrfToken();
+      const csrfToken = getCsrfToken();
       if (!csrfToken) {
-        this.addFlashMessage("CSRF token not found", "error");
+        addFlashMessage("CSRF token not found", "error");
         return;
       }
 
-      const loadingMessageId = this.addFlashMessage("Uploading model...", "in-progress");
+      const loadingMessageId = addFlashMessage("Uploading model...", "in-progress");
+      setIsUploading(true);
 
       const formData = new FormData();
       formData.append("file", file);
@@ -132,82 +148,78 @@ class Models extends React.Component<{}, State> {
       // Note: Using axios directly here since ApiHelper doesn't support FormData uploads
       const uploadResponse = await axios.put("/api/uploadModels", formData, {
         headers: {
-          'Content-Disposition': `form-data; name="file"; filename="${file.name}"`,
-          'Content-Type': 'application/x-gzip',
-          'X-CSRF-Token': csrfToken
-        }
+          "Content-Disposition": `form-data; name="file"; filename="${file.name}"`,
+          "Content-Type": "application/x-gzip",
+          "X-CSRF-Token": csrfToken,
+        },
       });
 
-      this.removeFlashMessage(loadingMessageId);
+      removeFlashMessage(loadingMessageId);
+      setIsUploading(false);
 
       if (uploadResponse.data.success) {
-        this.addFlashMessage("Model uploaded successfully", "success");
-        this.getModels();
+        addFlashMessage("Model uploaded successfully", "success");
+        getModels();
       } else {
-        this.addFlashMessage(uploadResponse.data.message ?? "Upload failed", "error");
+        addFlashMessage(uploadResponse.data.message ?? "Upload failed", "error");
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error('Error:', error);
-      this.addFlashMessage(error.message ?? "Upload failed", "error");
+      console.error("Error:", error);
+      addFlashMessage(error.message ?? "Upload failed", "error");
       // Reset loading state if error occurs
-      this.setState({ isUploading: false });
+      setIsUploading(false);
     }
   };
 
-  handleSelectionChange = ({ detail }: { detail: { selectedItems: Model[] } }) => {
-    this.setState({ selectedModels: detail.selectedItems });
+  const handleSelectionChange = ({ detail }: { detail: { selectedItems: Model[] } }) => {
+    setSelectedModels(detail.selectedItems);
   };
 
-  formatDate = (epochTime: number) => {
+  const formatDate = (epochTime: number) => {
     const date = new Date(epochTime * 1000); // Convert epoch time to milliseconds
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: '2-digit' };
-    const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
-    const formattedDate = date.toLocaleDateString('en-US', options);
-    const formattedTime = date.toLocaleTimeString('en-US', timeOptions);
+    const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "2-digit" };
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
+    const formattedDate = date.toLocaleDateString("en-US", options);
+    const formattedTime = date.toLocaleTimeString("en-US", timeOptions);
     return `${formattedDate} ${formattedTime}`;
   };
 
-  addFlashMessage = (content: string, type: FlashbarProps.Type) => {
+  const addFlashMessage = (content: string, type: FlashbarProps.Type) => {
     const id = Date.now().toString(); // Use epoch time as unique id
     const newMessage: FlashbarProps.MessageDefinition = {
       id,
       content,
       type,
       dismissible: type !== "in-progress",
-      onDismiss: type !== "in-progress" ? () => this.removeFlashMessage(id) : undefined
+      onDismiss: type !== "in-progress" ? () => removeFlashMessage(id) : undefined,
     };
-    this.setState((prevState) => ({
-      flashMessages: [...prevState.flashMessages, newMessage]
-    }));
+    setLocalFlashMessages((prev) => [...prev, newMessage]);
     return id; // Return the id of the new message
   };
 
-  removeFlashMessage = (id: string) => {
-    this.setState((prevState) => ({
-      flashMessages: prevState.flashMessages.filter(message => message.id !== id)
-    }));
+  const removeFlashMessage = (id: string) => {
+    setLocalFlashMessages((prev) => prev.filter((message) => message.id !== id));
   };
 
-  renderFlashMessages() {
-    return (
-      <Flashbar
-        items={this.state.flashMessages}
-      />
-    );
-  }
-
-  renderDeleteModal() {
+  const renderDeleteModal = () => {
     return (
       <Modal
-        onDismiss={() => this.setState({ isDeleteModalVisible: false })}
-        visible={this.state.isDeleteModalVisible}
+        onDismiss={() => setIsDeleteModalVisible(false)}
+        visible={isDeleteModalVisible}
         closeAriaLabel="Close modal"
         header="Delete Model"
         footer={
           <Box float="right">
             <SpaceBetween direction="horizontal" size="xs">
-              <Button onClick={() => this.setState({ isDeleteModalVisible: false })}>Cancel</Button>
-              <Button variant="primary" onClick={this.deleteModels}>Delete</Button>
+              <Button onClick={() => setIsDeleteModalVisible(false)}>Cancel</Button>
+              <Button variant="primary" onClick={deleteModels}>
+                Delete
+              </Button>
             </SpaceBetween>
           </Box>
         }
@@ -217,54 +229,72 @@ class Models extends React.Component<{}, State> {
         </TextContent>
       </Modal>
     );
-  }
+  };
 
-  render() {
-    const { models, selectedModels } = this.state;
-
-    return (
-      <BaseAppLayout
-        content={
-          <TextContent>
-            {this.renderFlashMessages()}
-            {this.renderDeleteModal()}
-            <h1>Models</h1>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2>Reinforcement learning models</h2>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                    type="file"
-                    style={{ display: 'none' }}
-                    ref={(input) => (this.fileInput = input)}
-                    onChange={this.handleFileUpload}
-                  />
-                <Button onClick={() => this.fileInput?.click()}>Upload Model</Button>
-                <Button onClick={() => this.setState({ isDeleteModalVisible: true })} disabled={selectedModels.length === 0}>Delete</Button>
-                <Button onClick={this.getModels}>Refresh</Button>
-              </div>
-            </div>
-            <div style={{ marginTop: '16px' }}>
-              <Table
-                columnDefinitions={[
-                  { id: 'name', header: 'Name', cell: item => item.name },
-                  { id: 'sensors', header: 'Sensor(s)', cell: item => item.sensors },
-                  { id: 'training_algorithm', header: 'Training algorithm', cell: item => item.training_algorithm },
-                  { id: 'action_space_type', header: 'Action space type', cell: item => item.action_space_type },
-                  { id: 'size', header: 'Size', cell: item => item.size },
-                  { id: 'creation_time', header: 'Upload time', cell: item => this.formatDate(item.creation_time) },
-                ]}
-                items={models}
-                header={<Header>Model List</Header>}
-                selectionType="multi"
-                selectedItems={selectedModels}
-                onSelectionChange={this.handleSelectionChange}
-              />
-            </div>
-          </TextContent>
-        }
-      />
-    );
-  }
-}
+  return (
+    <BaseAppLayout
+      pageNotifications={flashMessages} // Combined model context flashbar items and local ones
+      content={
+        <SpaceBetween size="l" direction="vertical">
+          {renderDeleteModal()}
+          <Header variant="h1">Models</Header>
+          <Table
+            columnDefinitions={[
+              { id: "name", header: "Name", cell: (item) => item.name },
+              { id: "sensors", header: "Sensor(s)", cell: (item) => item.sensors },
+              {
+                id: "training_algorithm",
+                header: "Training algorithm",
+                cell: (item) => item.training_algorithm,
+              },
+              {
+                id: "action_space_type",
+                header: "Action space type",
+                cell: (item) => item.action_space_type,
+              },
+              { id: "size", header: "Size", cell: (item) => item.size },
+              {
+                id: "creation_time",
+                header: "Upload time",
+                cell: (item) => formatDate(item.creation_time),
+              },
+            ]}
+            items={models}
+            header={
+              <Header
+                description="Reinforcement models uploaded to the vehicle."
+                actions={
+                  <SpaceBetween direction="horizontal" size="xs">
+                    <input
+                      type="file"
+                      style={{ display: "none" }}
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                    />
+                    <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                      Upload Model
+                    </Button>
+                    <Button
+                      onClick={() => setIsDeleteModalVisible(true)}
+                      disabled={selectedModels.length === 0}
+                    >
+                      Delete
+                    </Button>
+                    <Button onClick={getModels}>Refresh</Button>
+                  </SpaceBetween>
+                }
+              >
+                Model List
+              </Header>
+            }
+            selectionType="multi"
+            selectedItems={selectedModels}
+            onSelectionChange={handleSelectionChange}
+          />
+        </SpaceBetween>
+      }
+    />
+  );
+};
 
 export default Models;
