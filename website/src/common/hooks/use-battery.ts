@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
+// Constants
+const BATTERY_INTERVAL_MS = 10000;
+
 // Battery Context
 interface BatteryState {
   batteryLevel: number;
@@ -77,7 +80,7 @@ export const useBatteryProvider = () => {
     };
 
     updateBatteryStatus();
-    const batteryInterval = setInterval(updateBatteryStatus, 10000);
+    const batteryInterval = setInterval(updateBatteryStatus, BATTERY_INTERVAL_MS);
 
     // Cleanup function
     return () => {

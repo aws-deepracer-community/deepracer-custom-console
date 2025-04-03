@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
+// Constants
+const NETWORK_INTERVAL_MS = 55000;
+
 // Network Context
 interface NetworkState {
   ssid: string;
@@ -57,7 +60,7 @@ export const useNetworkProvider = () => {
     };
 
     getNetworkStatus();
-    const networkInterval = setInterval(getNetworkStatus, 10000);
+    const networkInterval = setInterval(getNetworkStatus, NETWORK_INTERVAL_MS);
 
     return () => {
       isSubscribed = false;
