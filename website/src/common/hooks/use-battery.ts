@@ -44,18 +44,24 @@ export const useBatteryProvider = () => {
           if (batteryData.success) {
             setHasInitialReading(true);
             if (batteryData.battery_level === -1) {
+              console.debug("Battery level is -1, indicating battery not connected");
               setBatteryError(true);
               setBatteryLevel(0);
               setBatteryWarningDismissed(false);
               setBatteryErrorDismissed(false);
             } else {
+              const calculatedLevel = (batteryData.battery_level / 10) * 100;
+              console.debug(`Setting battery level to ${calculatedLevel}% (raw: ${batteryData.battery_level})`);
               setBatteryError(false);
-              setBatteryLevel((batteryData.battery_level / 10) * 100);
+              setBatteryLevel(calculatedLevel);
               setBatteryErrorDismissed(false);
               if (batteryData.battery_level <= 4) {
+                console.debug(`Low battery warning: ${batteryData.battery_level}/10`);
                 setBatteryWarningDismissed(false);
               }
             }
+          } else {
+            console.warn("Battery data success flag is false", batteryData);
           }
         }
       } catch (error) {
@@ -74,16 +80,28 @@ export const useBatteryProvider = () => {
         const response = await axios.get("/api/get_battery_level");
         return response.data;
       } catch (error) {
-        console.error("Error fetching battery status:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Axios error fetching battery status:", {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message
+          });
+        } else {
+          console.error("Unknown error fetching battery status:", error);
+        }
         return null;
       }
     };
 
+    console.debug("Initializing battery monitoring");
     updateBatteryStatus();
     const batteryInterval = setInterval(updateBatteryStatus, BATTERY_INTERVAL_MS);
+    console.debug(`Battery monitoring interval set: ${BATTERY_INTERVAL_MS}ms`);
 
     // Cleanup function
     return () => {
+      console.debug("Cleaning up battery monitoring");
       isSubscribed = false;
       clearInterval(batteryInterval);
     };
