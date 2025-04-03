@@ -5,6 +5,7 @@ import {
   Modal,
   Box,
   SpaceBetween,
+  Pagination,
 } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import Button from "@cloudscape-design/components/button";
@@ -46,12 +47,14 @@ const Models = () => {
   );
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentPageIndex, setCurrentPageIndex] = useState(1);
+  const [pageSize] = useState(15);
 
   // Ref for file input
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Combined flashbar messages
-  const flashMessages = [ ...localFlashMessages];
+  const flashMessages = [...localFlashMessages];
 
   const getModels = useCallback(async () => {
     try {
@@ -231,13 +234,21 @@ const Models = () => {
     );
   };
 
+  const getPaginatedItems = () => {
+    const startIndex = (currentPageIndex - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return models.slice(startIndex, endIndex);
+  };
+
   return (
     <BaseAppLayout
       additionalNotifications={flashMessages} // Combined model context flashbar items and local ones
       content={
         <SpaceBetween size="l" direction="vertical">
           {renderDeleteModal()}
-          <Header variant="h1">Models</Header>
+          <Header variant="h1" description="Reinforcement models uploaded to the vehicle">
+            Models
+          </Header>
           <Table
             columnDefinitions={[
               { id: "name", header: "Name", cell: (item) => item.name },
@@ -259,10 +270,10 @@ const Models = () => {
                 cell: (item) => formatDate(item.creation_time),
               },
             ]}
-            items={models}
+            items={getPaginatedItems()}
             header={
               <Header
-                description="Reinforcement models uploaded to the vehicle."
+                counter={selectedModels.length ? `(${selectedModels.length}/${models.length})` : `(${models.length})`}
                 actions={
                   <SpaceBetween direction="horizontal" size="xs">
                     <input
@@ -290,6 +301,18 @@ const Models = () => {
             selectionType="multi"
             selectedItems={selectedModels}
             onSelectionChange={handleSelectionChange}
+            pagination={
+              <Pagination
+                currentPageIndex={currentPageIndex}
+                onChange={({ detail }) => setCurrentPageIndex(detail.currentPageIndex)}
+                pagesCount={Math.ceil(models.length / pageSize)}
+                ariaLabels={{
+                  nextPageLabel: "Next page",
+                  previousPageLabel: "Previous page",
+                  pageLabel: pageNumber => `Page ${pageNumber} of all pages`
+                }}
+              />
+            }
           />
         </SpaceBetween>
       }
