@@ -20,29 +20,38 @@ export default function BaseAppLayout(props: BaseAppLayoutProps) {
   const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
 
   useEffect(() => {
+    let isSubscribed = true; // Track if component is mounted
+
     const updateBatteryStatus = async () => {
-      const batteryData = await getBatteryStatus();
-      console.debug("Updating battery status", batteryData);
-      if (batteryData && batteryData.success) {
-        setHasInitialReading(true);
-        if (batteryData.battery_level === -1) {
+      try {
+        const batteryData = await getBatteryStatus();
+        // Only update state if component is still mounted
+        if (isSubscribed && batteryData) {
+          if (batteryData.success) {
+            setHasInitialReading(true);
+            if (batteryData.battery_level === -1) {
+              setBatteryError(true);
+              setBatteryLevel(0);
+              setBatteryWarningDismissed(false);
+              setBatteryErrorDismissed(false);
+            } else {
+              setBatteryError(false);
+              setBatteryLevel((batteryData.battery_level / 10) * 100);
+              setBatteryErrorDismissed(false);
+              if (batteryData.battery_level <= 4) {
+                setBatteryWarningDismissed(false);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error updating battery status:", error);
+        if (isSubscribed) {
           setBatteryError(true);
           setBatteryLevel(0);
           setBatteryWarningDismissed(false);
           setBatteryErrorDismissed(false);
-        } else {
-          setBatteryError(false);
-          setBatteryLevel((batteryData.battery_level / 10) * 100);
-          setBatteryErrorDismissed(false);
-          if (batteryData.battery_level <= 4) {
-            setBatteryWarningDismissed(false);
-          }
         }
-      } else {
-        setBatteryError(true);
-        setBatteryLevel(0);
-        setBatteryWarningDismissed(false);
-        setBatteryErrorDismissed(false);
       }
     };
 
@@ -55,9 +64,15 @@ export default function BaseAppLayout(props: BaseAppLayoutProps) {
         return null;
       }
     };
+
     updateBatteryStatus();
     const interval = setInterval(updateBatteryStatus, 10000);
-    return () => clearInterval(interval);
+
+    // Cleanup function
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (

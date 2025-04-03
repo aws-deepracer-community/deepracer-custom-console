@@ -57,21 +57,34 @@ export default function NavigationPanel({ battery }: BatteryProps) {
   };
 
   useEffect(() => {
+    let isSubscribed = true;
+
     const getNetworkStatus = async () => {
       try {
         const response = await axios.get("/api/get_network_details");
-        if (response.data && response.data.success) {
+        if (response.data?.success && isSubscribed) {
           setSsid(response.data.SSID);
-          // Split the IP addresses string and trim whitespace
           setIpAddresses(response.data.ip_address.split(",").map((ip: string) => ip.trim()));
         }
-        return response.data;
       } catch (error) {
         console.error("Error fetching network status:", error);
-        return null;
+        if (isSubscribed) {
+          setSsid("");
+          setIpAddresses([]);
+        }
       }
     };
 
+    getNetworkStatus();
+    const networkInterval = setInterval(getNetworkStatus, 10000);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(networkInterval);
+    };
+  }, []);
+
+  useEffect(() => {
     const checkEmergencyStop = async () => {
       try {
         const response = await ApiHelper.get<{ apis_supported: string[], success: boolean }>('supported_apis');
@@ -82,14 +95,7 @@ export default function NavigationPanel({ battery }: BatteryProps) {
       }
     };
 
-    getNetworkStatus();
     checkEmergencyStop();
-    const network_interval = setInterval(getNetworkStatus, 10000);
-
-    // Return a cleanup function that clears both intervals
-    return () => {
-      clearInterval(network_interval);
-    };
   }, []);
 
   const [items] = useState<SideNavigationProps.Item[]>(() => {

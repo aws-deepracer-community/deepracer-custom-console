@@ -160,7 +160,12 @@ const HomePage = () => {
     const intervalId = setInterval(fetchSensorStatus, 10000);
     
     // Cleanup on component unmount
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      if (cameraImgRef.current) {
+        cameraImgRef.current.src = ''; // Clear camera feed source
+      }
+    };
   }, []);
 
   const fetchModels = async () => {

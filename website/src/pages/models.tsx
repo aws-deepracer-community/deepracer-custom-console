@@ -99,12 +99,17 @@ class Models extends React.Component<{}, State> {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.endsWith(".tar.gz")) {
-      this.addFlashMessage("Incorrect model format, please select a tar.gz file", "error");
-      return;
-    }
-
     try {
+      // Reset input value to allow uploading same file again
+      if (this.fileInput) {
+        this.fileInput.value = '';
+      }
+
+      if (!file.name.endsWith(".tar.gz")) {
+        this.addFlashMessage("Incorrect model format, please select a tar.gz file", "error");
+        return;
+      }
+
       const modelInstalledResponse = await this.isModelInstalled(file.name);
       if (modelInstalledResponse?.success) {
         this.addFlashMessage(modelInstalledResponse.message ?? "Model already installed", "error");
@@ -142,6 +147,8 @@ class Models extends React.Component<{}, State> {
     } catch (error: any) {
       console.error('Error:', error);
       this.addFlashMessage(error.message ?? "Upload failed", "error");
+      // Reset loading state if error occurs
+      this.setState({ isUploading: false });
     }
   };
 

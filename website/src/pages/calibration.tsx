@@ -127,6 +127,11 @@ export default function CalibrationPage() {
   useEffect(() => {
     setCalibration();
     handleStop();
+
+    // Clean up calibration mode when unmounting
+    return () => {
+      handleStop();
+    };
   }, []);
 
   return (
