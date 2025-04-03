@@ -17,7 +17,7 @@ import axios from "axios";
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { Joystick } from "react-joystick-component";
 import BaseAppLayout from "../components/base-app-layout";
-import { ApiHelper } from '../common/helpers/api-helper';
+import { ApiHelper } from "../common/helpers/api-helper";
 
 // Add interfaces for API responses
 interface SensorStatusResponse {
@@ -53,7 +53,9 @@ const HomePage = () => {
     stereo_status: "not_connected",
     lidar_status: "not_connected",
   });
-  const [modelOptions, setModelOptions] = useState<{ label: string; value: string; description: string; disabled: boolean }[]>([]);
+  const [modelOptions, setModelOptions] = useState<
+    { label: string; value: string; description: string; disabled: boolean }[]
+  >([]);
   const [selectedModel, setSelectedModel] = useState<{ value: string } | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flashbarItems, setFlashbarItems] = useState<FlashbarProps.MessageDefinition[]>([]);
@@ -95,7 +97,7 @@ const HomePage = () => {
 
   const checkInitialModelStatus = async () => {
     try {
-      const response = await ApiHelper.get<ModelLoadingResponse>('isModelLoading');
+      const response = await ApiHelper.get<ModelLoadingResponse>("isModelLoading");
       const selectedModelName = localStorage.getItem("selectedModelName");
       if (selectedModelName) {
         setSelectedModel({ value: selectedModelName });
@@ -128,7 +130,7 @@ const HomePage = () => {
   const setDriveMode = async (mode: "auto" | "manual") => {
     try {
       setIsInferenceRunning(false);
-      const response = await ApiHelper.post<DriveResponse>('drive_mode', {
+      const response = await ApiHelper.post<DriveResponse>("drive_mode", {
         drive_mode: mode,
       });
       console.log(`Drive mode set to ${mode}:`, response);
@@ -147,7 +149,7 @@ const HomePage = () => {
 
   const fetchSensorStatus = async () => {
     try {
-      const data = await ApiHelper.get<SensorStatusResponse>('get_sensor_status');
+      const data = await ApiHelper.get<SensorStatusResponse>("get_sensor_status");
       if (data?.success) {
         setSensorStatus(data);
       }
@@ -158,21 +160,21 @@ const HomePage = () => {
 
   useEffect(() => {
     const intervalId = setInterval(fetchSensorStatus, 10000);
-    
+
     // Cleanup on component unmount
     return () => {
       clearInterval(intervalId);
       if (cameraImgRef.current) {
-        cameraImgRef.current.src = ''; // Clear camera feed source
+        cameraImgRef.current.src = ""; // Clear camera feed source
       }
     };
   }, []);
 
   const fetchModels = async () => {
     try {
-      const response = await ApiHelper.get<ModelsResponse>('models');
+      const response = await ApiHelper.get<ModelsResponse>("models");
       if (response) {
-        const options = response.models.map(model => ({
+        const options = response.models.map((model) => ({
           label: model.model_folder_name,
           value: model.model_folder_name,
           description: model.model_sensors.join(", "),
@@ -203,7 +205,7 @@ const HomePage = () => {
   const handleStart = async () => {
     try {
       setIsInferenceRunning(true);
-      const response = await ApiHelper.post<DriveResponse>('start_stop', {
+      const response = await ApiHelper.post<DriveResponse>("start_stop", {
         start_stop: "start",
       });
       console.log("Vehicle started:", response);
@@ -215,7 +217,7 @@ const HomePage = () => {
   const handleStop = async () => {
     try {
       setIsInferenceRunning(false);
-      const response = await ApiHelper.post<DriveResponse>('start_stop', {
+      const response = await ApiHelper.post<DriveResponse>("start_stop", {
         start_stop: "stop",
       });
       console.log("Vehicle stopped:", response);
@@ -227,7 +229,7 @@ const HomePage = () => {
   const handleThrottle = (direction: "up" | "down") => {
     setThrottle((prevThrottle) => {
       const newThrottle = direction === "up" ? prevThrottle + 1 : prevThrottle - 1;
-      ApiHelper.post<DriveResponse>('max_nav_throttle', {
+      ApiHelper.post<DriveResponse>("max_nav_throttle", {
         throttle: newThrottle,
       });
       return newThrottle;
@@ -237,7 +239,7 @@ const HomePage = () => {
   const handleThrottleFive = (direction: "up" | "down") => {
     setThrottle((prevThrottle) => {
       const newThrottle = direction === "up" ? prevThrottle + 5 : prevThrottle - 5;
-      ApiHelper.post<DriveResponse>('max_nav_throttle', {
+      ApiHelper.post<DriveResponse>("max_nav_throttle", {
         throttle: newThrottle,
       });
       return newThrottle;
@@ -249,7 +251,10 @@ const HomePage = () => {
       handleStop();
 
       if (selectedModel) {
-        const modelResponse = await ApiHelper.post<DriveResponse>(`models/${selectedModel.value}/model`, {});
+        const modelResponse = await ApiHelper.post<DriveResponse>(
+          `models/${selectedModel.value}/model`,
+          {}
+        );
         if (modelResponse?.success) {
           setIsModalVisible(false);
           setIsModelLoaded(false);
@@ -264,7 +269,7 @@ const HomePage = () => {
   };
 
   const pollModelLoadingStatus = async () => {
-    const response = await ApiHelper.get<ModelLoadingResponse>('isModelLoading');
+    const response = await ApiHelper.get<ModelLoadingResponse>("isModelLoading");
     if (response?.isModelLoading === "loaded" && response?.success) {
       showSuccessFlashbar();
       setIsModelLoaded(true);
@@ -332,7 +337,8 @@ const HomePage = () => {
   let cameraFeedSrc;
   switch (cameraFeedType) {
     case "stereo":
-      cameraFeedSrc = "route?topic=/object_detection_pkg/detection_display&width=480&height=360&qos_profile=sensor_data";
+      cameraFeedSrc =
+        "route?topic=/object_detection_pkg/detection_display&width=480&height=360&qos_profile=sensor_data";
       break;
     case "lidar":
       cameraFeedSrc =
@@ -533,7 +539,7 @@ const HomePage = () => {
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
-                                <path d="M76 52H20v-8h56v8z" fill="currentColor" />
+                                <path d="M76 56H20v-12h56v12z" fill="currentColor" />
                               </svg>
                             </Button>
                             <Button
@@ -550,16 +556,14 @@ const HomePage = () => {
                                 xmlns="http://www.w3.org/2000/svg"
                               >
                                 <path
-                                  d="M76 52H52v24h-8V52H20v-8h24V20h8v24h24v8z"
+                                  d="M76 56H54v22h-12V56H20v-12h22V22h12v22h22v12z"
                                   fill="currentColor"
                                 />
                               </svg>
                             </Button>
-                          </SpaceBetween>
-                          <Box variant="small" color="text-body-secondary">
+                            <Box variant="small" color="text-body-secondary">
                               Use -5 / +5 with caution, increased risk of crashing!
                             </Box>
-                          <SpaceBetween size="l" direction="horizontal">
                             <Button
                               variant="normal"
                               onClick={() => handleThrottleFive("down")}
@@ -573,12 +577,12 @@ const HomePage = () => {
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
-                                <text 
-                                  x="48" 
-                                  y="48" 
-                                  fill="currentColor" 
-                                  fontSize="80" 
-                                  fontFamily="OpenSans" 
+                                <text
+                                  x="48"
+                                  y="48"
+                                  fill="currentColor"
+                                  fontSize="80"
+                                  fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
                                   fontWeight="bold"
                                   textAnchor="middle"
                                   dominantBaseline="central"
@@ -600,12 +604,12 @@ const HomePage = () => {
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
-                                <text 
-                                  x="48" 
-                                  y="48" 
-                                  fill="currentColor" 
-                                  fontSize="80" 
-                                  fontFamily="OpenSans" 
+                                <text
+                                  x="48"
+                                  y="48"
+                                  fill="currentColor"
+                                  fontSize="80"
+                                  fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
                                   fontWeight="bold"
                                   textAnchor="middle"
                                   dominantBaseline="central"
@@ -660,7 +664,7 @@ const HomePage = () => {
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <path d="M76 52H20v-8h56v8z" fill="currentColor" />
+                              <path d="M76 56H20v-12h56v12z" fill="currentColor" />
                             </svg>
                           </Button>
                           <Button
@@ -676,13 +680,14 @@ const HomePage = () => {
                               xmlns="http://www.w3.org/2000/svg"
                             >
                               <path
-                                d="M76 52H52v24h-8V52H20v-8h24V20h8v24h24v8z"
+                                d="M76 56H54v22h-12V56H20v-12h22V22h12v22h22v12z"
                                 fill="currentColor"
                               />
                             </svg>
                           </Button>
-                        </SpaceBetween>
-                        <SpaceBetween size="l" direction="horizontal">
+                          <Box variant="small" color="text-body-secondary">
+                            Use -5 / +5 with caution, increased risk of crashing!
+                          </Box>
                           <Button
                             variant="normal"
                             onClick={() => handleThrottleFive("down")}
@@ -696,12 +701,12 @@ const HomePage = () => {
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <text 
-                                x="48" 
-                                y="48" 
-                                fill="currentColor" 
-                                fontSize="80" 
-                                fontFamily="Arial, sans-serif" 
+                              <text
+                                x="48"
+                                y="48"
+                                fill="currentColor"
+                                fontSize="80"
+                                fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
                                 fontWeight="bold"
                                 textAnchor="middle"
                                 dominantBaseline="central"
@@ -723,12 +728,12 @@ const HomePage = () => {
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <text 
-                                x="48" 
-                                y="48" 
-                                fill="currentColor" 
-                                fontSize="80" 
-                                fontFamily="Arial, sans-serif" 
+                              <text
+                                x="48"
+                                y="48"
+                                fill="currentColor"
+                                fontSize="80"
+                                fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
                                 fontWeight="bold"
                                 textAnchor="middle"
                                 dominantBaseline="central"
