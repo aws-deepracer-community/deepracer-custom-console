@@ -45,7 +45,6 @@ export default function App() {
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/system-unavailable" element={<SystemUnavailablePage />} />
-              <Route path="/test_login" element={<LoginPage />} />
               <Route path="/logout" element={<LoginPage />} />
 
               {/* Protected routes */}
