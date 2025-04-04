@@ -53,7 +53,7 @@ export default function NavigationPanel({ battery }: BatteryProps) {
     } catch (error) {
       console.error("Error stopping vehicle:", error);
     }
-    ApiHelper.post<DriveResponse>("emergency_stop", {}).catch((error) =>
+    ApiHelper.post<DriveResponse>("emergency_stop", {usb_reset: true}).catch((error) =>
       console.error("Error in emergency stop:", error)
     );
   };
