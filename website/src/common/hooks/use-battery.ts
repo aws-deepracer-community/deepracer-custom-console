@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./use-authentication";
 import axios from "axios";
 import { FlashbarProps } from "@cloudscape-design/components";
 
@@ -36,53 +37,66 @@ export const useBatteryProvider = () => {
   const [batteryErrorDismissed, setBatteryErrorDismissed] = useState(false);
   const [hasInitialReading, setHasInitialReading] = useState(false);
   const [pageLoadTime] = useState<number>(Date.now());
-  
+  const { isAuthenticated } = useAuth();
+
   // Battery notifications state
-  const [batteryFlashbarItems, setBatteryFlashbarItems] = useState<FlashbarProps.MessageDefinition[]>([]);
+  const [batteryFlashbarItems, setBatteryFlashbarItems] = useState<
+    FlashbarProps.MessageDefinition[]
+  >([]);
 
   // Update battery notifications whenever relevant state changes
   useEffect(() => {
     const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
     const notifications: FlashbarProps.MessageDefinition[] = [];
 
-    // Battery error notification
-    if ((batteryError || (!hasInitialReading && hasBeenTenSeconds)) && !batteryErrorDismissed) {
-      notifications.push({
-        type: "error" as FlashbarProps.Type,
-        content: !hasInitialReading && hasBeenTenSeconds
-          ? "Unable to get battery reading"
-          : "Vehicle battery is not connected",
-        dismissible: true,
-        dismissLabel: "Dismiss message",
-        id: "battery-error",
-        onDismiss: () => setBatteryErrorDismissed(true),
-      });
-    }
+    // Only show notifications if authenticated
+    if (isAuthenticated) {
+      // Battery error notification
+      if ((batteryError || (!hasInitialReading && hasBeenTenSeconds)) && !batteryErrorDismissed) {
+        notifications.push({
+          type: "error" as FlashbarProps.Type,
+          content:
+            !hasInitialReading && hasBeenTenSeconds
+              ? "Unable to get battery reading"
+              : "Vehicle battery is not connected",
+          dismissible: true,
+          dismissLabel: "Dismiss message",
+          id: "battery-error",
+          onDismiss: () => setBatteryErrorDismissed(true),
+        });
+      }
 
-    // Battery warning notification
-    if (batteryLevel <= 40 && !batteryError && !batteryWarningDismissed && hasInitialReading) {
-      notifications.push({
-        type: "warning" as FlashbarProps.Type,
-        content: `Battery Level is at ${batteryLevel}%`,
-        dismissible: true,
-        dismissLabel: "Dismiss message",
-        id: "battery-warning",
-        onDismiss: () => setBatteryWarningDismissed(true),
-      });
+      // Battery warning notification
+      if (batteryLevel <= 40 && !batteryError && !batteryWarningDismissed && hasInitialReading) {
+        notifications.push({
+          type: "warning" as FlashbarProps.Type,
+          content: `Battery Level is at ${batteryLevel}%`,
+          dismissible: true,
+          dismissLabel: "Dismiss message",
+          id: "battery-warning",
+          onDismiss: () => setBatteryWarningDismissed(true),
+        });
+      }
     }
 
     setBatteryFlashbarItems(notifications);
   }, [
-    batteryLevel, 
-    batteryError, 
-    hasInitialReading, 
-    batteryWarningDismissed, 
-    batteryErrorDismissed, 
-    pageLoadTime
+    batteryLevel,
+    batteryError,
+    hasInitialReading,
+    batteryWarningDismissed,
+    batteryErrorDismissed,
+    pageLoadTime,
+    isAuthenticated,
   ]);
 
   // Battery status management
   useEffect(() => {
+    // Don't fetch battery data if not authenticated
+    if (!isAuthenticated) {
+      return;
+    }
+
     let isSubscribed = true;
 
     const updateBatteryStatus = async () => {
@@ -99,7 +113,9 @@ export const useBatteryProvider = () => {
               setBatteryErrorDismissed(false);
             } else {
               const calculatedLevel = (batteryData.battery_level / 10) * 100;
-              console.debug(`Setting battery level to ${calculatedLevel}% (raw: ${batteryData.battery_level})`);
+              console.debug(
+                `Setting battery level to ${calculatedLevel}% (raw: ${batteryData.battery_level})`
+              );
               setBatteryError(false);
               setBatteryLevel(calculatedLevel);
               setBatteryErrorDismissed(false);
@@ -133,7 +149,7 @@ export const useBatteryProvider = () => {
             status: error.response?.status,
             statusText: error.response?.statusText,
             data: error.response?.data,
-            message: error.message
+            message: error.message,
           });
         } else {
           console.error("Unknown error fetching battery status:", error);
@@ -153,7 +169,7 @@ export const useBatteryProvider = () => {
       isSubscribed = false;
       clearInterval(batteryInterval);
     };
-  }, []);
+  }, [isAuthenticated]); // Add isAuthenticated as a dependency
 
   const batteryContextValue: BatteryState = {
     batteryLevel,

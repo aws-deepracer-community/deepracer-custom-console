@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { FlashbarProps } from "@cloudscape-design/components";
 import { ApiHelper } from "../helpers/api-helper";
+import { useAuth } from "./use-authentication";
 
 // Types for model-related responses
 interface ModelResponse {
@@ -68,6 +69,7 @@ export const useModelsProvider = () => {
     success: null,
     error: null,
   });
+  const { isAuthenticated } = useAuth();
 
   // Add state for flashbar items
   const [modelFlashbarItems, setModelFlashbarItems] = useState<FlashbarProps.MessageDefinition[]>(
@@ -81,6 +83,11 @@ export const useModelsProvider = () => {
 
   // Function to fetch available models
   const fetchModels = useCallback(async () => {
+    // Don't fetch if not authenticated
+    if (!isAuthenticated) {
+      return [];
+    }
+
     try {
       const response = await ApiHelper.get<ModelsResponse>("models");
       if (response) {
@@ -108,10 +115,15 @@ export const useModelsProvider = () => {
       console.error("Error fetching models:", error);
       return [];
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Function to check if a model is currently loaded
   const checkModelLoadStatus = useCallback(async () => {
+    // Don't check if not authenticated
+    if (!isAuthenticated) {
+      return false;
+    }
+
     try {
       const response = await ApiHelper.get<ModelLoadingResponse>("isModelLoading");
       if (response?.isModelLoading === "loaded" && response?.success) {
@@ -133,82 +145,95 @@ export const useModelsProvider = () => {
       setIsModelLoading(false);
       return false;
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Function to poll for model loading status with retry limit
-  const pollModelLoadingStatus = useCallback((retryCount = 0) => {
-    // Maximum number of retries (30 seconds with 1-second interval)
-    const MAX_RETRIES = 30;
+  const pollModelLoadingStatus = useCallback(
+    (retryCount = 0) => {
+      // Don't poll if not authenticated
+      if (!isAuthenticated) {
+        return;
+      }
 
-    if (retryCount >= MAX_RETRIES) {
-      // Too many retries, stop polling
-      setLoadStatus({
-        loading: false,
-        success: false,
-        error: "Model loading timed out",
-      });
-      return;
-    }
+      // Maximum number of retries (30 seconds with 1-second interval)
+      const MAX_RETRIES = 30;
 
-    // Check model status
-    ApiHelper.get<ModelLoadingResponse>("isModelLoading")
-      .then((response) => {
-        if (response?.success) {
-          if (response.isModelLoading === "loaded") {
-            // Model loaded successfully
-            setIsModelLoaded(true);
-            setIsModelLoading(false);
-            setLoadStatus({
-              loading: false,
-              success: true,
-              error: null,
-            });
-          } else if (response.isModelLoading === "loading") {
-            // Still loading, continue polling
-            setIsModelLoaded(false);
-            setIsModelLoading(true);
-            setTimeout(() => pollModelLoadingStatus(retryCount + 1), 1000);
-          } else if (response.isModelLoading === "failed") {
-            // Loading failed
+      if (retryCount >= MAX_RETRIES) {
+        // Too many retries, stop polling
+        setLoadStatus({
+          loading: false,
+          success: false,
+          error: "Model loading timed out",
+        });
+        return;
+      }
+
+      // Check model status
+      ApiHelper.get<ModelLoadingResponse>("isModelLoading")
+        .then((response) => {
+          if (response?.success) {
+            if (response.isModelLoading === "loaded") {
+              // Model loaded successfully
+              setIsModelLoaded(true);
+              setIsModelLoading(false);
+              setLoadStatus({
+                loading: false,
+                success: true,
+                error: null,
+              });
+            } else if (response.isModelLoading === "loading") {
+              // Still loading, continue polling
+              setIsModelLoaded(false);
+              setIsModelLoading(true);
+              setTimeout(() => pollModelLoadingStatus(retryCount + 1), 1000);
+            } else if (response.isModelLoading === "failed") {
+              // Loading failed
+              setIsModelLoaded(false);
+              setIsModelLoading(false);
+              setLoadStatus({
+                loading: false,
+                success: false,
+                error: "Model loading failed",
+              });
+            } else {
+              // Unknown state, try again
+              setIsModelLoaded(false);
+              setIsModelLoading(false);
+              setTimeout(() => pollModelLoadingStatus(retryCount + 1), 1000);
+            }
+          } else {
+            // API call failed
             setIsModelLoaded(false);
             setIsModelLoading(false);
             setLoadStatus({
               loading: false,
               success: false,
-              error: "Model loading failed",
+              error: "Error checking model loading status",
             });
-          } else {
-            // Unknown state, try again
-            setIsModelLoaded(false);
-            setIsModelLoading(false);
-            setTimeout(() => pollModelLoadingStatus(retryCount + 1), 1000);
           }
-        } else {
-          // API call failed
+        })
+        .catch((error) => {
+          console.error("Error polling model status:", error);
           setIsModelLoaded(false);
           setIsModelLoading(false);
           setLoadStatus({
             loading: false,
             success: false,
-            error: "Error checking model loading status",
+            error: error instanceof Error ? error.message : "Error checking model status",
           });
-        }
-      })
-      .catch((error) => {
-        console.error("Error polling model status:", error);
-        setIsModelLoaded(false);
-        setIsModelLoading(false);
-        setLoadStatus({
-          loading: false,
-          success: false,
-          error: error instanceof Error ? error.message : "Error checking model status",
         });
-      });
-  }, []);
+    },
+    [isAuthenticated]
+  );
 
   // Function to load a model
   const loadModel = useCallback(
     async (modelName: string) => {
+      // Don't load if not authenticated
+      if (!isAuthenticated) {
+        return false;
+      }
+
       try {
         // Reset states
         setLoadStatus({
@@ -250,17 +275,38 @@ export const useModelsProvider = () => {
         return false;
       }
     },
-    [pollModelLoadingStatus]
+    [pollModelLoadingStatus, isAuthenticated]
   );
 
   // Function to reload models list
   const reloadModels = useCallback(async () => {
+    // Don't reload if not authenticated
+    if (!isAuthenticated) {
+      return;
+    }
+
     await fetchModels();
     await checkModelLoadStatus();
-  }, [fetchModels, checkModelLoadStatus]);
+  }, [fetchModels, checkModelLoadStatus, isAuthenticated]);
 
   // Initialize models and check status on mount
   useEffect(() => {
+    // Don't initialize if not authenticated
+    if (!isAuthenticated) {
+      // Reset state when authentication is lost
+      setModelOptions([]);
+      setSelectedModel(null);
+      setIsModelLoaded(false);
+      setIsModelLoading(false);
+      setLoadStatus({
+        loading: false,
+        success: null,
+        error: null,
+      });
+      setModelFlashbarItems([]);
+      return;
+    }
+
     const initialize = async () => {
       const options = await fetchModels();
       await checkModelLoadStatus();
@@ -276,10 +322,16 @@ export const useModelsProvider = () => {
     };
 
     initialize();
-  }, [fetchModels, checkModelLoadStatus]);
+  }, [fetchModels, checkModelLoadStatus, isAuthenticated]);
 
   // Update flashbar items based on loadStatus
   useEffect(() => {
+    // Don't show flashbar items if not authenticated
+    if (!isAuthenticated) {
+      setModelFlashbarItems([]);
+      return;
+    }
+
     if (loadStatus.loading) {
       setModelFlashbarItems([
         {
@@ -312,7 +364,7 @@ export const useModelsProvider = () => {
         },
       ]);
     }
-  }, [loadStatus, clearModelFlashbar]);
+  }, [loadStatus, clearModelFlashbar, isAuthenticated]);
 
   // Prepare context value
   const contextValue: ModelsContextState = {

@@ -13,6 +13,7 @@ import {
 import * as React from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../common/hooks/use-authentication";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export default () => {
@@ -21,11 +22,13 @@ export default () => {
   const [csrfToken, setCsrfToken] = React.useState("");
   const [error, setError] = React.useState("");
   const navigate = useNavigate();
-
+  const { login, logout } = useAuth();
+  
   // Run handleLogout only once when component mounts
   React.useEffect(() => {
     const handleLogout = async () => {
       try {
+        logout();
         const response = await axios.get("/redirect_login");
         console.log("Vehicle Logged Out:", response.data);
       } catch (error) {
@@ -41,7 +44,7 @@ export default () => {
     if (urlParams.has("epwd")) return;
 
     handleLogout();
-  }, []);
+  }, [logout]);
 
   // Generate and set up CSRF token on component mount
   React.useEffect(() => {
@@ -93,6 +96,7 @@ export default () => {
           // The cookies will be automatically stored by the browser
           // You can verify the cookies are set using:
           console.log("Cookies set:", document.cookie);
+          login();
           navigate("/home");
         }
       } catch (error) {

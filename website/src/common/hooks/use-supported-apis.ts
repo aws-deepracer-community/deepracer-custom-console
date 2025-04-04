@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { ApiHelper } from "../helpers/api-helper";
+import { useAuth } from "./use-authentication";
 
 interface SupportedApisState {
   supportedApis: string[];
@@ -23,8 +24,18 @@ export const useSupportedApisProvider = () => {
   const [isEmergencyStopSupported, setIsEmergencyStopSupported] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    // Don't fetch supported APIs if not authenticated
+    if (!isAuthenticated) {
+      setSupportedApis([]);
+      setIsEmergencyStopSupported(false);
+      setIsLoading(false);
+      setHasError(false);
+      return;
+    }
+
     let isSubscribed = true;
 
     const checkSupportedApis = async () => {
@@ -65,7 +76,7 @@ export const useSupportedApisProvider = () => {
     return () => {
       isSubscribed = false;
     };
-  }, []);
+  }, [isAuthenticated]); // Add isAuthenticated as a dependency
 
   const supportedApisContextValue: SupportedApisState = {
     supportedApis,

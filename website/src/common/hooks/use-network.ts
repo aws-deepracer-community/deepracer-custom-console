@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { useAuth } from "./use-authentication";
 
 // Constants
 const NETWORK_INTERVAL_MS = 55000;
@@ -27,9 +28,19 @@ export const useNetworkProvider = () => {
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
+  const { isAuthenticated } = useAuth();
 
   // Network status management
   useEffect(() => {
+    // Don't fetch network details if not authenticated
+    if (!isAuthenticated) {
+      setSsid("");
+      setIpAddresses([]);
+      setIsLoading(false);
+      setHasError(false);
+      return;
+    }
+
     let isSubscribed = true;
 
     const getNetworkStatus = async () => {
@@ -37,7 +48,9 @@ export const useNetworkProvider = () => {
         setIsLoading(true);
         const response = await axios.get("/api/get_network_details");
         if (response.data?.success && isSubscribed) {
-          console.debug(`Success! SSID: ${response.data.SSID}, IP Address: ${response.data.ip_address}`);
+          console.debug(
+            `Success! SSID: ${response.data.SSID}, IP Address: ${response.data.ip_address}`
+          );
           setSsid(response.data.SSID);
           setIpAddresses(response.data.ip_address.split(",").map((ip: string) => ip.trim()));
           setHasError(false);
@@ -53,12 +66,12 @@ export const useNetworkProvider = () => {
             status: error.response?.status,
             statusText: error.response?.statusText,
             data: error.response?.data,
-            message: error.message
+            message: error.message,
           });
         } else {
           console.error("Unknown error fetching network status:", error);
         }
-        
+
         if (isSubscribed) {
           console.debug("Setting network error state due to exception");
           setSsid("");
@@ -83,7 +96,7 @@ export const useNetworkProvider = () => {
       isSubscribed = false;
       clearInterval(networkInterval);
     };
-  }, []);
+  }, [isAuthenticated]); // Add isAuthenticated as a dependency
 
   const networkContextValue: NetworkState = {
     ssid,

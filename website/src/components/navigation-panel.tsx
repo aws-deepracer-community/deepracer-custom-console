@@ -2,7 +2,6 @@ import { SideNavigation, SideNavigationProps, SpaceBetween } from "@cloudscape-d
 import Button from "@cloudscape-design/components/button";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import ProgressBar from "@cloudscape-design/components/progress-bar";
-import axios from "axios";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { APP_NAME } from "../common/constants";
@@ -35,13 +34,7 @@ export default function NavigationPanel({ battery }: BatteryProps) {
   const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
 
   const handleLogout = async () => {
-    try {
-      const response = await axios.get("/redirect_login");
-      console.log("Vehicle Logged Out:", response.data);
-    } catch (error) {
-      console.error("Error logging out vehicle:", error);
-    }
-    navigate("/login");
+    navigate("/logout");
   };
 
   const handleEmergencyStop = () => {
