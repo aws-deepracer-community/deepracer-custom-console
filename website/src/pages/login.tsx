@@ -20,11 +20,15 @@ export default () => {
   const [checked, setChecked] = React.useState(false);
   const [csrfToken, setCsrfToken] = React.useState("");
   const [error, setError] = React.useState("");
+  const [hasCheckedSession, setHasCheckedSession] = React.useState(false);
   const navigate = useNavigate();
 
   // Run handleLogout only once when component mounts
   React.useEffect(() => {
     const handleLogout = async () => {
+      if (hasCheckedSession) return; // Prevent multiple calls
+      setHasCheckedSession(true);
+
       try {
         const response = await axios.get("/redirect_login");
         console.log("Vehicle Logged Out:", response.data);
@@ -38,10 +42,11 @@ export default () => {
     };
 
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has("epwd")) return;
+    // Skip logout if we have an epwd parameter or if we've already checked the session
+    if (urlParams.has("epwd") || hasCheckedSession) return;
 
     handleLogout();
-  }, []);
+  }, [hasCheckedSession]);
 
   // Generate and set up CSRF token on component mount
   React.useEffect(() => {
