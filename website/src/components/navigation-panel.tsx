@@ -37,18 +37,27 @@ export default function NavigationPanel({ battery }: BatteryProps) {
     navigate("/logout");
   };
 
-  const handleEmergencyStop = () => {
+  const handleEmergencyStop = async () => {
     try {
-      const response = ApiHelper.post<DriveResponse>("start_stop", {
+      await ApiHelper.post<DriveResponse>("start_stop", {
         start_stop: "stop",
-      });
-      console.log("Vehicle stopped:", response);
+      })
+        .then((response) => {
+          console.log("Vehicle stopped:", response);
+          // Now call emergency_stop after start_stop completes successfully
+          return ApiHelper.post<DriveResponse>("emergency_stop", {});
+        })
+        .catch((error) => {
+          console.error("Error stopping vehicle:", error);
+          // Still try emergency stop even if start_stop fails
+          return ApiHelper.post<DriveResponse>("emergency_stop", {});
+        })
+        .catch((error) => {
+          console.error("Error in emergency stop:", error);
+        });
     } catch (error) {
       console.error("Error stopping vehicle:", error);
     }
-    ApiHelper.post<DriveResponse>("emergency_stop", {}).catch((error) =>
-      console.error("Error in emergency stop:", error)
-    );
   };
 
   const [items] = useState<SideNavigationProps.Item[]>(() => {
@@ -166,7 +175,7 @@ export default function NavigationPanel({ battery }: BatteryProps) {
                     data-testid="emergency-stop"
                     fullWidth={true}
                   >
-                    Emergency Stop
+                    Emergency Stop & Reset
                   </Button>
                 )}
                 <Button fullWidth={true} onClick={handleLogout}>
