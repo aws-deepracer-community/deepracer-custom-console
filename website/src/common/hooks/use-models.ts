@@ -118,7 +118,7 @@ export const useModelsProvider = () => {
       console.error("Error fetching models:", error);
       return [];
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isModelLoaded]);
 
   // Function to check if a model is currently loaded
   const checkModelLoadStatus = useCallback(async () => {
