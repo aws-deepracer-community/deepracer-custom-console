@@ -103,8 +103,11 @@ export const useModelsProvider = () => {
         const selectedModelName = localStorage.getItem("selectedModelName");
         if (selectedModelName) {
           const previousModel = options.find((model) => model.value === selectedModelName);
-          if (previousModel) {
+          if (previousModel && isModelLoaded) {
             setSelectedModel(previousModel);
+          } else {
+            // If the previous model is not found, clear the selection
+            setSelectedModel(null); 
           }
         }
 

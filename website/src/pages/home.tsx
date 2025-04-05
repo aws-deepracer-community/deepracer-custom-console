@@ -18,6 +18,7 @@ import { Joystick } from "react-joystick-component";
 import BaseAppLayout from "../components/base-app-layout";
 import { ApiHelper } from "../common/helpers/api-helper";
 import { useModels } from "../common/hooks/use-models";
+import { useAuth } from "../common/hooks/use-authentication";
 
 // Add interfaces for API responses
 interface SensorStatusResponse {
@@ -50,13 +51,9 @@ const HomePage = () => {
   const [expandedCameraSection, setExpandedCameraSection] = useState(true);
 
   // Get all model-related data from context
-  const {
-    modelOptions,
-    selectedModel,
-    isModelLoaded,
-    setSelectedModel,
-    loadModel,
-  } = useModels();
+  const { modelOptions, selectedModel, isModelLoaded, setSelectedModel, loadModel, reloadModels } =
+    useModels();
+  const { isAuthenticated } = useAuth();
 
   // Check for scrollbars after render and on resize
   useLayoutEffect(() => {
@@ -96,6 +93,12 @@ const HomePage = () => {
       handleStop();
     };
   }, []);
+
+  const handleReloadModels = async () => {
+    if (isAuthenticated) {
+      reloadModels();
+    }
+  };
 
   const setDriveMode = async (mode: "auto" | "manual") => {
     try {
@@ -372,14 +375,21 @@ const HomePage = () => {
                             <Box color="text-body-secondary">
                               Choose a model to autonomously drive
                             </Box>
-                            <Select
-                              options={modelOptions}
-                              selectedOption={selectedModel}
-                              onChange={handleModelSelect}
-                              placeholder="Select a model"
-                              expandToViewport
-                              triggerVariant="option"
-                            />
+                            <SpaceBetween size="xs" direction="horizontal" alignItems="center">
+                              <Select
+                                options={modelOptions}
+                                selectedOption={selectedModel}
+                                onChange={handleModelSelect}
+                                placeholder="Select a reinforcement model"
+                                expandToViewport
+                                triggerVariant="option"
+                              />
+                              <Button
+                                variant="normal"
+                                onClick={handleReloadModels}
+                                iconName="refresh"
+                              />
+                            </SpaceBetween>
                             <Box variant="small" color="text-body-secondary">
                               Vehicle's sensor configuration must match the model's sensor
                               configuration to enable autonomous driving.
