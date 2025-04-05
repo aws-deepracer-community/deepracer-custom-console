@@ -109,7 +109,7 @@ export default () => {
         console.error("Login error:", error);
       }
     },
-    [csrfToken, navigate]
+    [csrfToken, navigate, login]
   );
 
   // Add a useEffect to check for password in URL and auto-login
