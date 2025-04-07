@@ -49,6 +49,10 @@ const NetworkSettingsContainer = () => {
         </Header>
       }
     >
+        <SpaceBetween direction="vertical" size="xs">
+          <p>Network refresh happens at 1 minute intervals, please be patient to see recent changes such as connecting via USB. </p>
+          <p></p>
+        </SpaceBetween>
         <KeyValuePairs
           columns={3}
           items={[
