@@ -94,6 +94,31 @@ const HomePage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      switch (event.key.toLowerCase()) {
+        case '+':
+          handleThrottle('up');
+          break;
+        case '-':
+          handleThrottle('down');
+          break;
+        case 'l':
+          handleThrottleFive('up');
+          break;
+        case 'm':
+          handleThrottleFive('down');
+          break;
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+    };
+  }, []);
+
   const handleReloadModels = async () => {
     if (isAuthenticated) {
       reloadModels();
