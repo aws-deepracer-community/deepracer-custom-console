@@ -24,11 +24,17 @@ export abstract class ApiHelper {
         error.code === "ERR_CONNECTION_RESET" ||
         error.code === "ECONNABORTED" ||
         error.code === "ERR_NETWORK" ||
+        error.message?.includes("timeout") ||
         error.message === "Network Error" ||
         (error.request && error.request.status === 0)
       ) {
-        console.log("Unable to connect to server", error);
-        window.location.href = "/#/system-unavailable";
+        console.log("Unable to connect to server", {
+          code: error.code,
+          message: error.message,
+          status: error.request?.status
+        });
+        // Force redirect using document.location for more reliable navigation
+        document.location.href = "/#/system-unavailable";
         return null;
       }
       console.error("Error getting api " + path + ":", error);
@@ -59,11 +65,17 @@ export abstract class ApiHelper {
         error.code === "ERR_CONNECTION_RESET" ||
         error.code === "ECONNABORTED" ||
         error.code === "ERR_NETWORK" ||
+        error.message?.includes("timeout") ||
         error.message === "Network Error" ||
         (error.request && error.request.status === 0)
       ) {
-        console.log("Unable to connect to server", error);
-        window.location.href = "/#/system-unavailable";
+        console.log("Unable to connect to server", {
+          code: error.code,
+          message: error.message,
+          status: error.request?.status
+        });
+        // Force redirect using document.location for more reliable navigation
+        document.location.href = "/#/system-unavailable";
         return null;
       }
       console.error("Error posting to api " + path + ":", error);
