@@ -1,8 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./use-authentication";
-import axios from "axios";
 import { FlashbarProps } from "@cloudscape-design/components";
+import { ApiHelper } from "../helpers/api-helper";
 
+// Add new interface for API response
+interface BatteryResponse {
+  success: boolean;
+  battery_level: number;
+}
 // Constants
 const BATTERY_INTERVAL_MS = 10000;
 
@@ -141,19 +146,10 @@ export const useBatteryProvider = () => {
 
     const getBatteryStatus = async () => {
       try {
-        const response = await axios.get("/api/get_battery_level");
-        return response.data;
+        const response = await ApiHelper.get<BatteryResponse>("get_battery_level");
+        return response;
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error("Axios error fetching battery status:", {
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            data: error.response?.data,
-            message: error.message,
-          });
-        } else {
-          console.error("Unknown error fetching battery status:", error);
-        }
+        console.error("Error fetching battery status:", error);
         return null;
       }
     };
