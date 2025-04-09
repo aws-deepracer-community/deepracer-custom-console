@@ -21,7 +21,8 @@ export abstract class ApiHelper {
         (error.response?.status >= 500 && error.response?.status < 600) ||
         error.code === "ERR_CONNECTION_REFUSED" ||
         error.code === "ERR_CONNECTION_TIMED_OUT"  ||
-        error.code === "ERR_CONNECTION_RESET"
+        error.code === "ERR_CONNECTION_RESET" ||
+        error.code === "ECONNABORTED"
       ) {
         console.log("Unable to connect to server");
         window.location.href = "/#/system-unavailable";
@@ -52,7 +53,8 @@ export abstract class ApiHelper {
         (error.response?.status >= 500 && error.response?.status < 600) ||
         error.code === "ERR_CONNECTION_REFUSED" ||
         error.code === "ERR_CONNECTION_TIMED_OUT"  ||
-        error.code === "ERR_CONNECTION_RESET"
+        error.code === "ERR_CONNECTION_RESET" ||
+        error.code === "ECONNABORTED"
       ) {
         console.log("Unable to connect to server");
         window.location.href = "/#/system-unavailable";
