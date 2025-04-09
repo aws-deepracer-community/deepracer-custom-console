@@ -22,9 +22,12 @@ export abstract class ApiHelper {
         error.code === "ERR_CONNECTION_REFUSED" ||
         error.code === "ERR_CONNECTION_TIMED_OUT"  ||
         error.code === "ERR_CONNECTION_RESET" ||
-        error.code === "ECONNABORTED"
+        error.code === "ECONNABORTED" ||
+        error.code === "ERR_NETWORK" ||
+        error.message === "Network Error" ||
+        (error.request && error.request.status === 0)
       ) {
-        console.log("Unable to connect to server");
+        console.log("Unable to connect to server", error);
         window.location.href = "/#/system-unavailable";
         return null;
       }
@@ -54,9 +57,12 @@ export abstract class ApiHelper {
         error.code === "ERR_CONNECTION_REFUSED" ||
         error.code === "ERR_CONNECTION_TIMED_OUT"  ||
         error.code === "ERR_CONNECTION_RESET" ||
-        error.code === "ECONNABORTED"
+        error.code === "ECONNABORTED" ||
+        error.code === "ERR_NETWORK" ||
+        error.message === "Network Error" ||
+        (error.request && error.request.status === 0)
       ) {
-        console.log("Unable to connect to server");
+        console.log("Unable to connect to server", error);
         window.location.href = "/#/system-unavailable";
         return null;
       }
