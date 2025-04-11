@@ -865,7 +865,7 @@ const AboutContainer = () => {
                   softwareInfo.software_update_available == "Unknown"
                     ? true
                     : softwareInfo.software_update_available
-                    ? false
+                    ? true
                     : true
                 }
               >
