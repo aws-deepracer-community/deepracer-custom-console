@@ -638,7 +638,6 @@ const HomePage = () => {
                             variant="normal"
                             onClick={() => handleThrottleFive("down")}
                             data-testid="decrease-speed"
-                            disabled={!isModelLoaded}
                           >
                             <svg
                               width="96"
@@ -665,7 +664,6 @@ const HomePage = () => {
                             variant="primary"
                             onClick={() => handleThrottleFive("up")}
                             data-testid="increase-speed"
-                            disabled={!isModelLoaded}
                           >
                             <svg
                               width="96"
