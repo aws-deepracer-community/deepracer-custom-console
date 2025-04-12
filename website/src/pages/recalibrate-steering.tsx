@@ -269,6 +269,7 @@ export default function RecalibrateSteeringPage() {
                       Place your vehicle on the ground or other hard surface within eyesight. You
                       must be able to see the wheels during steering calibration.
                     </Box>
+                    <p />
                   </SpaceBetween>
                 </div>
                 <div>
@@ -337,6 +338,7 @@ export default function RecalibrateSteeringPage() {
                       <Button onClick={handleLeftSliderRight}>{">"}</Button>
                     </SpaceBetween>
                     <Box variant="p">Estimated angle: 26-32 degrees</Box>
+                    <p />
                   </SpaceBetween>
                 </div>
                 <div>
@@ -370,6 +372,7 @@ export default function RecalibrateSteeringPage() {
                       <Button onClick={handleRightSliderRight}>{">"}</Button>
                     </SpaceBetween>
                     <Box variant="p">Estimated angle: 26-32 degrees</Box>
+                    <p />
                   </SpaceBetween>
                 </div>
                 <div>
