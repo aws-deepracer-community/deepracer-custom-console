@@ -97,25 +97,25 @@ const HomePage = () => {
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key.toLowerCase()) {
-        case '+':
-          handleThrottle('up');
+        case "+":
+          handleAutoThrottle(1);
           break;
-        case '-':
-          handleThrottle('down');
+        case "-":
+          handleAutoThrottle(-1);
           break;
-        case 'l':
-          handleThrottleFive('up');
+        case "l":
+          handleAutoThrottle(5);
           break;
-        case 'm':
-          handleThrottleFive('down');
+        case "m":
+          handleAutoThrottle(-5);
           break;
       }
     };
 
-    window.addEventListener('keypress', handleKeyPress);
+    window.addEventListener("keypress", handleKeyPress);
 
     return () => {
-      window.removeEventListener('keypress', handleKeyPress);
+      window.removeEventListener("keypress", handleKeyPress);
     };
   }, []);
 
@@ -132,6 +132,10 @@ const HomePage = () => {
         drive_mode: mode,
       });
       console.log(`Drive mode set to ${mode}:`, response);
+
+      if (response?.success && mode === "auto") {
+        handleAutoThrottle(0);
+      }
     } catch (error) {
       console.error(`Error setting drive mode to ${mode}:`, error);
     }
@@ -206,9 +210,9 @@ const HomePage = () => {
     }
   };
 
-  const handleThrottle = (direction: "up" | "down") => {
+  const handleAutoThrottle = (change: number) => {
     setThrottle((prevThrottle) => {
-      const newThrottle = direction === "up" ? prevThrottle + 1 : prevThrottle - 1;
+      const newThrottle = Math.round(prevThrottle + change);
       ApiHelper.post<DriveResponse>("max_nav_throttle", {
         throttle: newThrottle,
       });
@@ -216,13 +220,9 @@ const HomePage = () => {
     });
   };
 
-  const handleThrottleFive = (direction: "up" | "down") => {
+  const handleManualThrottle = (change: number) => {
     setThrottle((prevThrottle) => {
-      const newThrottle = direction === "up" ? prevThrottle + 5 : prevThrottle - 5;
-      ApiHelper.post<DriveResponse>("max_nav_throttle", {
-        throttle: newThrottle,
-      });
-      return newThrottle;
+      return Math.round(prevThrottle + change);
     });
   };
 
@@ -243,13 +243,13 @@ const HomePage = () => {
 
     lastJoystickMoveTime.current = now;
     const steering = event.x;
-    const throttle = event.y;
-    console.log(`Joystick moved to x: ${steering}, y: ${throttle}`);
+    const joy_throttle = event.y;
+    console.log(`Joystick moved to x: ${steering}, y: ${joy_throttle}`);
     try {
       const modelResponse = axios.put(`/api/manual_drive`, {
         angle: steering,
-        throttle: throttle,
-        max_speed: 0.5,
+        throttle: joy_throttle * -1,
+        max_speed: throttle / 100.0,
       });
       console.log("Model API response:", modelResponse);
     } catch (error) {
@@ -470,7 +470,7 @@ const HomePage = () => {
                           <SpaceBetween size="l" direction="horizontal">
                             <Button
                               variant="normal"
-                              onClick={() => handleThrottle("down")}
+                              onClick={() => handleAutoThrottle(-1)}
                               data-testid="decrease-speed"
                               disabled={!isModelLoaded}
                             >
@@ -486,7 +486,7 @@ const HomePage = () => {
                             </Button>
                             <Button
                               variant="primary"
-                              onClick={() => handleThrottle("up")}
+                              onClick={() => handleAutoThrottle(1)}
                               data-testid="increase-speed"
                               disabled={!isModelLoaded}
                             >
@@ -510,7 +510,7 @@ const HomePage = () => {
                           <SpaceBetween size="l" direction="horizontal">
                             <Button
                               variant="normal"
-                              onClick={() => handleThrottleFive("down")}
+                              onClick={() => handleAutoThrottle(-5)}
                               data-testid="decrease-speed"
                               disabled={!isModelLoaded}
                             >
@@ -537,7 +537,7 @@ const HomePage = () => {
                             </Button>
                             <Button
                               variant="primary"
-                              onClick={() => handleThrottleFive("up")}
+                              onClick={() => handleAutoThrottle(5)}
                               data-testid="increase-speed"
                               disabled={!isModelLoaded}
                             >
@@ -598,7 +598,7 @@ const HomePage = () => {
                         <SpaceBetween size="l" direction="horizontal">
                           <Button
                             variant="normal"
-                            onClick={() => handleThrottle("down")}
+                            onClick={() => handleManualThrottle(-1)}
                             data-testid="decrease-speed"
                           >
                             <svg
@@ -613,7 +613,7 @@ const HomePage = () => {
                           </Button>
                           <Button
                             variant="primary"
-                            onClick={() => handleThrottle("up")}
+                            onClick={() => handleManualThrottle(1)}
                             data-testid="increase-speed"
                           >
                             <svg
@@ -636,9 +636,8 @@ const HomePage = () => {
                         <SpaceBetween size="l" direction="horizontal">
                           <Button
                             variant="normal"
-                            onClick={() => handleThrottleFive("down")}
+                            onClick={() => handleManualThrottle(-5)}
                             data-testid="decrease-speed"
-                            disabled={!isModelLoaded}
                           >
                             <svg
                               width="96"
@@ -663,9 +662,8 @@ const HomePage = () => {
                           </Button>
                           <Button
                             variant="primary"
-                            onClick={() => handleThrottleFive("up")}
+                            onClick={() => handleManualThrottle(5)}
                             data-testid="increase-speed"
-                            disabled={!isModelLoaded}
                           >
                             <svg
                               width="96"
