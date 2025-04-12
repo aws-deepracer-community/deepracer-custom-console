@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="306" height="159" viewBox="0 0 306 159" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g fill="none" fill-rule="evenodd" transform="translate(1 1)">
     <path stroke="#333333" stroke-opacity=".891" stroke-width="3" d="M1,154 L303,156" stroke-linecap="square"/>
-    <text fill="#16191F" font-family="AmazonEmber-Regular, Amazon Ember" font-size="14">
+    <text fill="#16191F" font-family="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif" font-size="14">
       <tspan x="1" y="146">Back</tspan>
     </text>
     <g transform="translate(16)">
@@ -353,7 +353,7 @@
       <path stroke="#000000" stroke-width="1.17" d="M133.633634,108.17561 C133.592483,108.801613 133.529921,109.240656 133.445946,109.492738 C133.361971,109.74482 133.174283,110.056997 132.882883,110.429268" stroke-linecap="square" transform="matrix(-1 0 0 1 266.517 0)"/>
       <path stroke="#000000" stroke-width="1.17" d="M86.3363363,108.17561 C86.2951862,108.801613 86.2326236,109.240656 86.1486486,109.492738 C86.0646737,109.74482 85.876986,110.056997 85.5855856,110.429268" stroke-linecap="square" transform="matrix(-1 0 0 1 171.922 0)"/>
     </g>
-    <text fill="#16191F" font-family="AmazonEmber-Regular, Amazon Ember" font-size="14">
+    <text fill="#16191F" font-family="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif" font-size="14">
       <tspan x="269" y="146">Front</tspan>
     </text>
   </g>

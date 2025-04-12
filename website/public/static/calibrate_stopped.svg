@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="306" height="209" viewBox="0 0 306 209" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g fill="none" fill-rule="evenodd" transform="translate(1 1)">
-    <text fill="#16191F" font-family="AmazonEmber-Regular, Amazon Ember" font-size="14">
+    <text fill="#16191F" font-family="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif" font-size="14">
       <tspan x="0" y="196">Back</tspan>
     </text>
-    <text fill="#16191F" font-family="AmazonEmber-Regular, Amazon Ember" font-size="14">
+    <text fill="#16191F" font-family="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif" font-size="14">
       <tspan x="268.728" y="196">Front</tspan>
     </text>
     <polyline fill="#FFFFFF" stroke="#527FFF" stroke-width="3" points="94 206 94 142 94 142 186 142 186 206"/>

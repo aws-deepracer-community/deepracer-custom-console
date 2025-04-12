@@ -11,10 +11,10 @@
         <polyline points="0 24.589 25 0 25 65"/>
         <path d="M49,24 L25,0"/>
       </g>
-      <text fill="#16191F" font-family="AmazonEmber-Regular, Amazon Ember" font-size="14">
+      <text fill="#16191F" font-family="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif" font-size="14">
         <tspan x="40.864" y="81">Front</tspan>
       </text>
-      <text fill="#16191F" font-family="AmazonEmber-Regular, Amazon Ember" font-size="14">
+      <text fill="#16191F" font-family="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif" font-size="14">
         <tspan x="43.111" y="271">Back</tspan>
       </text>
       <g stroke-width="2" transform="translate(0 93)">
