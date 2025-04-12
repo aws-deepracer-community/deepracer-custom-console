@@ -15,15 +15,14 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../common/hooks/use-authentication";
 
-// eslint-disable-next-line react-refresh/only-export-components
-export default () => {
+export default function Login() {
   const [value, setValue] = React.useState("");
   const [checked, setChecked] = React.useState(false);
   const [csrfToken, setCsrfToken] = React.useState("");
   const [error, setError] = React.useState("");
   const navigate = useNavigate();
   const { login, logout } = useAuth();
-  
+
   // Run handleLogout only once when component mounts
   React.useEffect(() => {
     const handleLogout = async () => {
@@ -42,7 +41,7 @@ export default () => {
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("epwd")) return;
-
+    console.debug("Handle logout called!"); // for troubleshooting
     handleLogout();
   }, [logout]);
 
@@ -89,6 +88,7 @@ export default () => {
         });
 
         if (response.data === "failure") {
+          console.log("Login failed");
           setError("Login failed - invalid credentials");
           setValue("");
         } else {
@@ -97,7 +97,7 @@ export default () => {
           // You can verify the cookies are set using:
           console.log("Cookies set:", document.cookie);
           login();
-          navigate("/home");
+          navigate("/home", { replace: true, state: { from: "/login" } });
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 400) {
@@ -169,7 +169,7 @@ export default () => {
                 {error}
               </Alert>
             )}
-            <form>
+            <form onSubmit={(e) => e.preventDefault()}>
               <FormField label="Password" stretch={true}>
                 <Input
                   onChange={({ detail }) => setValue(detail.value)}
@@ -207,4 +207,4 @@ export default () => {
       </Grid>
     </Box>
   );
-};
+}
