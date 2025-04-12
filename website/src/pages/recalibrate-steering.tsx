@@ -10,7 +10,6 @@ import {
   Header,
   Slider,
   SpaceBetween,
-  TextContent,
 } from "@cloudscape-design/components";
 import BaseAppLayout from "../components/base-app-layout";
 import { ApiHelper } from "../common/helpers/api-helper";
@@ -249,6 +248,9 @@ export default function RecalibrateSteeringPage() {
       content={
         <Grid gridDefinition={[{ colspan: 3 }, { colspan: 9 }]}>
           <div>
+            <Header variant="h3">
+              <span id="navigation-header">Steps</span>
+            </Header>
             <AnchorNavigation
               anchors={anchors.map((anchor) => ({
                 ...anchor,
@@ -260,14 +262,14 @@ export default function RecalibrateSteeringPage() {
             {activeAnchor === "#ground" && (
               <Grid gridDefinition={[{ colspan: 8 }, { colspan: 4 }]}>
                 <div>
-                  <TextContent>
+                  <SpaceBetween direction="vertical" size="xs">
                     <Header variant="h1">Vehicle Steering Recalibration</Header>
                     <Header variant="h2">Set vehicle on the ground</Header>
                     <Box variant="p">
                       Place your vehicle on the ground or other hard surface within eyesight. You
                       must be able to see the wheels during steering calibration.
                     </Box>
-                  </TextContent>
+                  </SpaceBetween>
                 </div>
                 <div>
                   <img src="static/calibrate_ground.svg" alt="Calibrate Ground" />
@@ -312,7 +314,7 @@ export default function RecalibrateSteeringPage() {
             {activeAnchor === "#left" && (
               <Grid gridDefinition={[{ colspan: 8 }, { colspan: 4 }]}>
                 <div>
-                  <SpaceBetween direction="vertical" size="l">
+                  <SpaceBetween direction="vertical" size="xs">
                     <Header variant="h1">Vehicle Steering Recalibration</Header>
                     <Header variant="h2">Maximum left steering</Header>
                     <Box variant="p">
@@ -345,7 +347,7 @@ export default function RecalibrateSteeringPage() {
             {activeAnchor === "#right" && (
               <Grid gridDefinition={[{ colspan: 8 }, { colspan: 4 }]}>
                 <div>
-                  <TextContent>
+                  <SpaceBetween direction="vertical" size="xs">
                     <Header variant="h1">Vehicle Steering Recalibration</Header>
                     <Header variant="h2">Maximum right steering</Header>
                     <Box variant="p">
@@ -368,7 +370,7 @@ export default function RecalibrateSteeringPage() {
                       <Button onClick={handleRightSliderRight}>{">"}</Button>
                     </SpaceBetween>
                     <Box variant="p">Estimated angle: 26-32 degrees</Box>
-                  </TextContent>
+                  </SpaceBetween>
                 </div>
                 <div>
                   <img src="static/calibrate_right.svg" alt="Calibrate Right" />

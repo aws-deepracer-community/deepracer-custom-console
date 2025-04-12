@@ -282,6 +282,9 @@ export default function RecalibrateSpeedPage() {
       content={
         <Grid gridDefinition={[{ colspan: 3 }, { colspan: 9 }]}>
           <div>
+            <Header variant="h3">
+              <span id="navigation-header">Steps</span>
+            </Header>
             <AnchorNavigation
               anchors={anchors.map((anchor) => ({
                 ...anchor,
