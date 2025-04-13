@@ -17,6 +17,7 @@ import {
   KeyValuePairs,
   StatusIndicator,
   InputProps,
+  Box,
 } from "@cloudscape-design/components";
 import { ApiHelper } from "../common/helpers/api-helper";
 
@@ -42,6 +43,11 @@ interface DeviceInfoResponse {
   success: boolean;
   hardware_version: string;
   software_version: string;
+  cpu_model?: string;
+  ram_amount?: string;
+  disk_amount?: string;
+  ros_distro?: string;
+  os_version?: string;
 }
 
 interface SoftwareUpdateResponse {
@@ -146,18 +152,13 @@ const NetworkSettingsContainer = () => {
               <Button onClick={() => navigate("/edit-network")}>Edit</Button>
             </SpaceBetween>
           }
+          description="Network refresh happens at 1 minute intervals, please be patient to see recent changes
+          such as connecting via USB."
         >
           Network Settings
         </Header>
       }
     >
-      <SpaceBetween direction="vertical" size="xs">
-        <p>
-          Network refresh happens at 1 minute intervals, please be patient to see recent changes
-          such as connecting via USB.{" "}
-        </p>
-        <p></p>
-      </SpaceBetween>
       <KeyValuePairs
         columns={3}
         items={[
@@ -273,20 +274,18 @@ const DeviceConsolePasswordContainer = () => {
       header={
         <Header
           actions={
-            <SpaceBetween direction="horizontal" size="xs">
               <Button onClick={() => showDevicePasswordModal(true)}>
                 Change Device Console Password
               </Button>
-            </SpaceBetween>
           }
+          description="A password is required to protect access to your AWS DeepRacer vehicle."
         >
           Device console password
         </Header>
       }
     >
       <SpaceBetween direction="vertical" size="xs">
-        <p>A password is required to protect access to your AWS DeepRacer vehicle. </p>
-        <p>
+        <Box>
           If you forget your password,{" "}
           <a
             href="https://docs.aws.amazon.com/console/deepracer/reset-your-password"
@@ -294,7 +293,7 @@ const DeviceConsolePasswordContainer = () => {
           >
             reset your password.{" "}
           </a>
-        </p>
+        </Box>
         {devicePasswordChangedSuccessVisible ? (
           <Alert
             onDismiss={() => {
@@ -821,11 +820,19 @@ const LedColorContainer = () => {
 };
 
 const AboutContainer = () => {
-  const [deviceInfo, setDeviceInfo] = useState({
+  const [deviceInfo, setDeviceInfo] = useState<{
+    hardware_version: string;
+    software_version: string;
+    cpu_model?: string;
+    ram_amount?: string;
+    disk_amount?: string;
+    ros_distro?: string;
+    os_version?: string;
+  }>({
     hardware_version: "Unknown",
     software_version: "Unknown",
   });
-  const [softwareInfo, setsoftwareInfo] = useState({
+  const [softwareInfo, setSoftwareInfo] = useState({
     software_update_available: "Unknown",
     mandatory_update: "Unknown",
   });
@@ -837,6 +844,11 @@ const AboutContainer = () => {
         setDeviceInfo({
           hardware_version: deviceData.hardware_version,
           software_version: deviceData.software_version,
+          cpu_model: deviceData.cpu_model || "Intel Atom™ Processor",
+          ram_amount: deviceData.ram_amount || "4 GB",
+          disk_amount: deviceData.disk_amount || "32 GB",
+          ros_distro: deviceData.ros_distro || "ROS2 Foxy",
+          os_version: deviceData.os_version || "Ubuntu OS 20.04.1 LTS",
         });
       }
       const softwareData = await ApiHelper.get<SoftwareUpdateResponse>(
@@ -846,7 +858,7 @@ const AboutContainer = () => {
         "get_mandatory_update_status"
       );
       if (softwareData?.success && mandatoryData?.success) {
-        setsoftwareInfo({
+        setSoftwareInfo({
           software_update_available: softwareData.status,
           mandatory_update: mandatoryData.status,
         });
@@ -873,6 +885,7 @@ const AboutContainer = () => {
               </Button>
             </SpaceBetween>
           }
+          description="AWS DeepRacer vehicle 1/18th scale 4WD monster truck chassis"
         >
           About
         </Header>
@@ -881,22 +894,12 @@ const AboutContainer = () => {
       {/* TO DO: Some Hardcoded values, need to create an API */}
       {/* TO DO: Need to code software update modal */}
       <SpaceBetween direction="vertical" size="m">
-        <TextContent>
-          <p>AWS DeepRacer vehicle 1/18th scale 4WD monster truck chassis</p>
-          <p>Ubuntu OS 20.04.1 LTS, Intel® OpenVINO™ toolkit, ROS2 Foxy</p>
-        </TextContent>
-        
         <KeyValuePairs
           columns={4}
           items={[
             {
-              label: "Hardware Version",
-              value:
-                deviceInfo.hardware_version == "Unknown" ? (
-                  <StatusIndicator type="warning">Unknown</StatusIndicator>
-                ) : (
-                  deviceInfo.hardware_version
-                ),
+              label: "Operating System",
+              value: deviceInfo.os_version + ", Intel® OpenVINO™ toolkit, " + deviceInfo.ros_distro,
             },
             {
               label: "Software Version",
@@ -929,14 +932,20 @@ const AboutContainer = () => {
                   <StatusIndicator type="success">Update not mandatory</StatusIndicator>
                 ),
             },
-          ]}
-        />
-        
-        <KeyValuePairs
-          columns={4}
-          items={[
-            { label: "Processor", value: "Intel Atom™ Processor" },
-            { label: "Memory", value: "4GB RAM/Storage 32 GB memory (expandable)" },
+            {
+              label: "Hardware Version",
+              value:
+                deviceInfo.hardware_version == "Unknown" ? (
+                  <StatusIndicator type="warning">Unknown</StatusIndicator>
+                ) : (
+                  deviceInfo.hardware_version
+                ),
+            },
+            { label: "Processor", value: deviceInfo.cpu_model },
+            {
+              label: "Memory",
+              value: deviceInfo.ram_amount + " RAM/" + deviceInfo.disk_amount + " Storage",
+            },
             { label: "Camera", value: "4MP with MJPEG" },
           ]}
         />
