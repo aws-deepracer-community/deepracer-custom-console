@@ -4,6 +4,7 @@ import { NetworkContext, useNetworkProvider } from "../common/hooks/use-network"
 import { SupportedApisContext, useSupportedApisProvider } from "../common/hooks/use-supported-apis";
 import { ModelsContext, useModelsProvider } from "../common/hooks/use-models";
 import { AuthContext, useAuthProvider } from "../common/hooks/use-authentication";
+import { PreferencesContext, usePreferencesProvider } from "../common/hooks/use-preferences";
 
 // Main Context Provider Component
 export const ContextProvider: React.FC<{
@@ -13,15 +14,18 @@ export const ContextProvider: React.FC<{
   const networkContextValue = useNetworkProvider();
   const supportedApisContextValue = useSupportedApisProvider();
   const modelsContextValue = useModelsProvider();
+  const preferencesContextValue = usePreferencesProvider();
 
   return (
-    <BatteryContext.Provider value={batteryContextValue}>
-      <NetworkContext.Provider value={networkContextValue}>
-        <SupportedApisContext.Provider value={supportedApisContextValue}>
-          <ModelsContext.Provider value={modelsContextValue}>{children}</ModelsContext.Provider>
-        </SupportedApisContext.Provider>
-      </NetworkContext.Provider>
-    </BatteryContext.Provider>
+    <SupportedApisContext.Provider value={supportedApisContextValue}>
+      <PreferencesContext.Provider value={preferencesContextValue}>
+        <BatteryContext.Provider value={batteryContextValue}>
+          <NetworkContext.Provider value={networkContextValue}>
+            <ModelsContext.Provider value={modelsContextValue}>{children}</ModelsContext.Provider>
+          </NetworkContext.Provider>
+        </BatteryContext.Provider>
+      </PreferencesContext.Provider>
+    </SupportedApisContext.Provider>
   );
 };
 

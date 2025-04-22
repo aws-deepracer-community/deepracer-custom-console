@@ -4,6 +4,8 @@ import { NavigationPanelState } from "../types";
 const PREFIX = "deepracer";
 const THEME_STORAGE_NAME = `${PREFIX}-theme`;
 const NAVIGATION_PANEL_STATE_STORAGE_NAME = `${PREFIX}-navigation-panel-state`;
+const SPEED_ADJUSTMENT_KEY = `${PREFIX}-speed-adjustment`;
+const DEVICE_STATUS_KEY = `${PREFIX}-device-status`;
 
 export abstract class StorageHelper {
   static getTheme() {
@@ -49,5 +51,25 @@ export abstract class StorageHelper {
     localStorage.setItem(NAVIGATION_PANEL_STATE_STORAGE_NAME, stateStr);
 
     return newState;
+  }
+
+  // Speed adjustment methods
+  static getEnableSpeedAdjustment(): boolean {
+    const savedValue = localStorage.getItem(SPEED_ADJUSTMENT_KEY);
+    return savedValue ? JSON.parse(savedValue) : false;
+  }
+
+  static setEnableSpeedAdjustment(value: boolean): void {
+    localStorage.setItem(SPEED_ADJUSTMENT_KEY, JSON.stringify(value));
+  }
+
+  // Device status methods
+  static getEnableDeviceStatus(): boolean {
+    const savedValue = localStorage.getItem(DEVICE_STATUS_KEY);
+    return savedValue ? JSON.parse(savedValue) : false;
+  }
+
+  static setEnableDeviceStatus(value: boolean): void {
+    localStorage.setItem(DEVICE_STATUS_KEY, JSON.stringify(value));
   }
 }

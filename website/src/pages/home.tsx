@@ -19,6 +19,7 @@ import { Joystick } from "react-joystick-component";
 import BaseAppLayout from "../components/base-app-layout";
 import DeviceStatusPanel from "../components/device-status-panel";
 import { ApiHelper } from "../common/helpers/api-helper";
+import { usePreferences } from "../common/hooks/use-preferences";
 import { useModels } from "../common/hooks/use-models";
 import { useAuth } from "../common/hooks/use-authentication";
 import { useSupportedApis } from "../common/hooks/use-supported-apis";
@@ -47,6 +48,7 @@ const HomePage = () => {
   const [throttle, setThrottle] = useState(30);
   const [isInferenceRunning, setIsInferenceRunning] = useState(false);
   const lastJoystickMoveTime = useRef<number>(0);
+  const { settings } = usePreferences();
 
   // Add state for tracking scrollbars
   const [defaultExpandCameraSection, setDefaultExpandCameraSection] = useState(true);
@@ -106,7 +108,6 @@ const HomePage = () => {
         drive_mode: mode,
       });
       console.log(`Drive mode set to ${mode}:`, response);
-
     } catch (error) {
       console.error(`Error setting drive mode to ${mode}:`, error);
     }
@@ -126,8 +127,8 @@ const HomePage = () => {
     return () => {
       handleStop();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -204,7 +205,6 @@ const HomePage = () => {
 
   const handleStart = async () => {
     try {
-      
       // Ensure throttle is set before starting
       handleAutoThrottle(0);
 
@@ -523,65 +523,69 @@ const HomePage = () => {
                               </svg>
                             </Button>
                           </SpaceBetween>
-                          <Box variant="small" color="text-body-secondary">
-                            Use -5 / +5 with caution, increased risk of crashing!
-                          </Box>
-                          <SpaceBetween size="l" direction="horizontal">
-                            <Button
-                              variant="normal"
-                              onClick={() => handleAutoThrottle(-5)}
-                              data-testid="decrease-speed"
-                              disabled={!isModelLoaded}
-                            >
-                              <svg
-                                width="96"
-                                height="96"
-                                viewBox="0 0 96 96"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <text
-                                  x="48"
-                                  y="48"
-                                  fill="currentColor"
-                                  fontSize="80"
-                                  fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
-                                  fontWeight="bold"
-                                  textAnchor="middle"
-                                  dominantBaseline="central"
+                          {settings.enableSpeedAdjustment && (
+                            <div>
+                              <Box variant="small" color="text-body-secondary">
+                                Use -5 / +5 with caution, increased risk of crashing!
+                              </Box>
+                              <SpaceBetween size="l" direction="horizontal">
+                                <Button
+                                  variant="normal"
+                                  onClick={() => handleAutoThrottle(-5)}
+                                  data-testid="decrease-speed"
+                                  disabled={!isModelLoaded}
                                 >
-                                  -5
-                                </text>
-                              </svg>
-                            </Button>
-                            <Button
-                              variant="primary"
-                              onClick={() => handleAutoThrottle(5)}
-                              data-testid="increase-speed"
-                              disabled={!isModelLoaded}
-                            >
-                              <svg
-                                width="96"
-                                height="96"
-                                viewBox="0 0 96 96"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <text
-                                  x="48"
-                                  y="48"
-                                  fill="currentColor"
-                                  fontSize="80"
-                                  fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
-                                  fontWeight="bold"
-                                  textAnchor="middle"
-                                  dominantBaseline="central"
+                                  <svg
+                                    width="96"
+                                    height="96"
+                                    viewBox="0 0 96 96"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <text
+                                      x="48"
+                                      y="48"
+                                      fill="currentColor"
+                                      fontSize="80"
+                                      fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
+                                      fontWeight="bold"
+                                      textAnchor="middle"
+                                      dominantBaseline="central"
+                                    >
+                                      -5
+                                    </text>
+                                  </svg>
+                                </Button>
+                                <Button
+                                  variant="primary"
+                                  onClick={() => handleAutoThrottle(5)}
+                                  data-testid="increase-speed"
+                                  disabled={!isModelLoaded}
                                 >
-                                  +5
-                                </text>
-                              </svg>
-                            </Button>
-                          </SpaceBetween>
+                                  <svg
+                                    width="96"
+                                    height="96"
+                                    viewBox="0 0 96 96"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <text
+                                      x="48"
+                                      y="48"
+                                      fill="currentColor"
+                                      fontSize="80"
+                                      fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
+                                      fontWeight="bold"
+                                      textAnchor="middle"
+                                      dominantBaseline="central"
+                                    >
+                                      +5
+                                    </text>
+                                  </svg>
+                                </Button>
+                              </SpaceBetween>
+                            </div>
+                          )}
                         </SpaceBetween>
                       </>
                     ),
@@ -649,63 +653,67 @@ const HomePage = () => {
                             </svg>
                           </Button>
                         </SpaceBetween>
-                        <Box variant="small" color="text-body-secondary">
-                          Use -5 / +5 with caution, increased risk of crashing!
-                        </Box>
-                        <SpaceBetween size="l" direction="horizontal">
-                          <Button
-                            variant="normal"
-                            onClick={() => handleManualThrottle(-5)}
-                            data-testid="decrease-speed"
-                          >
-                            <svg
-                              width="96"
-                              height="96"
-                              viewBox="0 0 96 96"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <text
-                                x="48"
-                                y="48"
-                                fill="currentColor"
-                                fontSize="80"
-                                fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
-                                fontWeight="bold"
-                                textAnchor="middle"
-                                dominantBaseline="central"
+                        {settings.enableSpeedAdjustment && (
+                          <div>
+                            <Box variant="small" color="text-body-secondary">
+                              Use -5 / +5 with caution, increased risk of crashing!
+                            </Box>
+                            <SpaceBetween size="l" direction="horizontal">
+                              <Button
+                                variant="normal"
+                                onClick={() => handleManualThrottle(-5)}
+                                data-testid="decrease-speed"
                               >
-                                -5
-                              </text>
-                            </svg>
-                          </Button>
-                          <Button
-                            variant="primary"
-                            onClick={() => handleManualThrottle(5)}
-                            data-testid="increase-speed"
-                          >
-                            <svg
-                              width="96"
-                              height="96"
-                              viewBox="0 0 96 96"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <text
-                                x="48"
-                                y="48"
-                                fill="currentColor"
-                                fontSize="80"
-                                fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
-                                fontWeight="bold"
-                                textAnchor="middle"
-                                dominantBaseline="central"
+                                <svg
+                                  width="96"
+                                  height="96"
+                                  viewBox="0 0 96 96"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <text
+                                    x="48"
+                                    y="48"
+                                    fill="currentColor"
+                                    fontSize="80"
+                                    fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
+                                    fontWeight="bold"
+                                    textAnchor="middle"
+                                    dominantBaseline="central"
+                                  >
+                                    -5
+                                  </text>
+                                </svg>
+                              </Button>
+                              <Button
+                                variant="primary"
+                                onClick={() => handleManualThrottle(5)}
+                                data-testid="increase-speed"
                               >
-                                +5
-                              </text>
-                            </svg>
-                          </Button>
-                        </SpaceBetween>
+                                <svg
+                                  width="96"
+                                  height="96"
+                                  viewBox="0 0 96 96"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <text
+                                    x="48"
+                                    y="48"
+                                    fill="currentColor"
+                                    fontSize="80"
+                                    fontFamily="'Open Sans', 'Helvetica Neue', Roboto, Arial, sans-serif"
+                                    fontWeight="bold"
+                                    textAnchor="middle"
+                                    dominantBaseline="central"
+                                  >
+                                    +5
+                                  </text>
+                                </svg>
+                              </Button>
+                            </SpaceBetween>
+                          </div>
+                        )}
                       </SpaceBetween>
                     ),
                   },
@@ -717,7 +725,7 @@ const HomePage = () => {
         </div>
       }
       splitPanel={
-        isDeviceStatusSupported ? (
+        isDeviceStatusSupported && settings.enableDeviceStatus ? (
           <DeviceStatusPanel
             isInferenceRunning={isInferenceRunning}
             notifications={localFlashMessages}
