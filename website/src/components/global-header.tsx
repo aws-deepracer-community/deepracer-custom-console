@@ -62,7 +62,7 @@ export default function GlobalHeader() {
               },
               {
                 id: "device-status",
-                text: (settings.enableDeviceStatus ? "Disable " : "Enable ") + "Device Status",
+                text: (settings.enableDeviceStatus ? "Disable " : "Enable ") + "Car Health Monitoring",
                 iconName: "status-info",
                 disabled: !isDeviceStatusSupported,
                 description: !isDeviceStatusSupported ? "Not supported on this device" : undefined,
