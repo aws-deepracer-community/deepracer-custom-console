@@ -58,12 +58,12 @@ export default function GlobalHeader() {
                 id: "speed-adjustment",
                 text:
                   (settings.enableSpeedAdjustment ? "Disable " : "Enable ") + "5x Speed Adjustment",
-                iconName: "add-plus",
+                iconName: "angle-right-double",
               },
               {
                 id: "device-status",
                 text: (settings.enableDeviceStatus ? "Disable " : "Enable ") + "Car Health Monitoring",
-                iconName: "status-info",
+                iconName: "heart",
                 disabled: !isDeviceStatusSupported,
                 description: !isDeviceStatusSupported ? "Not supported on this device" : undefined,
               },
