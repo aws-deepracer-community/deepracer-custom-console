@@ -1,9 +1,30 @@
 import axios, { AxiosResponse } from "axios";
-import { NavigateFunction } from "react-router-dom";
+import { createContext, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
-// For backward compatibility, keep the static methods
-export abstract class ApiHelper {
-  static async get<T>(path: string, navigate?: NavigateFunction): Promise<T | null> {
+// Define the API Context type
+interface ApiContextType {
+  get: <T>(path: string) => Promise<T | null>;
+  post: <T>(path: string, data: unknown) => Promise<T | null>;
+}
+
+// Create and export the context
+export const ApiContext = createContext<ApiContextType | undefined>(undefined);
+
+// Custom hook to use the API context
+export const useApi = () => {
+  const context = useContext(ApiContext);
+  if (context === undefined) {
+    throw new Error("useApi must be used within an ApiProvider");
+  }
+  return context;
+};
+
+// Hook to provide API context values
+export const useApiProvider = () => {
+  const navigate = useNavigate();
+
+  const get = async <T,>(path: string): Promise<T | null> => {
     try {
       const response: AxiosResponse<T> = await axios.get("/api/" + path, {
         timeout: 10000, // 10 seconds timeout
@@ -15,11 +36,7 @@ export abstract class ApiHelper {
         console.log("Unauthorized");
         // Only redirect if we're not already on the login page
         if (!window.location.pathname.includes("/login")) {
-          if (navigate) {
-            navigate("/login");
-          } else {
-            window.location.href = "/#/login";
-          }
+          navigate("/login");
         }
         return null;
       }
@@ -39,24 +56,15 @@ export abstract class ApiHelper {
           message: error.message,
           status: error.request?.status,
         });
-        // Use navigate when available, fallback to window.location
-        if (navigate) {
-          navigate("/system-unavailable");
-        } else {
-          window.location.href = "/#/system-unavailable";
-        }
+        navigate("/system-unavailable");
         return null;
       }
       console.error("Error getting api " + path + ":", error);
       return null;
     }
-  }
+  };
 
-  static async post<T>(
-    path: string,
-    data: unknown,
-    navigate?: NavigateFunction
-  ): Promise<T | null> {
+  const post = async <T,>(path: string, data: unknown): Promise<T | null> => {
     try {
       const response: AxiosResponse<T> = await axios.post("/api/" + path, data, {
         timeout: 10000, // 10 seconds timeout
@@ -68,11 +76,7 @@ export abstract class ApiHelper {
         console.log("Unauthorized");
         // Only redirect if we're not already on the login page
         if (!window.location.pathname.includes("/login")) {
-          if (navigate) {
-            navigate("/login");
-          } else {
-            window.location.href = "/#/login";
-          }
+          navigate("/login");
         }
         return null;
       }
@@ -92,16 +96,13 @@ export abstract class ApiHelper {
           message: error.message,
           status: error.request?.status,
         });
-        // Use navigate when available, fallback to window.location
-        if (navigate) {
-          navigate("/system-unavailable");
-        } else {
-          window.location.href = "/#/system-unavailable";
-        }
+        navigate("/system-unavailable");
         return null;
       }
       console.error("Error posting to api " + path + ":", error);
       return null;
     }
-  }
-}
+  };
+
+  return { get, post };
+};

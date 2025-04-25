@@ -1,8 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from "./use-authentication";
 import { FlashbarProps } from "@cloudscape-design/components";
-import { ApiHelper } from "../helpers/api-helper";
+import { useApi } from "./use-api";
 
 // Add new interface for API response
 interface BatteryResponse {
@@ -44,7 +43,7 @@ export const useBatteryProvider = () => {
   const [hasInitialReading, setHasInitialReading] = useState(false);
   const [pageLoadTime] = useState<number>(Date.now());
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { get: apiGet } = useApi();
 
   // Battery notifications state
   const [batteryFlashbarItems, setBatteryFlashbarItems] = useState<
@@ -148,7 +147,7 @@ export const useBatteryProvider = () => {
 
     const getBatteryStatus = async () => {
       try {
-        const response = await ApiHelper.get<BatteryResponse>("get_battery_level", navigate);
+        const response = await apiGet<BatteryResponse>("get_battery_level");
         return response;
       } catch (error) {
         console.error("Error fetching battery status:", error);
@@ -167,7 +166,7 @@ export const useBatteryProvider = () => {
       isSubscribed = false;
       clearInterval(batteryInterval);
     };
-  }, [isAuthenticated, navigate]); // Add isAuthenticated as a dependency
+  }, [isAuthenticated, apiGet]); // Add isAuthenticated as a dependency
 
   const batteryContextValue: BatteryState = {
     batteryLevel,
