@@ -14,7 +14,7 @@ import LoginPage from "./pages/login";
 import EditNetworkPage from "./pages/edit-network";
 import UpdateNetworkPage from "./pages/update-network";
 import SystemUnavailablePage from "./pages/system-unavailable";
-import { ContextProvider, AuthProvider } from "./components/context-provider";
+import { ContextProvider, AuthProvider, ApiProvider } from "./components/context-provider";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -37,178 +37,180 @@ export default function App() {
     <div style={{ height: "100%" }}>
       <AuthProvider>
         <Router>
-          <ContextProvider>
-            <GlobalHeader />
-            <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
-            <div>
-              <Routes>
-                {/* Public routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/system-unavailable" element={<SystemUnavailablePage />} />
-                <Route path="/logout" element={<LoginPage />} />
+          <ApiProvider>
+            <ContextProvider>
+              <GlobalHeader />
+              <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
+              <div>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/system-unavailable" element={<SystemUnavailablePage />} />
+                  <Route path="/logout" element={<LoginPage />} />
 
-                {/* Protected routes */}
-                {isDeepracerAws ? (
-                  <Route
-                    path="*"
-                    element={
-                      <ProtectedRoute>
-                        <UpdateNetworkPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                ) : (
-                  <>
+                  {/* Protected routes */}
+                  {isDeepracerAws ? (
                     <Route
-                      path="/logs"
+                      path="*"
                       element={
                         <ProtectedRoute>
-                          <LogsPage />
+                          <UpdateNetworkPage />
                         </ProtectedRoute>
                       }
                     />
-                    <Route
-                      path="/settings"
-                      element={
-                        <ProtectedRoute>
-                          <SettingsPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/edit-network"
-                      element={
-                        <ProtectedRoute>
-                          <EditNetworkPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/calibration"
-                      element={
-                        <ProtectedRoute>
-                          <CalibrationPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/recalibrate-steering"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSteeringPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/ground"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSteeringPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/center"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSteeringPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/left"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSteeringPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/right"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSteeringPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/recalibrate-speed"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSpeedPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/raise"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSpeedPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/stopped"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSpeedPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/direction"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSpeedPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/forward"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSpeedPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/backward"
-                      element={
-                        <ProtectedRoute>
-                          <RecalibrateSpeedPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/models"
-                      element={
-                        <ProtectedRoute>
-                          <ModelsPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/home"
-                      element={
-                        <ProtectedRoute>
-                          <HomePage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/"
-                      element={
-                        <ProtectedRoute>
-                          <HomePage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="*" element={<NotFound />} />
-                  </>
-                )}
-              </Routes>
-            </div>
-          </ContextProvider>
+                  ) : (
+                    <>
+                      <Route
+                        path="/logs"
+                        element={
+                          <ProtectedRoute>
+                            <LogsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute>
+                            <SettingsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/edit-network"
+                        element={
+                          <ProtectedRoute>
+                            <EditNetworkPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/calibration"
+                        element={
+                          <ProtectedRoute>
+                            <CalibrationPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/recalibrate-steering"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSteeringPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/ground"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSteeringPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/center"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSteeringPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/left"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSteeringPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/right"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSteeringPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/recalibrate-speed"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSpeedPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/raise"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSpeedPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/stopped"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSpeedPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/direction"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSpeedPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/forward"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSpeedPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/backward"
+                        element={
+                          <ProtectedRoute>
+                            <RecalibrateSpeedPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/models"
+                        element={
+                          <ProtectedRoute>
+                            <ModelsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/home"
+                        element={
+                          <ProtectedRoute>
+                            <HomePage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/"
+                        element={
+                          <ProtectedRoute>
+                            <HomePage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="*" element={<NotFound />} />
+                    </>
+                  )}
+                </Routes>
+              </div>
+            </ContextProvider>
+          </ApiProvider>
         </Router>
       </AuthProvider>
     </div>

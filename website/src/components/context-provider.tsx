@@ -16,21 +16,26 @@ export const ContextProvider: React.FC<{
   const supportedApisContextValue = useSupportedApisProvider();
   const modelsContextValue = useModelsProvider();
   const preferencesContextValue = usePreferencesProvider();
-  const apiContextValue = useApiProvider();
 
   return (
-    <ApiContext.Provider value={apiContextValue}>
-      <SupportedApisContext.Provider value={supportedApisContextValue}>
-        <PreferencesContext.Provider value={preferencesContextValue}>
-          <BatteryContext.Provider value={batteryContextValue}>
-            <NetworkContext.Provider value={networkContextValue}>
-              <ModelsContext.Provider value={modelsContextValue}>{children}</ModelsContext.Provider>
-            </NetworkContext.Provider>
-          </BatteryContext.Provider>
-        </PreferencesContext.Provider>
-      </SupportedApisContext.Provider>
-    </ApiContext.Provider>
+    <SupportedApisContext.Provider value={supportedApisContextValue}>
+      <PreferencesContext.Provider value={preferencesContextValue}>
+        <BatteryContext.Provider value={batteryContextValue}>
+          <NetworkContext.Provider value={networkContextValue}>
+            <ModelsContext.Provider value={modelsContextValue}>{children}</ModelsContext.Provider>
+          </NetworkContext.Provider>
+        </BatteryContext.Provider>
+      </PreferencesContext.Provider>
+    </SupportedApisContext.Provider>
   );
+};
+
+export const ApiProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const apiValues = useApiProvider();
+
+  return <ApiContext.Provider value={apiValues}>{children}</ApiContext.Provider>;
 };
 
 // Auth Context Provider
