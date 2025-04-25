@@ -18,32 +18,25 @@ Whether you're a casual racer or a DeepRacer developer, this custom console prov
 
 ## How to install on your car
 
-### Option 1 - Using Debian Package
+### Using Debian Package
 
 - Find the latest release - https://github.com/aws-deepracer-community/deepracer-custom-console/releases
 - SSH to your car
-- Run `curl -L -o deepracer-console-new.deb https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.2/aws-deepracer-community-device-console_2.2.2.0_all.deb`
+- Run `curl -L -o deepracer-console-new.deb https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.9/aws-deepracer-community-device-console_2.2.9.0_all.deb`
 - Run `sudo dpkg -i deepracer-console-new.deb`
+- Run `sudo systemctl restart deepracer-core.service` to restart the DeepRacer service
 - Open your browser and navigate to the IP address of the car and login using your password
 
 If you should need to restore the original UI run:
 - `sudo apt remove aws-deepracer-community-device-console`
 - `sudo apt install aws-deepracer-device-console`
 
-### Option 2 - Using scripts within this repo
-
-- Find the latest release - https://github.com/aws-deepracer-community/deepracer-custom-console/releases
-- SSH to your car
-- Run `git clone https://github.com/aws-deepracer-community/deepracer-custom-console`
-- Run `cd deepracer-custom-console`
-- Run `curl -L -o deepracer-console-new.zip https://github.com/aws-deepracer-community/deepracer-custom-console/releases/download/v2.2.2/aws-deepracer-community-device-console-v2.2.2.zip` (or the latest tagged version you want to install) to download the zip package
-- Run `sudo ./deepracer-backup-console.sh` to take a backup of the original UI
-- Run `sudo ./deepracer-deploy-console.sh` to install the new Cloudscape UI
-- Run `sudo systemctl restart deepracer-core.service` to restart the DeepRacer service
-- Run `sudo systemctl restart nginx` to restart nginx
-- Open your browser and navigate to the IP address of the car and login using your password
-
-If you should need to restore the original UI run `sudo ./deepracer-restore-console.sh`
+Note - some features also require the deepracer-custom-car code - https://github.com/aws-deepracer-community/deepracer-custom-car
+- Follow the instructions in that repo to install
+- If some features require the 'experimental' custom-car-code then update your car with the following config
+    -  Run `sudo vi /etc/apt/sources.list.d/aws_deepracer-community.list` and then comment out the first line and uncomment the third line
+    -  Run `sudo apt update && sudo apt upgrade`
+    - Run `sudo systemctl restart deepracer-core.service` to restart the DeepRacer service
 
 ## Development Guide
 
