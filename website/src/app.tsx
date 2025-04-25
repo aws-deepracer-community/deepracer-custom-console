@@ -36,8 +36,8 @@ export default function App() {
   return (
     <div style={{ height: "100%" }}>
       <AuthProvider>
-        <ContextProvider>
-          <Router>
+        <Router>
+          <ContextProvider>
             <GlobalHeader />
             <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
             <div>
@@ -208,8 +208,8 @@ export default function App() {
                 )}
               </Routes>
             </div>
-          </Router>
-        </ContextProvider>
+          </ContextProvider>
+        </Router>
       </AuthProvider>
     </div>
   );
