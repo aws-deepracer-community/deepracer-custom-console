@@ -278,8 +278,8 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
             ),
             "min"
           ),
-          warningMessage: "95% Latency is high",
-          errorMessage: "95% Latency is critically high",
+          warningMessage: "Latency (95th percentile) is high",
+          errorMessage: "Latency (95th percentile) is critically high",
           noInferenceStatus: "stopped" as "info" | "stopped" | "pending",
         },
         "device-status-fps-mean": {
