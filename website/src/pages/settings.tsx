@@ -274,9 +274,9 @@ const DeviceConsolePasswordContainer = () => {
       header={
         <Header
           actions={
-              <Button onClick={() => showDevicePasswordModal(true)}>
-                Change Device Console Password
-              </Button>
+            <Button onClick={() => showDevicePasswordModal(true)}>
+              Change Device Console Password
+            </Button>
           }
           description="A password is required to protect access to your AWS DeepRacer vehicle."
         >
@@ -602,7 +602,11 @@ const DeviceSshContainer = () => {
           <Alert type="info">
             Type in "ssh deepracer@[IP Addresss]" on your terminal to log into the device remotely.
           </Alert>
-        ) : null}
+        ) : (
+          <Alert type="info">
+            Feature requires both the SSH service and the UFW firewall to be enabled.
+          </Alert>
+        )}
         {sshPasswordChangedSuccessVisible ? (
           <Alert
             onDismiss={() => {
@@ -923,14 +927,7 @@ const AboutContainer = () => {
             },
             {
               label: "Mandatory Update",
-              value:
-                softwareInfo.mandatory_update == "Unknown" ? (
-                  <StatusIndicator type="warning">Unknown</StatusIndicator>
-                ) : softwareInfo.mandatory_update ? (
-                  <StatusIndicator type="error">Mandatory Update required</StatusIndicator>
-                ) : (
-                  <StatusIndicator type="success">Update not mandatory</StatusIndicator>
-                ),
+              value: "-",
             },
             {
               label: "Hardware Version",
