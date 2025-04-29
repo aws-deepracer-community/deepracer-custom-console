@@ -171,6 +171,33 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
     [checkStatus, updatesSinceInferenceStarted]
   );
 
+  const statusMinMax = (
+    status1: "info" | "success" | "warning" | "error" | "stopped" | "pending",
+    status2: "info" | "success" | "warning" | "error" | "stopped" | "pending",
+    operator: "min" | "max"
+  ): "info" | "success" | "warning" | "error" | "stopped" | "pending" => {
+    const statusPriority = {
+      error: 4,
+      warning: 3,
+      success: 2,
+      info: 1,
+      stopped: 0,
+      pending: -1,
+    };
+
+    if (operator === "min") {
+      return statusPriority[status1 as keyof typeof statusPriority] <
+        statusPriority[status2 as keyof typeof statusPriority]
+        ? status1
+        : status2;
+    } else {
+      return statusPriority[status1 as keyof typeof statusPriority] >
+        statusPriority[status2 as keyof typeof statusPriority]
+        ? status1
+        : status2;
+    }
+  };
+
   const allAlerts = useMemo(
     () => ({
       system: {
@@ -192,7 +219,7 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
             (metrics.cpuFreq / metrics.cpuFreqMax) * 100.0,
             thresholds.cpu.frequency,
             isInferenceRunning,
-            2,
+            3,
             "info"
           ),
           warningMessage: "CPU Frequency is low",
@@ -213,7 +240,7 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
             metrics.cpuUsage,
             thresholds.cpu.usage,
             isInferenceRunning,
-            2,
+            3,
             "info"
           ),
           warningMessage: "CPU Usage is high",
@@ -225,7 +252,7 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
             metrics.latencyMean,
             thresholds.performance.latency_mean,
             isInferenceRunning,
-            2,
+            3,
             "stopped"
           ),
           warningMessage: "Latency is high",
@@ -234,12 +261,22 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
         },
         "device-status-latency-p95": {
           metricValue: metrics.latencyP95 / metrics.latencyMean,
-          status: checkStatusWithInference(
-            metrics.latencyP95 / metrics.latencyMean,
-            thresholds.performance.latency_p95,
-            isInferenceRunning,
-            2,
-            "stopped"
+          status: statusMinMax(
+            checkStatusWithInference(
+              metrics.latencyP95 / metrics.latencyMean,
+              thresholds.performance.latency_p95,
+              isInferenceRunning,
+              3,
+              "stopped"
+            ),
+            checkStatusWithInference(
+              metrics.latencyP95,
+              thresholds.performance.latency_mean,
+              isInferenceRunning,
+              3,
+              "stopped"
+            ),
+            "min"
           ),
           warningMessage: "95% Latency is high",
           errorMessage: "95% Latency is critically high",
@@ -251,7 +288,7 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
             30.0 / metrics.fpsMean,
             thresholds.performance.fps_mean,
             isInferenceRunning,
-            2,
+            3,
             "stopped"
           ),
           warningMessage: "Frame Rate is low",
@@ -317,7 +354,7 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
       }
     });
   }, [addFlashMessage, removeFlashMessage, allAlerts.system]);
-  
+
   useEffect(() => {
     // Handle combined performance metrics alert
     const performanceAlertId = "device-status-performance";
