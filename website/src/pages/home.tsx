@@ -292,7 +292,7 @@ const HomePage = () => {
   switch (cameraFeedType) {
     case "stereo":
       cameraFeedSrc =
-        "route?topic=/object_detection_pkg/detection_display&width=480&height=360&qos_profile=sensor_data";
+        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
       break;
     case "lidar":
       cameraFeedSrc =
