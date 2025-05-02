@@ -3,7 +3,7 @@ export DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 echo "Starting DeepRacer custom console packaging..."
 
-VERSION_TAG=$(git describe --tags --abbrev=0 --match "v[2-9].[0-9].[0-9]")
+VERSION_TAG=$(git describe --tags --abbrev=0 --match "v[2-9].[0-9].[0-9]*")
 VERSION_COMMITS=$(git rev-list --count $VERSION_TAG..HEAD)
 VERSION_HASH=$(git rev-parse --short HEAD)
 
