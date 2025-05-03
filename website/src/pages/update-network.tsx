@@ -218,8 +218,8 @@ const UpdateNetworkSettingsContainer = ({
       setFlashbarItems([
         {
           type: "success",
-          header: `Successfully connected to Wifi network: ${selectedWifi!.value}`,
-          content: (
+          content: `Successfully connected to Wifi network: ${selectedWifi!.value}`,
+          action: (
             <Button onClick={() => window.open(`http://${ipAddress}`, "_blank")}>
               Go to Vehicle ({ipAddress})
             </Button>
@@ -305,7 +305,9 @@ export default function UpDateNetworkPage() {
       header={
         <div>
           <Flashbar items={flashbarItems} />
-          <Header variant="h1" description="Connect your DeepRacer to get started">Update the Wi-Fi network settings</Header>
+          <Header variant="h1" description="Connect your DeepRacer to get started">
+            Update the Wi-Fi network settings
+          </Header>
         </div>
       }
       defaultPadding
