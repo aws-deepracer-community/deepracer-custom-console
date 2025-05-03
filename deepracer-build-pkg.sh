@@ -33,20 +33,20 @@ echo "Full version: $VERSION"
 
 rm -rf $DIR/dist/*
 
-mkdir -p $DIR/dist/opt/aws/deepracer/lib/device_console $DIR/dist/opt/aws/deepracer/lib/device_console/templates $DIR/dist/DEBIAN
+mkdir -p $DIR/dist/build/opt/aws/deepracer/lib/device_console $DIR/dist/build/opt/aws/deepracer/lib/device_console/templates $DIR/dist/build/DEBIAN
 
-cp $DIR/package/control dist/DEBIAN/
-sed -i "s/Version: 0.0.0.0/Version: $VERSION/" $DIR/dist/DEBIAN/control
-cp $DIR/package/postinst dist/DEBIAN/
-cp $DIR/package/prerm dist/DEBIAN/
+cp $DIR/package/control dist/build/DEBIAN/
+sed -i "s/Version: 0.0.0.0/Version: $VERSION/" $DIR/dist/build/DEBIAN/control
+cp $DIR/package/postinst dist/build/DEBIAN/
+cp $DIR/package/prerm dist/build/DEBIAN/
 
-cp -r $DIR/website/dist/* $DIR/dist/opt/aws/deepracer/lib/device_console
-mv $DIR/dist/opt/aws/deepracer/lib/device_console/*.html $DIR/dist/opt/aws/deepracer/lib/device_console/templates
-mv $DIR/dist/opt/aws/deepracer/lib/device_console/*.json $DIR/dist/opt/aws/deepracer/lib/device_console/static
+cp -r $DIR/website/dist/* $DIR/dist/build/opt/aws/deepracer/lib/device_console
+mv $DIR/dist/build/opt/aws/deepracer/lib/device_console/*.html $DIR/dist/build/opt/aws/deepracer/lib/device_console/templates
+mv $DIR/dist/build/opt/aws/deepracer/lib/device_console/*.json $DIR/dist/build/opt/aws/deepracer/lib/device_console/static
 
 echo ""
 echo "Building Debian package..."
-dpkg-deb --root-owner-group --build $DIR/dist $DIR/dist/aws-deepracer-community-device-console.deb
+dpkg-deb --root-owner-group --build $DIR/dist/build $DIR/dist/aws-deepracer-community-device-console.deb
 dpkg-name -o $DIR/dist/aws-deepracer-community-device-console.deb
 
 # deb-s3 does not handle filenames with +, so we need to rename the file
