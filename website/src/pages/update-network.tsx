@@ -87,7 +87,7 @@ const NetworkSettingsContainer = () => {
           {
             label: "Wi-Fi Network SSID",
             value:
-              networkData.SSID === "Unknown" ? (
+              !networkData.SSID || networkData.SSID === "Unknown" ? (
                 loading ? (
                   <StatusIndicator type="loading">Loading...</StatusIndicator>
                 ) : (
@@ -100,7 +100,7 @@ const NetworkSettingsContainer = () => {
           {
             label: "Vehicle IP Address",
             value:
-              networkData.ip_address === "Unknown" ? (
+              !networkData.ip_address || networkData.ip_address === "Unknown" ? (
                 loading ? (
                   <StatusIndicator type="loading">Loading...</StatusIndicator>
                 ) : (
@@ -218,10 +218,12 @@ const UpdateNetworkSettingsContainer = ({
       setFlashbarItems([
         {
           type: "success",
-          content: `Successfully connected to Wifi network: ${selectedWifi!.value}`,
+          content: `Successfully connected to Wifi network: ${
+            selectedWifi!.value
+          } with IP address: ${ipAddress}`,
           action: (
             <Button onClick={() => window.open(`http://${ipAddress}`, "_blank")}>
-              Go to Vehicle ({ipAddress})
+              Go to Vehicle
             </Button>
           ),
           dismissible: true,
@@ -284,12 +286,8 @@ const UpdateNetworkSettingsContainer = ({
             loading={isConnecting}
             disabled={!selectedWifi}
           >
-            Connect
+            {isConnecting ? "Connecting" : "Connect"}
           </Button>
-
-          {isConnecting && (
-            <StatusIndicator type="in-progress">Connecting to network...</StatusIndicator>
-          )}
         </SpaceBetween>
       </SpaceBetween>
     </Container>
