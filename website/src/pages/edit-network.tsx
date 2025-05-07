@@ -119,7 +119,7 @@ export default function EditNetworkPage() {
           <SpaceBetween size="l">
             <h1>Edit Network Settings</h1>
             <NetworkSettingsContainer />
-            <ConnectUSBContainer />``
+            <ConnectUSBContainer />
           </SpaceBetween>
         </TextContent>
       }
