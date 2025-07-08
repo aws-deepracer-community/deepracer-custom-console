@@ -70,6 +70,7 @@ interface TimeResponse {
   timezone?: string;
   timezone_abbr?: string;
   utc_offset?: string;
+  timezone_changed?: boolean;
 }
 
 let sshPasswordInputType: InputProps.Type = "password";
@@ -750,6 +751,7 @@ const TimeContainer = () => {
     timezone: "Unknown",
     timezone_abbr: "",
     utc_offset: "",
+    timezone_changed: false,
   });
   const [timezoneChanging, setTimezoneChanging] = useState(false);
   const [timezoneChangeSuccess, setTimezoneChangeSuccess] = useState(false);
@@ -763,6 +765,7 @@ const TimeContainer = () => {
         timezone: data.timezone || "Unknown",
         timezone_abbr: data.timezone_abbr || "",
         utc_offset: data.utc_offset || "",
+        timezone_changed: data.timezone_changed || false,
       });
     }
   };
@@ -809,6 +812,11 @@ const TimeContainer = () => {
               <Button
                 loading={timezoneChanging}
                 onClick={() => setBrowserTimezone()}
+                disabled={
+                  timezoneChanging ||
+                  timeData.timezone_changed ||
+                  timeData.timezone === getBrowserTimezone()
+                }
               >
                 Set to Browser Timezone
               </Button>
@@ -821,54 +829,49 @@ const TimeContainer = () => {
       }
     >
       <SpaceBetween direction="vertical" size="m">
-        <KeyValuePairs
-          columns={3}
-          items={[
-            {
-              label: "Current Car Time",
-              value:
-                timeData.time === "Unknown" ? (
-                  <StatusIndicator type="warning">Unknown</StatusIndicator>
-                ) : (
-                  timeData.time
-                ),
-            },
-            {
-              label: "Car Timezone",
-              value:
-                timeData.timezone === "Unknown" ? (
-                  <StatusIndicator type="warning">Unknown</StatusIndicator>
-                ) : (
-                  <>
-                  {timeData.timezone}
-                  {timeData.timezone_abbr ? ` (${timeData.timezone_abbr}` : "("}
-                  {timeData.utc_offset ? `, ${timeData.utc_offset})` : ")"}
-                  </>
-                ),
+        {!timeData.timezone_changed ? (
+          <KeyValuePairs
+            columns={3}
+            items={[
+              {
+                label: "Current Car Time",
+                value:
+                  timeData.time === "Unknown" ? (
+                    <StatusIndicator type="warning">Unknown</StatusIndicator>
+                  ) : (
+                    timeData.time
+                  ),
+              },
+              {
+                label: "Car Timezone",
+                value:
+                  timeData.timezone === "Unknown" ? (
+                    <StatusIndicator type="warning">Unknown</StatusIndicator>
+                  ) : (
+                    <>
+                      {timeData.timezone}
+                      {timeData.timezone_abbr ? ` (${timeData.timezone_abbr}` : "("}
+                      {timeData.utc_offset ? `, ${timeData.utc_offset})` : ")"}
+                    </>
+                  ),
               },
               {
                 label: "Browser Timezone",
                 value: getBrowserTimezone(),
               },
-              ]}
-            />
-
+            ]}
+          />
+        ) : !timezoneChangeSuccess ? (
+          <Alert type="info">Timezone changed. Reset DeepRacer for changes to take effect.</Alert>
+        ) : null}
         {timezoneChangeSuccess && (
-          <Alert
-            onDismiss={() => setTimezoneChangeSuccess(false)}
-            dismissible
-            type="success"
-          >
+          <Alert onDismiss={() => setTimezoneChangeSuccess(false)} dismissible type="success">
             Timezone was updated successfully to {getBrowserTimezone()}.
           </Alert>
         )}
 
         {timezoneChangeError && (
-          <Alert
-            onDismiss={() => setTimezoneChangeError(false)}
-            dismissible
-            type="error"
-          >
+          <Alert onDismiss={() => setTimezoneChangeError(false)} dismissible type="error">
             Failed to update timezone. Please try again.
           </Alert>
         )}
@@ -1097,7 +1100,6 @@ const AboutContainer = () => {
 };
 
 export default function SettingsPage() {
-
   // Get API support information
   const { isTimeApiSupported } = useSupportedApis();
 
