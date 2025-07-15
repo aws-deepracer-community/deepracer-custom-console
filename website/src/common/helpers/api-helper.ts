@@ -29,8 +29,11 @@ export abstract class ApiHelper {
       ) {
         console.log("Unable to connect to server");
         // Don't redirect to system-unavailable if we're on the software update page
-        // (server is expected to be unavailable during reboot)
-        if (!window.location.hash.includes("/software-update")) {
+        // or already on system-unavailable
+        if (
+          !window.location.hash.includes("/software-update") &&
+          !window.location.hash.includes("/system-unavailable")
+        ) {
           window.location.href = "/#/system-unavailable";
         }
         return null;
@@ -68,8 +71,11 @@ export abstract class ApiHelper {
       ) {
         console.log("Unable to connect to server");
         // Don't redirect to system-unavailable if we're on the software update page
-        // (server is expected to be unavailable during reboot)
-        if (!window.location.hash.includes("/software-update")) {
+        // or already on system-unavailable
+        if (
+          !window.location.hash.includes("/software-update") &&
+          !window.location.hash.includes("/system-unavailable")
+        ) {
           window.location.href = "/#/system-unavailable";
         }
         return null;
