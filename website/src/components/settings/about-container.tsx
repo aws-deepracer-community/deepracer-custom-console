@@ -8,6 +8,7 @@ import {
   StatusIndicator,
 } from "@cloudscape-design/components";
 import { ApiHelper } from "../../common/helpers/api-helper";
+import { SoftwareUpdateModal } from "./software-update-modal";
 
 interface DeviceInfoResponse {
   success: boolean;
@@ -22,7 +23,7 @@ interface DeviceInfoResponse {
 
 interface SoftwareUpdateResponse {
   success: boolean;
-  status: string;
+  status: boolean; // Changed from string to boolean since API returns boolean
 }
 
 export const AboutContainer = () => {
@@ -38,10 +39,14 @@ export const AboutContainer = () => {
     hardware_version: "Unknown",
     software_version: "Unknown",
   });
-  const [softwareInfo, setSoftwareInfo] = useState({
-    software_update_available: "Unknown",
-    mandatory_update: "Unknown",
+  const [softwareInfo, setSoftwareInfo] = useState<{
+    software_update_available: boolean | null; // null = unknown, boolean = true/false
+    mandatory_update: boolean | null;
+  }>({
+    software_update_available: null, // Start with null (unknown)
+    mandatory_update: null,
   });
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   useEffect(() => {
     const fetchDeviceInfo = async () => {
@@ -58,7 +63,8 @@ export const AboutContainer = () => {
         });
       }
       const softwareData = await ApiHelper.get<SoftwareUpdateResponse>(
-        "is_software_update_available"
+        "is_software_update_available",
+        30000 // 30 seconds timeout for software update check
       );
       const mandatoryData = await ApiHelper.get<SoftwareUpdateResponse>(
         "get_mandatory_update_status"
@@ -72,83 +78,91 @@ export const AboutContainer = () => {
     };
     fetchDeviceInfo();
   }, []);
+
+  const handleSoftwareUpdate = () => {
+    setShowUpdateModal(true);
+  };
+
   return (
-    <Container
-      header={
-        <Header
-          actions={
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button
-                disabled={
-                  softwareInfo.software_update_available == "Unknown"
-                    ? true
-                    : softwareInfo.software_update_available
-                    ? true
-                    : true
-                }
-              >
-                Update Software
-              </Button>
-            </SpaceBetween>
-          }
-          description="AWS DeepRacer vehicle 1/18th scale 4WD monster truck chassis"
-        >
-          About
-        </Header>
-      }
-    >
-      {/* TO DO: Some Hardcoded values, need to create an API */}
-      {/* TO DO: Need to code software update modal */}
-      <SpaceBetween direction="vertical" size="m">
-        <KeyValuePairs
-          columns={4}
-          items={[
-            {
-              label: "Operating System",
-              value: deviceInfo.os_version + ", Intel® OpenVINO™ toolkit, " + deviceInfo.ros_distro,
-            },
-            {
-              label: "Software Version",
-              value:
-                deviceInfo.software_version == "Unknown" ? (
-                  <StatusIndicator type="warning">Unknown</StatusIndicator>
-                ) : (
-                  deviceInfo.software_version
-                ),
-            },
-            {
-              label: "Software Update Available",
-              value:
-                softwareInfo.software_update_available == "Unknown" ? (
-                  <StatusIndicator type="warning">Unknown</StatusIndicator>
-                ) : softwareInfo.software_update_available ? (
-                  <StatusIndicator type="warning">Software update Available</StatusIndicator>
-                ) : (
-                  <StatusIndicator type="success">Software up to date</StatusIndicator>
-                ),
-            },
-            {
-              label: "Mandatory Update",
-              value: "-",
-            },
-            {
-              label: "Hardware Version",
-              value:
-                deviceInfo.hardware_version == "Unknown" ? (
-                  <StatusIndicator type="warning">Unknown</StatusIndicator>
-                ) : (
-                  deviceInfo.hardware_version
-                ),
-            },
-            { label: "Processor", value: deviceInfo.cpu_model },
-            {
-              label: "Memory",
-              value: deviceInfo.ram_amount + " RAM/" + deviceInfo.disk_amount + " Storage",
-            },
-            { label: "Camera", value: "4MP with MJPEG" },
-          ]}
-        />
-      </SpaceBetween>
-    </Container>
+    <>
+      <Container
+        header={
+          <Header
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button
+                  disabled={
+                    softwareInfo.software_update_available === null ||
+                    softwareInfo.software_update_available === false
+                  }
+                  onClick={handleSoftwareUpdate}
+                >
+                  Update Software
+                </Button>
+              </SpaceBetween>
+            }
+            description="AWS DeepRacer vehicle 1/18th scale 4WD monster truck chassis"
+          >
+            About
+          </Header>
+        }
+      >
+        {/* TO DO: Some Hardcoded values, need to create an API */}
+        {/* TO DO: Need to code software update modal */}
+        <SpaceBetween direction="vertical" size="m">
+          <KeyValuePairs
+            columns={4}
+            items={[
+              {
+                label: "Operating System",
+                value:
+                  deviceInfo.os_version + ", Intel® OpenVINO™ toolkit, " + deviceInfo.ros_distro,
+              },
+              {
+                label: "Software Version",
+                value:
+                  deviceInfo.software_version == "Unknown" ? (
+                    <StatusIndicator type="warning">Unknown</StatusIndicator>
+                  ) : (
+                    deviceInfo.software_version
+                  ),
+              },
+              {
+                label: "Software Update Available",
+                value:
+                  softwareInfo.software_update_available === null ? (
+                    <StatusIndicator type="warning">Unknown</StatusIndicator>
+                  ) : softwareInfo.software_update_available === true ? (
+                    <StatusIndicator type="warning">Software update available</StatusIndicator>
+                  ) : (
+                    <StatusIndicator type="success">Software up to date</StatusIndicator>
+                  ),
+              },
+              {
+                label: "Mandatory Update",
+                value: "-",
+              },
+              {
+                label: "Hardware Version",
+                value:
+                  deviceInfo.hardware_version == "Unknown" ? (
+                    <StatusIndicator type="warning">Unknown</StatusIndicator>
+                  ) : (
+                    deviceInfo.hardware_version
+                  ),
+              },
+              { label: "Processor", value: deviceInfo.cpu_model },
+              {
+                label: "Memory",
+                value: deviceInfo.ram_amount + " RAM/" + deviceInfo.disk_amount + " Storage",
+              },
+              { label: "Camera", value: "4MP with MJPEG" },
+            ]}
+          />
+        </SpaceBetween>
+      </Container>
+
+      <SoftwareUpdateModal visible={showUpdateModal} onDismiss={() => setShowUpdateModal(false)} />
+    </>
   );
 };

@@ -56,7 +56,11 @@ export const useApiProvider = () => {
           message: error.message,
           status: error.request?.status,
         });
-        navigate("/system-unavailable");
+        // Don't redirect to system-unavailable if we're on the software update page
+        // (server is expected to be unavailable during reboot)
+        if (!window.location.hash.includes("/software-update")) {
+          navigate("/system-unavailable");
+        }
         return null;
       }
       console.error("Error getting api " + path + ":", error);
@@ -96,7 +100,11 @@ export const useApiProvider = () => {
           message: error.message,
           status: error.request?.status,
         });
-        navigate("/system-unavailable");
+        // Don't redirect to system-unavailable if we're on the software update page
+        // (server is expected to be unavailable during reboot)
+        if (!window.location.hash.includes("/software-update")) {
+          navigate("/system-unavailable");
+        }
         return null;
       }
       console.error("Error posting to api " + path + ":", error);
