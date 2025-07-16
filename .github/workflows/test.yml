@@ -21,11 +21,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: './website/package-lock.json'
     
     - name: Install dependencies
-      run: npm ci
+      run: npm install
     
     - name: Run linting
       run: npm run lint
@@ -54,11 +52,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: './website/package-lock.json'
     
     - name: Install dependencies
-      run: npm ci
+      run: npm install
     
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
@@ -92,11 +88,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: './website/package-lock.json'
     
     - name: Install dependencies
-      run: npm ci
+      run: npm install
     
     - name: Build for production
       run: npm run build
