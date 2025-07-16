@@ -61,14 +61,11 @@ jobs:
       run: npm install --save-dev @types/node
     
     - name: Install Playwright browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install --with-deps chromium
     
     - name: Build application
-      run: npm run build
-    
-    - name: Debug - Check available ports
-      run: netstat -tlnp || ss -tlnp || echo "No netstat/ss available"
-    
+      run: npm run build   
+   
     - name: Run E2E tests
       timeout-minutes: 10
       run: npm run test:e2e
@@ -76,7 +73,6 @@ jobs:
         CI: true
         E2E_TEST: true
         NODE_ENV: test
-        PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
     
     - name: Upload Playwright report
       uses: actions/upload-artifact@v4
