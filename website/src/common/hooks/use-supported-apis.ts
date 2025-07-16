@@ -6,6 +6,7 @@ interface SupportedApisState {
   supportedApis: string[];
   isEmergencyStopSupported: boolean;
   isDeviceStatusSupported: boolean;
+  isTimeApiSupported: boolean;
   isLoading: boolean;
   hasError: boolean;
 }
@@ -24,6 +25,7 @@ export const useSupportedApisProvider = () => {
   const [supportedApis, setSupportedApis] = useState<string[]>([]);
   const [isEmergencyStopSupported, setIsEmergencyStopSupported] = useState<boolean>(false);
   const [isDeviceStatusSupported, setIsDeviceStatusSupported] = useState<boolean>(false);
+  const [isTimeApiSupported, setIsTimeApiSupported] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
   const { isAuthenticated } = useAuth();
@@ -35,6 +37,7 @@ export const useSupportedApisProvider = () => {
       setIsEmergencyStopSupported(false);
       setIsDeviceStatusSupported(false);
       setIsLoading(false);
+      setIsTimeApiSupported(false);
       setHasError(false);
       return;
     }
@@ -52,11 +55,13 @@ export const useSupportedApisProvider = () => {
           setSupportedApis(response.apis_supported);
           setIsEmergencyStopSupported(response.apis_supported.includes("/api/emergency_stop"));
           setIsDeviceStatusSupported(response.apis_supported.includes("/api/get_device_status"));
+          setIsTimeApiSupported(response.apis_supported.includes("/api/get_time"));
           setHasError(false);
         } else if (isSubscribed) {
           setSupportedApis([]);
           setIsEmergencyStopSupported(false);
           setIsDeviceStatusSupported(false);
+          setIsTimeApiSupported(false);
           setHasError(true);
         }
       } catch (error) {
@@ -64,7 +69,8 @@ export const useSupportedApisProvider = () => {
         if (isSubscribed) {
           setSupportedApis([]);
           setIsEmergencyStopSupported(false);
-          setIsEmergencyStopSupported(false);
+          setIsDeviceStatusSupported(false);
+          setIsTimeApiSupported(false);
           setHasError(true);
         }
       } finally {
@@ -88,6 +94,7 @@ export const useSupportedApisProvider = () => {
     supportedApis,
     isEmergencyStopSupported,
     isDeviceStatusSupported,
+    isTimeApiSupported,
     isLoading,
     hasError,
   };
