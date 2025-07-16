@@ -2,9 +2,9 @@ name: Test Automation
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]  # Only run on main branches
   pull_request:
-    branches: [ main ]
+    branches: [ main, settings-and-battery ]  # Run on all PRs to main and settings-and-battery
   workflow_dispatch: # Allows manual triggering
 
 jobs:
