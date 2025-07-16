@@ -1,19 +1,17 @@
-import { Box, Container, SpaceBetween, Grid } from '@cloudscape-design/components';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ApiHelper } from '../common/helpers/api-helper';
+import { Box, Container, SpaceBetween, Grid } from "@cloudscape-design/components";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ApiHelper } from "../common/helpers/api-helper";
 
 export function SystemUnavailablePage() {
   const navigate = useNavigate();
-  const setIsPolling = useState(true)[1];
 
   useEffect(() => {
     const checkSystem = async () => {
       try {
-        const response = await ApiHelper.get('logs/SYS/200');
+        const response = await ApiHelper.get("server_ready");
         if (response) {
-          setIsPolling(false);
-          navigate('/home');
+          navigate("/home", { replace: true });
         }
       } catch (error) {
         // System still unavailable, continue polling
@@ -24,7 +22,6 @@ export function SystemUnavailablePage() {
 
     return () => {
       clearInterval(pollInterval);
-      setIsPolling(false);
     };
   }, [navigate]);
 
@@ -50,7 +47,7 @@ export function SystemUnavailablePage() {
 
             <Box textAlign="center">
               If the problem persists try rebooting your DeepRacer car.
-              <br/>
+              <br />
               If rebooting doesn't fix the problem consider flashing your car.
             </Box>
           </SpaceBetween>

@@ -85,7 +85,7 @@ export const SoftwareUpdatePage = () => {
             setTimeout(checkServerReady, 2000);
           }
         };
-        
+
         checkServerReady();
       }, 15000); // Wait 15 seconds before starting checks
     };
@@ -135,7 +135,7 @@ export const SoftwareUpdatePage = () => {
   };
 
   const handleReturnToSettings = () => {
-    navigate("/settings");
+    navigate("/settings", { replace: true });
   };
 
   return (
@@ -160,7 +160,8 @@ export const SoftwareUpdatePage = () => {
 
             {updateStatus === "rebooting" ? (
               <Alert type="info">
-                Update installation complete. System is rebooting. Please wait while the device comes back online...
+                Update installation complete. System is rebooting. Please wait while the device
+                comes back online...
               </Alert>
             ) : updateStatus === "complete" ? (
               <Alert type="success">
@@ -168,7 +169,8 @@ export const SoftwareUpdatePage = () => {
               </Alert>
             ) : (
               <Alert type="warning">
-                Please wait while your AWS DeepRacer software is being updated. Do not power off the device during this process.
+                Please wait while your AWS DeepRacer software is being updated. Do not power off the
+                device during this process.
               </Alert>
             )}
 

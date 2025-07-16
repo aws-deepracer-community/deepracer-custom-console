@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { createContext, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 // Define the API Context type
 interface ApiContextType {
@@ -23,6 +23,7 @@ export const useApi = () => {
 // Hook to provide API context values
 export const useApiProvider = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const get = async <T>(path: string): Promise<T | null> => {
     try {
@@ -35,7 +36,7 @@ export const useApiProvider = () => {
       if (error.response?.status === 401) {
         console.log("Unauthorized");
         // Only redirect if we're not already on the login page
-        if (!window.location.pathname.includes("/login")) {
+        if (!location.pathname.includes("/login")) {
           navigate("/login");
         }
         return null;
@@ -59,8 +60,8 @@ export const useApiProvider = () => {
         // Don't redirect to system-unavailable if we're on the software update page
         // or already on system-unavailable
         if (
-          !window.location.hash.includes("/software-update") &&
-          !window.location.hash.includes("/system-unavailable")
+          !location.pathname.includes("/software-update") &&
+          !location.pathname.includes("/system-unavailable")
         ) {
           navigate("/system-unavailable");
         }
@@ -82,7 +83,7 @@ export const useApiProvider = () => {
       if (error.response?.status === 401) {
         console.log("Unauthorized");
         // Only redirect if we're not already on the login page
-        if (!window.location.pathname.includes("/login")) {
+        if (!location.pathname.includes("/login")) {
           navigate("/login");
         }
         return null;
@@ -106,8 +107,8 @@ export const useApiProvider = () => {
         // Don't redirect to system-unavailable if we're on the software update page
         // or already on system-unavailable
         if (
-          !window.location.hash.includes("/software-update") &&
-          !window.location.hash.includes("/system-unavailable")
+          !location.pathname.includes("/software-update") &&
+          !location.pathname.includes("/system-unavailable")
         ) {
           navigate("/system-unavailable");
         }
