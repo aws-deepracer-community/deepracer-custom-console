@@ -121,7 +121,7 @@ export const AboutContainer = () => {
               {
                 label: "Software Version",
                 value:
-                  deviceInfo.software_version == "Unknown" ? (
+                  deviceInfo.software_version === "Unknown" ? (
                     <StatusIndicator type="warning">Unknown</StatusIndicator>
                   ) : (
                     deviceInfo.software_version
@@ -145,7 +145,7 @@ export const AboutContainer = () => {
               {
                 label: "Hardware Version",
                 value:
-                  deviceInfo.hardware_version == "Unknown" ? (
+                  deviceInfo.hardware_version === "Unknown" ? (
                     <StatusIndicator type="warning">Unknown</StatusIndicator>
                   ) : (
                     deviceInfo.hardware_version
