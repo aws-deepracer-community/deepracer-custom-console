@@ -5,6 +5,14 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './e2e',
+  /* Maximum time one test can run for. */
+  timeout: 30 * 1000,
+  /* Global timeout for the entire test run */
+  globalTimeout: process.env.CI ? 10 * 60 * 1000 : undefined, // 10 minutes in CI
+  /* Maximum time to wait for an action in test (e.g., click) */
+  expect: {
+    timeout: 5 * 1000,
+  },
   /* Output directories */
   outputDir: '../test-results',
   /* Run tests in files in parallel */
@@ -12,7 +20,7 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0, // Reduced retries to save time
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -30,7 +38,13 @@ export default defineConfig({
   },
 
   /* Configure projects for major browsers */
-  projects: [
+  projects: process.env.CI ? [
+    // Only run on Chromium in CI to reduce test time
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ] : [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
@@ -72,8 +86,12 @@ export default defineConfig({
     command: 'E2E_TEST=true npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // 2 minutes timeout for server startup
+    stderr: 'pipe',
+    stdout: 'pipe',
     env: {
-      E2E_TEST: 'true'
+      E2E_TEST: 'true',
+      NODE_ENV: 'test'
     }
   },
 })

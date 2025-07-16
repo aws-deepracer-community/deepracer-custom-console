@@ -5,6 +5,7 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   unit-tests:
@@ -20,7 +21,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
     
     - name: Install dependencies
       run: npm install
@@ -51,10 +52,13 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
     
     - name: Install dependencies
       run: npm install
+    
+    - name: Install Node.js types
+      run: npm install --save-dev @types/node
     
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
@@ -62,8 +66,17 @@ jobs:
     - name: Build application
       run: npm run build
     
+    - name: Debug - Check available ports
+      run: netstat -tlnp || ss -tlnp || echo "No netstat/ss available"
+    
     - name: Run E2E tests
+      timeout-minutes: 10
       run: npm run test:e2e
+      env:
+        CI: true
+        E2E_TEST: true
+        NODE_ENV: test
+        PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
     
     - name: Upload Playwright report
       uses: actions/upload-artifact@v4
@@ -87,7 +100,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
     
     - name: Install dependencies
       run: npm install
