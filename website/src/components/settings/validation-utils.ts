@@ -39,7 +39,7 @@ export const validateConfirmPassword = (newPassword: string, confirmPassword: st
     confirmPasswordError = true;
     return;
   }
-  if (newPassword != confirmPassword) {
+  if (newPassword !== confirmPassword) {
     confirmPasswordError = true;
     return "New password and confirm password do not match";
   }

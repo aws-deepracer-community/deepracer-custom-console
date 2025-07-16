@@ -179,7 +179,7 @@ export const DeviceSshContainer = () => {
               <Button
                 loading={sshEnabling}
                 disabled={
-                  sshData.isSshEnabled == "Unknown" ? true : sshData.isSshEnabled ? true : false
+                  sshData.isSshEnabled === "Unknown" ? true : sshData.isSshEnabled ? true : false
                 }
                 onClick={() => enableSsh()}
               >
@@ -188,7 +188,7 @@ export const DeviceSshContainer = () => {
               <Button
                 loading={sshDisabling}
                 disabled={
-                  sshData.isSshEnabled == "Unknown" ? true : sshData.isSshEnabled ? false : true
+                  sshData.isSshEnabled === "Unknown" ? true : sshData.isSshEnabled ? false : true
                 }
                 onClick={() => disbleSsh()}
               >
@@ -196,7 +196,7 @@ export const DeviceSshContainer = () => {
               </Button>
               <Button
                 disabled={
-                  sshData.isSshEnabled == "Unknown" ? true : sshData.isSshEnabled ? false : true
+                  sshData.isSshEnabled === "Unknown" ? true : sshData.isSshEnabled ? false : true
                 }
                 onClick={() => showSSHPasswordModal(true)}
               >
@@ -216,7 +216,7 @@ export const DeviceSshContainer = () => {
             {
               label: "SSH Server",
               value:
-                sshData.isSshEnabled == "Unknown" ? (
+                sshData.isSshEnabled === "Unknown" ? (
                   <StatusIndicator type="warning">Unknown</StatusIndicator>
                 ) : sshData.isSshEnabled ? (
                   <StatusIndicator type="success">Enabled</StatusIndicator>

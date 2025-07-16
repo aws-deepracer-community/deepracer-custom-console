@@ -62,7 +62,7 @@ export const NetworkSettingsContainer = () => {
           {
             label: "Wi-Fi Network SSID",
             value:
-              networkData.SSID == "Unknown" ? (
+              networkData.SSID === "Unknown" ? (
                 <StatusIndicator type="warning">Unknown</StatusIndicator>
               ) : (
                 networkData.SSID
@@ -71,7 +71,7 @@ export const NetworkSettingsContainer = () => {
           {
             label: "Vehicle IP Address",
             value:
-              networkData.ip_address == "Unknown" ? (
+              networkData.ip_address === "Unknown" ? (
                 <StatusIndicator type="warning">Unknown</StatusIndicator>
               ) : (
                 networkData.ip_address
@@ -80,7 +80,7 @@ export const NetworkSettingsContainer = () => {
           {
             label: "USB connection",
             value:
-              networkData.is_usb_connected == "Unknown" ? (
+              networkData.is_usb_connected === "Unknown" ? (
                 <StatusIndicator type="warning">Unknown</StatusIndicator>
               ) : networkData.is_usb_connected ? (
                 <StatusIndicator type="success">Connected</StatusIndicator>
