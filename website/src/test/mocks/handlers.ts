@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { http, HttpResponse } from "msw";
 import type {
   BatteryResponse,
@@ -106,13 +105,13 @@ export const handlers = [
 
   // Vehicle control APIs
   http.post("/api/start_stop", async ({ request }) => {
-    const body = (await request.json()) as { start_stop: string };
+    await request.json(); // Extract body but don't store it
     const response: DriveResponse = { success: true };
     return HttpResponse.json(response);
   }),
 
   http.post("/api/drive_mode", async ({ request }) => {
-    const body = (await request.json()) as { drive_mode: string };
+    await request.json(); // Extract body but don't store it
     const response: DriveResponse = { success: true };
     return HttpResponse.json(response);
   }),
@@ -123,7 +122,7 @@ export const handlers = [
   }),
 
   http.post("/api/max_nav_throttle", async ({ request }) => {
-    const body = (await request.json()) as { throttle: number };
+    await request.json(); // Extract body but don't store it
     const response: DriveResponse = { success: true };
     return HttpResponse.json(response);
   }),
@@ -141,7 +140,7 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/models/:modelName/model", ({ params }) => {
+  http.post("/api/models/:modelName/model", () => {
     return HttpResponse.json({ success: true });
   }),
 
@@ -152,12 +151,12 @@ export const handlers = [
     ]);
   }),
 
-  http.post("/api/deleteModels", async ({ request }) => {
+  http.post("/api/deleteModels", async () => {
     const response: DeleteModelsResponse = { success: true };
     return HttpResponse.json(response);
   }),
 
-  http.get("/api/isModelInstalled/:modelName", ({ params }) => {
+  http.get("/api/isModelInstalled/:modelName", () => {
     const response: ModelInstalledResponse = {
       success: true,
       modelInstalled: true,
@@ -191,22 +190,22 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/set_calibration/angle", async ({ request }) => {
+  http.post("/api/set_calibration/angle", async () => {
     const response: CalibrationResponse = { success: true };
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/set_calibration/throttle", async ({ request }) => {
+  http.post("/api/set_calibration/throttle", async () => {
     const response: CalibrationResponse = { success: true };
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/adjust_calibrating_wheels/angle", async ({ request }) => {
+  http.post("/api/adjust_calibrating_wheels/angle", async () => {
     const response: AdjustWheelsResponse = { success: true };
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/adjust_calibrating_wheels/throttle", async ({ request }) => {
+  http.post("/api/adjust_calibrating_wheels/throttle", async () => {
     const response: AdjustWheelsResponse = { success: true };
     return HttpResponse.json(response);
   }),
@@ -257,7 +256,7 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/set_timezone", async ({ request }) => {
+  http.post("/api/set_timezone", async () => {
     return HttpResponse.json({ success: true });
   }),
 
@@ -270,7 +269,7 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/set_led_color", async ({ request }) => {
+  http.post("/api/set_led_color", async () => {
     const response: LedColorResponse = { success: true };
     return HttpResponse.json(response);
   }),
@@ -302,7 +301,7 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/resetSshPassword", async ({ request }) => {
+  http.post("/api/resetSshPassword", async () => {
     const response: PasswordResponse = {
       success: true,
       message: "Password reset successfully",
@@ -310,7 +309,7 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/password", async ({ request }) => {
+  http.post("/api/password", async () => {
     const response: PasswordResponse = {
       success: true,
       message: "Password changed successfully",
@@ -336,7 +335,7 @@ export const handlers = [
   }),
 
   // Logs API
-  http.get("/api/logs/:logType/:count", ({ params }) => {
+  http.get("/api/logs/:logType/:count", () => {
     const response: LogsResponse = {
       success: true,
       logs: [
