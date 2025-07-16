@@ -14,6 +14,7 @@ import LoginPage from "./pages/login";
 import EditNetworkPage from "./pages/edit-network";
 import UpdateNetworkPage from "./pages/update-network";
 import SystemUnavailablePage from "./pages/system-unavailable";
+import { SoftwareUpdatePage } from "./pages/software-update";
 import { ContextProvider, AuthProvider, ApiProvider } from "./components/context-provider";
 
 // Protected Route wrapper component
@@ -46,6 +47,7 @@ export default function App() {
                   {/* Public routes */}
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/system-unavailable" element={<SystemUnavailablePage />} />
+                  <Route path="/software-update" element={<SoftwareUpdatePage />} />
                   <Route path="/logout" element={<LoginPage />} />
 
                   {/* Protected routes */}

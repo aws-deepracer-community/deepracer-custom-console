@@ -24,7 +24,7 @@ export const useApi = () => {
 export const useApiProvider = () => {
   const navigate = useNavigate();
 
-  const get = async <T,>(path: string): Promise<T | null> => {
+  const get = async <T>(path: string): Promise<T | null> => {
     try {
       const response: AxiosResponse<T> = await axios.get("/api/" + path, {
         timeout: 10000, // 10 seconds timeout
@@ -56,7 +56,14 @@ export const useApiProvider = () => {
           message: error.message,
           status: error.request?.status,
         });
-        navigate("/system-unavailable");
+        // Don't redirect to system-unavailable if we're on the software update page
+        // or already on system-unavailable
+        if (
+          !window.location.hash.includes("/software-update") &&
+          !window.location.hash.includes("/system-unavailable")
+        ) {
+          navigate("/system-unavailable");
+        }
         return null;
       }
       console.error("Error getting api " + path + ":", error);
@@ -64,7 +71,7 @@ export const useApiProvider = () => {
     }
   };
 
-  const post = async <T,>(path: string, data: unknown): Promise<T | null> => {
+  const post = async <T>(path: string, data: unknown): Promise<T | null> => {
     try {
       const response: AxiosResponse<T> = await axios.post("/api/" + path, data, {
         timeout: 10000, // 10 seconds timeout
@@ -96,7 +103,14 @@ export const useApiProvider = () => {
           message: error.message,
           status: error.request?.status,
         });
-        navigate("/system-unavailable");
+        // Don't redirect to system-unavailable if we're on the software update page
+        // or already on system-unavailable
+        if (
+          !window.location.hash.includes("/software-update") &&
+          !window.location.hash.includes("/system-unavailable")
+        ) {
+          navigate("/system-unavailable");
+        }
         return null;
       }
       console.error("Error posting to api " + path + ":", error);
