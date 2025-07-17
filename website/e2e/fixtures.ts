@@ -291,6 +291,33 @@ async function setupCommonMocks(page: any) {
     });
   });
 
+  // Load Model
+  await page.route("**/api/models/*/model", async (route) => {
+    const modelName = route.request().url().split("/").slice(-2)[0];
+    console.log("Load Model Request:", {
+      modelName,
+      method: route.request().method(),
+      url: route.request().url(),
+    });
+    if (modelName === "Sample_single_cam") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: true,
+        }),
+      });
+    } else {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+        }),
+      });
+    }
+  });
+
   // Handle login endpoint for authentication
   await page.route("**/login", async (route: any) => {
     // If running in WebKit, manually set the cookie before login POST
