@@ -247,6 +247,50 @@ async function setupCommonMocks(page: any) {
     });
   });
 
+  // Calibration
+  await page.route("**/api/get_calibration/<cali_type>", async (route) => {
+    const caliType = route.request().url().split("/").slice(-1)[0];
+
+    if (!["angle", "speed"].includes(caliType)) {
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          message: "Invalid calibration type",
+        }),
+      });
+      return;
+    }
+
+    // Mock calibration data based on type
+    if (caliType === "angle") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ max: 20.0, mid: -5.0, min: -30.0, polarity: 1, success: true }),
+      });
+    }
+
+    if (caliType === "throttle") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ max: 23.0, mid: -12.0, min: -42.0, polarity: -1, success: true }),
+      });
+    }
+  });
+
+  await page.route("**/api/set_calibration_mode", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+      }),
+    });
+  });
+
   // Handle login endpoint for authentication
   await page.route("**/login", async (route: any) => {
     // If running in WebKit, manually set the cookie before login POST
@@ -267,7 +311,7 @@ async function setupCommonMocks(page: any) {
       await route.fulfill({
         status: 200,
         contentType: "text/plain",
-        body: JSON.stringify({"redirect":"/home"}),
+        body: JSON.stringify({ redirect: "/home" }),
         headers: {
           // Set-Cookie header to embed the cookie in the response
           "Set-Cookie": "deepracer_token=test-auth-token; Path=/; Domain=localhost",
