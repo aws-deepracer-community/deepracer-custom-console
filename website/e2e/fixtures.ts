@@ -267,7 +267,7 @@ async function setupCommonMocks(page: any) {
       await route.fulfill({
         status: 200,
         contentType: "text/plain",
-        body: "success",
+        body: JSON.stringify({"redirect":"/home"}),
         headers: {
           // Set-Cookie header to embed the cookie in the response
           "Set-Cookie": "deepracer_token=test-auth-token; Path=/; Domain=localhost",
