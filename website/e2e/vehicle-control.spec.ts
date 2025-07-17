@@ -31,7 +31,6 @@ test.describe("DeepRacer Vehicle Control", () => {
 
   test("should enable loading of a model", async ({ page }) => {
     // Mock models API
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let requestStatus = "error";
 
     await page.route("**/api/isModelLoading", async (route) => {
