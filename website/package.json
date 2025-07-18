@@ -8,7 +8,13 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "npx prettier --ignore-path .gitignore --write \"**/*.+(tsx|js|ts|json)\""
+    "format": "npx prettier --ignore-path .gitignore --write \"**/*.+(tsx|js|ts|json)\"",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@cloudscape-design/components": "^3.0.878",
@@ -23,6 +29,11 @@
     "sass": "^1.83.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^22.13.11",
     "@types/react": "^18.2.55",
     "@types/react-color": "^3.0.13",
@@ -31,13 +42,18 @@
     "@typescript-eslint/parser": "^6.21.0",
     "@uiw/react-color-circle": "^2.3.4",
     "@vitejs/plugin-react": "^4.3.2",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "jsdom": "^25.0.1",
+    "msw": "^2.6.6",
     "postcss": "^8.4.35",
     "typescript": "^5.2.2",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vitest": "^2.1.8"
   },
   "overrides": {
     "react-virtual": {
