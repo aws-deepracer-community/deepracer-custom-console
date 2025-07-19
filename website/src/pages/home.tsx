@@ -75,6 +75,9 @@ const HomePage = () => {
   const [localFlashMessages, setLocalFlashMessages] = useState<FlashbarProps.MessageDefinition[]>(
     []
   );
+
+  const SENSOR_STATUS_REFRESH_INTERVAL_MS = 15000; // 15 seconds
+
   // Check for scrollbars after render and on resize
   useLayoutEffect(() => {
     const checkForScrollbars = () => {
@@ -171,7 +174,10 @@ const HomePage = () => {
 
   const fetchSensorStatus = async () => {
     try {
-      const data = await ApiHelper.get<SensorStatusResponse>("get_sensor_status");
+      const data = await ApiHelper.get<SensorStatusResponse>(
+        "get_sensor_status",
+        SENSOR_STATUS_REFRESH_INTERVAL_MS
+      );
       if (data?.success) {
         setSensorStatus(data);
       }
@@ -181,7 +187,7 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    const intervalId = setInterval(fetchSensorStatus, 10000);
+    const intervalId = setInterval(fetchSensorStatus, SENSOR_STATUS_REFRESH_INTERVAL_MS);
 
     // Cleanup on component unmount
     return () => {

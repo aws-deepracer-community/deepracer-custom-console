@@ -135,7 +135,7 @@ export const DeviceSshContainer = () => {
     sshPasswordInputType = "password";
   };
 
-  const disbleSsh = async () => {
+  const disableSsh = async () => {
     setsshDisabling(true);
     const setSsh = await ApiHelper.get<SshResponse>("disableSsh");
     if (setSsh?.success) {
@@ -190,7 +190,7 @@ export const DeviceSshContainer = () => {
                 disabled={
                   sshData.isSshEnabled === "Unknown" ? true : sshData.isSshEnabled ? false : true
                 }
-                onClick={() => disbleSsh()}
+                onClick={() => disableSsh()}
               >
                 Disable SSH
               </Button>
