@@ -1,31 +1,31 @@
-import { ReactElement } from 'react'
-import { render as rtlRender } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { expect } from 'vitest'
-import { BatteryContext } from '../common/hooks/use-battery'
-import { NetworkContext } from '../common/hooks/use-network'
-import { SupportedApisContext } from '../common/hooks/use-supported-apis'
-import { ModelsContext } from '../common/hooks/use-models'
-import { PreferencesContext } from '../common/hooks/use-preferences'
-import { ApiContext } from '../common/hooks/use-api'
-import { AuthContext } from '../common/hooks/use-authentication'
-import { KeyValuePairsWrapper } from '@cloudscape-design/components/test-utils/dom'
+import { ReactElement } from "react";
+import { render as rtlRender } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { expect } from "vitest";
+import { BatteryContext } from "../common/hooks/use-battery";
+import { NetworkContext } from "../common/hooks/use-network";
+import { SupportedApisContext } from "../common/hooks/use-supported-apis";
+import { ModelsContext } from "../common/hooks/use-models";
+import { PreferencesContext } from "../common/hooks/use-preferences";
+import { ApiContext } from "../common/hooks/use-api";
+import { AuthContext } from "../common/hooks/use-authentication";
+import { KeyValuePairsWrapper } from "@cloudscape-design/components/test-utils/dom";
 
 // Re-export everything from testing library
 // eslint-disable-next-line react-refresh/only-export-components
-export * from '@testing-library/react'
+export * from "@testing-library/react";
 
 // Mock providers for testing
 const mockApiProvider = {
   get: async <T,>(): Promise<T | null> => ({ success: true } as T),
   post: async <T,>(): Promise<T | null> => ({ success: true } as T),
-}
+};
 
 const mockAuthProvider = {
   isAuthenticated: true,
   login: () => {},
   logout: () => {},
-}
+};
 
 const mockBatteryProvider = {
   batteryLevel: 85,
@@ -36,37 +36,37 @@ const mockBatteryProvider = {
   setBatteryWarningDismissed: () => {},
   setBatteryErrorDismissed: () => {},
   batteryFlashbarItems: [],
-}
+};
 
 const mockNetworkProvider = {
-  ssid: 'DeepRacer-WiFi',
-  ipAddresses: ['192.168.1.100'],
+  ssid: "DeepRacer-WiFi",
+  ipAddresses: ["192.168.1.100"],
   isLoading: false,
   hasError: false,
-}
+};
 
 const mockSupportedApisProvider = {
-  supportedApis: ['get_battery_level', 'start_stop', 'emergency_stop'],
+  supportedApis: ["get_battery_level", "start_stop", "emergency_stop"],
   isEmergencyStopSupported: true,
   isDeviceStatusSupported: true,
   isTimeApiSupported: true,
   isLoading: false,
   hasError: false,
-}
+};
 
 const mockModelsProvider = {
   modelOptions: [
     {
-      label: 'my-racing-model',
-      value: 'my-racing-model',
-      description: 'A racing model',
+      label: "my-racing-model",
+      value: "my-racing-model",
+      description: "A racing model",
       disabled: false,
     },
   ],
   selectedModel: {
-    label: 'my-racing-model',
-    value: 'my-racing-model',
-    description: 'A racing model',
+    label: "my-racing-model",
+    value: "my-racing-model",
+    description: "A racing model",
     disabled: false,
   },
   isModelLoaded: true,
@@ -82,7 +82,7 @@ const mockModelsProvider = {
   modelFlashbarItems: [],
   clearModelFlashbar: () => {},
   checkModelLoadStatus: async () => true,
-}
+};
 
 const mockPreferencesProvider = {
   settings: {
@@ -91,7 +91,7 @@ const mockPreferencesProvider = {
   },
   setEnableSpeedAdjustment: () => {},
   setEnableDeviceStatus: () => {},
-}
+};
 
 // Comprehensive render function with all providers
 export const render = (ui: ReactElement) => {
@@ -103,9 +103,7 @@ export const render = (ui: ReactElement) => {
             <PreferencesContext.Provider value={mockPreferencesProvider}>
               <BatteryContext.Provider value={mockBatteryProvider}>
                 <NetworkContext.Provider value={mockNetworkProvider}>
-                  <ModelsContext.Provider value={mockModelsProvider}>
-                    {ui}
-                  </ModelsContext.Provider>
+                  <ModelsContext.Provider value={mockModelsProvider}>{ui}</ModelsContext.Provider>
                 </NetworkContext.Provider>
               </BatteryContext.Provider>
             </PreferencesContext.Provider>
@@ -113,8 +111,8 @@ export const render = (ui: ReactElement) => {
         </ApiContext.Provider>
       </AuthContext.Provider>
     </BrowserRouter>
-  )
-}
+  );
+};
 
 // Reusable helper function for testing key-value pairs
 export const expectKeyValuePair = (

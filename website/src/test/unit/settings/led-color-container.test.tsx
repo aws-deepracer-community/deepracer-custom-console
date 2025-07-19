@@ -19,20 +19,26 @@ vi.mock("../../../components/settings/validation-utils", () => ({
 
 // Mock the color circle component
 vi.mock("@uiw/react-color-circle", () => ({
-  default: ({ onChange, color, colors }: { 
-    onChange: (color: { hex: string; rgb: { r: number; g: number; b: number } }) => void; 
-    color: string; 
-    colors: string[] 
+  default: ({
+    onChange,
+    color,
+    colors,
+  }: {
+    onChange: (color: { hex: string; rgb: { r: number; g: number; b: number } }) => void;
+    color: string;
+    colors: string[];
   }) => (
     <div data-testid="color-circle" data-color={color}>
       {colors.map((colorOption, index) => (
         <button
           key={index}
           data-testid={`color-option-${colorOption}`}
-          onClick={() => onChange({ 
-            hex: colorOption, 
-            rgb: { r: 255, g: 0, b: 0 } // Mock RGB values
-          })}
+          onClick={() =>
+            onChange({
+              hex: colorOption,
+              rgb: { r: 255, g: 0, b: 0 }, // Mock RGB values
+            })
+          }
         >
           {colorOption}
         </button>
@@ -42,7 +48,9 @@ vi.mock("@uiw/react-color-circle", () => ({
 }));
 
 const mockApiHelper = vi.mocked(ApiHelper);
-const mockGetColorRgb = vi.mocked(await import("../../../components/settings/validation-utils")).getColorRgb;
+const mockGetColorRgb = vi.mocked(
+  await import("../../../components/settings/validation-utils")
+).getColorRgb;
 
 describe("LedColorContainer", () => {
   beforeEach(() => {
@@ -108,7 +116,7 @@ describe("LedColorContainer", () => {
 
       // Check that the Turn Off LED button is present
       const buttons = wrapper.findAllButtons();
-      const turnOffButton = buttons.find((btn) => 
+      const turnOffButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Turn Off LED")
       );
       expect(turnOffButton).toBeTruthy();
@@ -193,7 +201,7 @@ describe("LedColorContainer", () => {
 
       // Find and click the Turn Off LED button
       const buttons = wrapper.findAllButtons();
-      const turnOffButton = buttons.find((btn) => 
+      const turnOffButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Turn Off LED")
       );
 
@@ -238,7 +246,7 @@ describe("LedColorContainer", () => {
 
       // Click the blue color option
       await act(async () => {
-        blueColorButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        blueColorButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       });
 
       // Verify POST API call is made with the selected color RGB values

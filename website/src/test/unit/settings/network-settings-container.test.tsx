@@ -31,10 +31,7 @@ describe("NetworkSettingsContainer", () => {
     process.removeAllListeners("unhandledRejection");
     process.on("unhandledRejection", (reason) => {
       // Ignore expected test errors
-      if (
-        reason instanceof Error &&
-        (reason.message === "Network error")
-      ) {
+      if (reason instanceof Error && reason.message === "Network error") {
         return;
       }
       // Re-throw unexpected errors
@@ -102,9 +99,7 @@ describe("NetworkSettingsContainer", () => {
 
       // Check that the Edit button is present
       const buttons = wrapper.findAllButtons();
-      const editButton = buttons.find((btn) => 
-        btn.getElement().textContent?.includes("Edit")
-      );
+      const editButton = buttons.find((btn) => btn.getElement().textContent?.includes("Edit"));
       expect(editButton).toBeTruthy();
     });
 
@@ -181,7 +176,7 @@ describe("NetworkSettingsContainer", () => {
       const apiPromise = new Promise<typeof mockNetworkResponse>((resolve) => {
         resolveApiCall = resolve;
       });
-      
+
       mockApiHelper.get.mockReturnValue(apiPromise);
 
       const { container } = render(<NetworkSettingsContainer />);
@@ -205,9 +200,7 @@ describe("NetworkSettingsContainer", () => {
 
       // Check that the Edit button is present
       const buttons = wrapper.findAllButtons();
-      const editButton = buttons.find((btn) => 
-        btn.getElement().textContent?.includes("Edit")
-      );
+      const editButton = buttons.find((btn) => btn.getElement().textContent?.includes("Edit"));
       expect(editButton).toBeTruthy();
 
       // Now resolve the API call to complete the test
@@ -237,9 +230,7 @@ describe("NetworkSettingsContainer", () => {
 
       // Find and click the Edit button
       const buttons = wrapper.findAllButtons();
-      const editButton = buttons.find((btn) => 
-        btn.getElement().textContent?.includes("Edit")
-      );
+      const editButton = buttons.find((btn) => btn.getElement().textContent?.includes("Edit"));
 
       expect(editButton).toBeTruthy();
       editButton?.click();

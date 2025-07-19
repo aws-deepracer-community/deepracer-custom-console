@@ -76,17 +76,17 @@ describe("TimeContainer", () => {
       const buttons = wrapper.findAllButtons();
       expect(buttons).toHaveLength(2);
 
-      const refreshButton = buttons.find((btn) => 
+      const refreshButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Refresh")
       );
-      const setBrowserTimezoneButton = buttons.find((btn) => 
+      const setBrowserTimezoneButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Set to Browser Timezone")
       );
 
       expect(refreshButton).toBeTruthy();
       expect(setBrowserTimezoneButton).toBeTruthy();
 
-      // Both buttons should be enabled since timezone_changed is false 
+      // Both buttons should be enabled since timezone_changed is false
       // and car timezone (UTC) differs from browser timezone (America/New_York)
       expect(refreshButton?.getElement()).not.toBeDisabled();
       expect(setBrowserTimezoneButton?.getElement()).not.toBeDisabled();
@@ -129,10 +129,10 @@ describe("TimeContainer", () => {
       const buttons = wrapper.findAllButtons();
       expect(buttons).toHaveLength(2);
 
-      const refreshButton = buttons.find((btn) => 
+      const refreshButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Refresh")
       );
-      const setBrowserTimezoneButton = buttons.find((btn) => 
+      const setBrowserTimezoneButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Set to Browser Timezone")
       );
 
@@ -151,7 +151,7 @@ describe("TimeContainer", () => {
       const apiPromise = new Promise<typeof mockTimeResponse>((resolve) => {
         resolveApiCall = resolve;
       });
-      
+
       mockApiHelper.get.mockReturnValue(apiPromise);
 
       const { container } = render(<TimeContainer />);
@@ -177,17 +177,17 @@ describe("TimeContainer", () => {
       const buttons = wrapper.findAllButtons();
       expect(buttons).toHaveLength(2);
 
-      const refreshButton = buttons.find((btn) => 
+      const refreshButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Refresh")
       );
-      const setBrowserTimezoneButton = buttons.find((btn) => 
+      const setBrowserTimezoneButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Set to Browser Timezone")
       );
 
       expect(refreshButton).toBeTruthy();
       expect(setBrowserTimezoneButton).toBeTruthy();
 
-      // Set to Browser Timezone button should be enabled initially 
+      // Set to Browser Timezone button should be enabled initially
       // since timezone_changed is false (default) and "Unknown" !== "America/New_York"
       expect(refreshButton?.getElement()).not.toBeDisabled();
       expect(setBrowserTimezoneButton?.getElement()).not.toBeDisabled();
@@ -234,9 +234,11 @@ describe("TimeContainer", () => {
       await waitFor(() => {
         const alerts = wrapper.findAllAlerts();
         expect(alerts).toHaveLength(1);
-        
+
         const alert = alerts[0];
-        expect(alert.getElement()).toHaveTextContent("Timezone changed. Reset DeepRacer for changes to take effect.");
+        expect(alert.getElement()).toHaveTextContent(
+          "Timezone changed. Reset DeepRacer for changes to take effect."
+        );
       });
 
       // Check that buttons are still present
@@ -244,7 +246,7 @@ describe("TimeContainer", () => {
       expect(buttons).toHaveLength(2);
 
       // Set to Browser Timezone button should be disabled when timezone_changed is true
-      const setBrowserTimezoneButton = buttons.find((btn) => 
+      const setBrowserTimezoneButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Set to Browser Timezone")
       );
       expect(setBrowserTimezoneButton?.getElement()).toBeDisabled();
@@ -286,7 +288,7 @@ describe("TimeContainer", () => {
 
       // Find and click the refresh button
       const buttons = wrapper.findAllButtons();
-      const refreshButton = buttons.find((btn) => 
+      const refreshButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Refresh")
       );
 
@@ -347,7 +349,7 @@ describe("TimeContainer", () => {
 
       // Find and click the Set to Browser Timezone button
       const buttons = wrapper.findAllButtons();
-      const setBrowserTimezoneButton = buttons.find((btn) => 
+      const setBrowserTimezoneButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Set to Browser Timezone")
       );
 
@@ -373,7 +375,9 @@ describe("TimeContainer", () => {
       await waitFor(() => {
         const alerts = wrapper.findAllAlerts();
         const successAlert = alerts.find((alert) =>
-          alert.getElement().textContent?.includes("Timezone was updated successfully to America/New_York")
+          alert
+            .getElement()
+            .textContent?.includes("Timezone was updated successfully to America/New_York")
         );
         expect(successAlert).toBeTruthy();
       });
@@ -396,7 +400,7 @@ describe("TimeContainer", () => {
 
       // Find and click the Set to Browser Timezone button
       const buttons = wrapper.findAllButtons();
-      const setBrowserTimezoneButton = buttons.find((btn) => 
+      const setBrowserTimezoneButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Set to Browser Timezone")
       );
 
@@ -443,7 +447,7 @@ describe("TimeContainer", () => {
 
       // Find and click the Set to Browser Timezone button
       const buttons = wrapper.findAllButtons();
-      const setBrowserTimezoneButton = buttons.find((btn) => 
+      const setBrowserTimezoneButton = buttons.find((btn) =>
         btn.getElement().textContent?.includes("Set to Browser Timezone")
       );
 
@@ -453,7 +457,7 @@ describe("TimeContainer", () => {
       // Verify button shows loading state
       await waitFor(() => {
         const updatedButtons = wrapper.findAllButtons();
-        const loadingButton = updatedButtons.find((btn) => 
+        const loadingButton = updatedButtons.find((btn) =>
           btn.getElement().textContent?.includes("Set to Browser Timezone")
         );
         expect(loadingButton?.getElement()).toBeDisabled();
@@ -465,7 +469,7 @@ describe("TimeContainer", () => {
       // Wait for loading to complete
       await waitFor(() => {
         const updatedButtons = wrapper.findAllButtons();
-        const completedButton = updatedButtons.find((btn) => 
+        const completedButton = updatedButtons.find((btn) =>
           btn.getElement().textContent?.includes("Set to Browser Timezone")
         );
         expect(completedButton?.getElement()).not.toBeDisabled();
