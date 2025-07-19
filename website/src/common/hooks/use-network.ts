@@ -37,6 +37,7 @@ export const useNetworkProvider = () => {
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
+  const [hasInitialReading, setHasInitialReading] = useState<boolean>(false);
   const [isUSBConnected, setIsUSBConnected] = useState<boolean>(false);
   const { isAuthenticated } = useAuth();
   const { get } = useApi();
@@ -60,6 +61,7 @@ export const useNetworkProvider = () => {
         setIsLoading(true);
         const response = await get<NetworkDetailsResponse>("get_network_details");
         if (response?.success && isSubscribed) {
+          setHasInitialReading(true);
           console.debug(
             `Success! SSID: ${response.SSID}, IP Address: ${response.ip_address}`
           );
@@ -93,7 +95,9 @@ export const useNetworkProvider = () => {
     };
 
     console.debug("Initializing network monitoring");
-    getNetworkStatus();
+    if (!hasInitialReading) {
+      getNetworkStatus();
+    }
     const networkInterval = setInterval(getNetworkStatus, NETWORK_INTERVAL_MS);
     console.debug(`Network monitoring interval set: ${NETWORK_INTERVAL_MS}ms`);
 
@@ -102,7 +106,7 @@ export const useNetworkProvider = () => {
       isSubscribed = false;
       clearInterval(networkInterval);
     };
-  }, [isAuthenticated, get]); // Add get as a dependency
+  }, [isAuthenticated, get, hasInitialReading]); // Add get as a dependency
 
   const networkContextValue: NetworkState = {
     ssid,
