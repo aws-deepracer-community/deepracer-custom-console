@@ -36,6 +36,7 @@ export default defineConfig({
         "e2e/", // Exclude E2E from coverage
         "**/*.d.ts",
         "**/*.config.*",
+        "**/*.cjs",
         "dist/",
         "coverage/",
       ],
