@@ -15,14 +15,14 @@ interface NetworkResponse {
   success: boolean;
   SSID: string;
   ip_address: string;
-  is_usb_connected: string;
+  is_usb_connected: boolean;
 }
 
 export const NetworkSettingsContainer = () => {
   const [networkData, setNetworkData] = useState({
     SSID: "Unknown",
     ip_address: "Unknown",
-    is_usb_connected: "Unknown",
+    is_usb_connected: undefined as boolean | undefined,
   });
   const navigate = useNavigate();
 
@@ -80,9 +80,9 @@ export const NetworkSettingsContainer = () => {
           {
             label: "USB connection",
             value:
-              networkData.is_usb_connected === "Unknown" ? (
+              networkData.is_usb_connected === undefined ? (
                 <StatusIndicator type="warning">Unknown</StatusIndicator>
-              ) : networkData.is_usb_connected ? (
+              ) : networkData.is_usb_connected === true ? (
                 <StatusIndicator type="success">Connected</StatusIndicator>
               ) : (
                 <StatusIndicator type="info">Not Connected</StatusIndicator>
