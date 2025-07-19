@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -8,37 +7,20 @@ import {
   KeyValuePairs,
   StatusIndicator,
 } from "@cloudscape-design/components";
-import { ApiHelper } from "../../common/helpers/api-helper";
-
-// Add interfaces for API responses
-interface NetworkResponse {
-  success: boolean;
-  SSID: string;
-  ip_address: string;
-  is_usb_connected: boolean;
-}
+import { useNetwork } from "../../common/hooks/use-network";
 
 export const NetworkSettingsContainer = () => {
-  const [networkData, setNetworkData] = useState({
-    SSID: "Unknown",
-    ip_address: "Unknown",
-    is_usb_connected: undefined as boolean | undefined,
-  });
+  const { ssid, ipAddresses, isUSBConnected, hasError } = useNetwork();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchNetworkSettingsData = async () => {
-      const data = await ApiHelper.get<NetworkResponse>("get_network_details");
-      if (data?.success) {
-        setNetworkData({
-          SSID: data.SSID,
-          ip_address: data.ip_address,
-          is_usb_connected: data.is_usb_connected,
-        });
-      }
-    };
-    fetchNetworkSettingsData();
-  }, []);
+  // Helper function to get display value for network data
+  const getDisplayValue = (value: string | undefined, defaultValue = "Unknown") => {
+    return !value || value === defaultValue || hasError ? (
+      <StatusIndicator type="warning">Unknown</StatusIndicator>
+    ) : (
+      value
+    );
+  };
 
   return (
     <Container
@@ -61,32 +43,21 @@ export const NetworkSettingsContainer = () => {
         items={[
           {
             label: "Wi-Fi Network SSID",
-            value:
-              networkData.SSID === "Unknown" ? (
-                <StatusIndicator type="warning">Unknown</StatusIndicator>
-              ) : (
-                networkData.SSID
-              ),
+            value: getDisplayValue(ssid),
           },
           {
             label: "Vehicle IP Address",
-            value:
-              networkData.ip_address === "Unknown" ? (
-                <StatusIndicator type="warning">Unknown</StatusIndicator>
-              ) : (
-                networkData.ip_address
-              ),
+            value: getDisplayValue(ipAddresses.join(", ")),
           },
           {
             label: "USB connection",
-            value:
-              networkData.is_usb_connected === undefined ? (
-                <StatusIndicator type="warning">Unknown</StatusIndicator>
-              ) : networkData.is_usb_connected === true ? (
-                <StatusIndicator type="success">Connected</StatusIndicator>
-              ) : (
-                <StatusIndicator type="info">Not Connected</StatusIndicator>
-              ),
+            value: hasError ? (
+              <StatusIndicator type="warning">Unknown</StatusIndicator>
+            ) : isUSBConnected ? (
+              <StatusIndicator type="success">Connected</StatusIndicator>
+            ) : (
+              <StatusIndicator type="info">Not Connected</StatusIndicator>
+            ),
           },
         ]}
       />
