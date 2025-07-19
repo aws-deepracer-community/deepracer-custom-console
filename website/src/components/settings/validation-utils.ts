@@ -47,9 +47,12 @@ export const validateConfirmPassword = (newPassword: string, confirmPassword: st
   return;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getColorRgb = (rgb: any) => {
-  const hexcode: string =
+interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+}
+export const getColorRgb = (rgb: Rgb) => {  const hexcode: string =
     "#" + [rgb.r, rgb.g, rgb.b].map((x) => x.toString(16).padStart(2, "0")).join("");
   return hexcode;
 };

@@ -44,7 +44,7 @@ export const LedColorContainer = () => {
         //console.log('Set calibration:', setCalibration);
         const ledData = await ApiHelper.get<LedColorResponse>("get_led_color");
         if (ledData && ledData.success) {
-          const hexFromRgb = getColorRgb({ r: ledData.red, g: ledData.green, b: ledData.blue });
+          const hexFromRgb = getColorRgb({ r: ledData.red!, g: ledData.green!, b: ledData.blue! });
           //console.log(ledData)
           setHex(hexFromRgb);
           // console.log(hexFromRgb)

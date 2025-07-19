@@ -58,7 +58,8 @@ export const useBatteryProvider = () => {
 
   // Update battery notifications whenever relevant state changes
   useEffect(() => {
-    const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
+    const hasBeenTenSeconds = Date.now() - pageLoadTime >= BATTERY_INTERVAL_MS;
+
     const notifications: FlashbarProps.MessageDefinition[] = [];
 
     // Only show notifications if authenticated

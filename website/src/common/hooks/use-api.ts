@@ -24,11 +24,12 @@ export const useApi = () => {
 export const useApiProvider = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const DEFAULT_TIMEOUT = 10000; // 10 seconds
 
   const get = async <T>(path: string): Promise<T | null> => {
     try {
       const response: AxiosResponse<T> = await axios.get("/api/" + path, {
-        timeout: 10000, // 10 seconds timeout
+        timeout: DEFAULT_TIMEOUT,
       });
       return response.data;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +76,7 @@ export const useApiProvider = () => {
   const post = async <T>(path: string, data: unknown): Promise<T | null> => {
     try {
       const response: AxiosResponse<T> = await axios.post("/api/" + path, data, {
-        timeout: 10000, // 10 seconds timeout
+        timeout: DEFAULT_TIMEOUT,
       });
       return response.data;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

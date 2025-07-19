@@ -27,6 +27,8 @@ interface SoftwareUpdateResponse {
 }
 
 export const AboutContainer = () => {
+  const SOFTWARE_UPDATE_TIMEOUT_MS = 30000; // 30 seconds timeout for software update check
+
   const [deviceInfo, setDeviceInfo] = useState<{
     hardware_version: string;
     software_version: string;
@@ -64,7 +66,7 @@ export const AboutContainer = () => {
       }
       const softwareData = await ApiHelper.get<SoftwareUpdateResponse>(
         "is_software_update_available",
-        30000 // 30 seconds timeout for software update check
+        SOFTWARE_UPDATE_TIMEOUT_MS
       );
       const mandatoryData = await ApiHelper.get<SoftwareUpdateResponse>(
         "get_mandatory_update_status"
