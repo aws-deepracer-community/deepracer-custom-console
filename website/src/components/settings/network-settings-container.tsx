@@ -7,22 +7,10 @@ import {
   KeyValuePairs,
   StatusIndicator,
 } from "@cloudscape-design/components";
-import { ApiHelper } from "../../common/helpers/api-helper";
-
-// Add interfaces for API responses
-interface NetworkResponse {
-  success: boolean;
-  SSID: string;
-  ip_address: string;
-  is_usb_connected: boolean;
-}
+import { useNetwork } from "../../common/hooks/use-network";
 
 export const NetworkSettingsContainer = () => {
-  const [networkData, setNetworkData] = useState({
-    SSID: "Unknown",
-    ip_address: "Unknown",
-    is_usb_connected: undefined as boolean | undefined,
-  });
+  const { ssid, ipAddresses, isUSBConnected, hasError } = useNetwork();
   const navigate = useNavigate();
 
   // Helper function to get display value for network data
@@ -63,14 +51,13 @@ export const NetworkSettingsContainer = () => {
           },
           {
             label: "USB connection",
-            value:
-              networkData.is_usb_connected === undefined ? (
-                <StatusIndicator type="warning">Unknown</StatusIndicator>
-              ) : networkData.is_usb_connected === true ? (
-                <StatusIndicator type="success">Connected</StatusIndicator>
-              ) : (
-                <StatusIndicator type="info">Not Connected</StatusIndicator>
-              ),
+            value: hasError ? (
+              <StatusIndicator type="warning">Unknown</StatusIndicator>
+            ) : isUSBConnected ? (
+              <StatusIndicator type="success">Connected</StatusIndicator>
+            ) : (
+              <StatusIndicator type="info">Not Connected</StatusIndicator>
+            ),
           },
         ]}
       />
