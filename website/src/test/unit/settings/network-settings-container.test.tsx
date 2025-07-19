@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
 import { render, waitFor, act, expectKeyValuePair } from "../../utils";
 import createWrapper from "@cloudscape-design/components/test-utils/dom";
 import { NetworkSettingsContainer } from "../../../components/settings/network-settings-container";
@@ -24,6 +24,31 @@ vi.mock("react-router-dom", async () => {
 const mockApiHelper = vi.mocked(ApiHelper);
 
 describe("NetworkSettingsContainer", () => {
+  // Global handler for unhandled promise rejections in tests
+  const originalUnhandledRejection = process.listeners("unhandledRejection");
+
+  beforeAll(() => {
+    process.removeAllListeners("unhandledRejection");
+    process.on("unhandledRejection", (reason) => {
+      // Ignore expected test errors
+      if (
+        reason instanceof Error &&
+        (reason.message === "Network error")
+      ) {
+        return;
+      }
+      // Re-throw unexpected errors
+      throw reason;
+    });
+  });
+
+  afterAll(() => {
+    process.removeAllListeners("unhandledRejection");
+    originalUnhandledRejection.forEach((listener) => {
+      process.on("unhandledRejection", listener);
+    });
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -226,6 +251,9 @@ describe("NetworkSettingsContainer", () => {
 
   describe("Error Handling", () => {
     it("handles API errors gracefully", async () => {
+      // Mock console.error to avoid unhandled error logs
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       mockApiHelper.get.mockRejectedValue(new Error("Network error"));
 
       const { container } = render(<NetworkSettingsContainer />);
@@ -246,6 +274,11 @@ describe("NetworkSettingsContainer", () => {
         expectKeyValuePair(keyValuePairs!, "Vehicle IP Address", "Unknown");
         expectKeyValuePair(keyValuePairs!, "USB connection", "Unknown");
       });
+
+      // Wait a bit to ensure any promises are settled
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      consoleSpy.mockRestore();
     });
   });
 
