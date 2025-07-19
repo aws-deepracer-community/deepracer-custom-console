@@ -38,3 +38,23 @@ global.console = {
   debug: import.meta.env.NODE_ENV === 'test' ? () => {} : console.debug,
   log: import.meta.env.NODE_ENV === 'test' ? () => {} : console.log,
 }
+
+// Mock Intl.DateTimeFormat for jsdom environment
+if (typeof global.Intl === 'undefined') {
+  global.Intl = {} as typeof Intl;
+}
+
+global.Intl.DateTimeFormat = function MockDateTimeFormat() {
+  return {
+    resolvedOptions: () => ({ timeZone: 'America/New_York' }),
+  };
+} as typeof Intl.DateTimeFormat;
+
+// Mock clearInterval for jsdom environment 
+if (typeof global.clearInterval === 'undefined') {
+  global.clearInterval = ((id: number | undefined) => {
+    if (id !== undefined) {
+      clearTimeout(id);
+    }
+  }) as typeof clearInterval;
+}

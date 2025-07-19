@@ -1,6 +1,7 @@
 import { ReactElement } from 'react'
 import { render as rtlRender } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
+import { expect } from 'vitest'
 import { BatteryContext } from '../common/hooks/use-battery'
 import { NetworkContext } from '../common/hooks/use-network'
 import { SupportedApisContext } from '../common/hooks/use-supported-apis'
@@ -8,6 +9,7 @@ import { ModelsContext } from '../common/hooks/use-models'
 import { PreferencesContext } from '../common/hooks/use-preferences'
 import { ApiContext } from '../common/hooks/use-api'
 import { AuthContext } from '../common/hooks/use-authentication'
+import { KeyValuePairsWrapper } from '@cloudscape-design/components/test-utils/dom'
 
 // Re-export everything from testing library
 // eslint-disable-next-line react-refresh/only-export-components
@@ -113,3 +115,19 @@ export const render = (ui: ReactElement) => {
     </BrowserRouter>
   )
 }
+
+// Reusable helper function for testing key-value pairs
+export const expectKeyValuePair = (
+  kvPairsWrapper: KeyValuePairsWrapper,
+  label: string,
+  expectedValue: string
+) => {
+  const item = kvPairsWrapper
+    .findItems()
+    .find((item) => item.findLabel()?.getElement()?.textContent === label);
+  expect(item, `Key-value pair with label "${label}" should exist`).toBeTruthy();
+  expect(
+    item?.findValue()?.getElement(),
+    `Value for "${label}" should be accessible`
+  ).toHaveTextContent(expectedValue);
+};
