@@ -42,6 +42,7 @@ const mockNetworkProvider = {
   ssid: "DeepRacer-WiFi",
   ipAddresses: ["192.168.1.100"],
   isLoading: false,
+  isUSBConnected: true,
   hasError: false,
 };
 
