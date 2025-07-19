@@ -1,15 +1,24 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { useAuth } from "./use-authentication";
+import { useApi } from "./use-api";
 
 // Constants
 const NETWORK_INTERVAL_MS = 55000;
+
+// Types
+interface NetworkDetailsResponse {
+  success: boolean;
+  SSID: string;
+  ip_address: string;
+  is_usb_connected: boolean;
+}
 
 // Network Context
 interface NetworkState {
   ssid: string;
   ipAddresses: string[];
   isLoading: boolean;
+  isUSBConnected: boolean;
   hasError: boolean;
 }
 
@@ -28,7 +37,10 @@ export const useNetworkProvider = () => {
   const [ipAddresses, setIpAddresses] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
+  const [hasInitialReading, setHasInitialReading] = useState<boolean>(false);
+  const [isUSBConnected, setIsUSBConnected] = useState<boolean>(false);
   const { isAuthenticated } = useAuth();
+  const { get } = useApi();
 
   // Network status management
   useEffect(() => {
@@ -38,6 +50,7 @@ export const useNetworkProvider = () => {
       setIpAddresses([]);
       setIsLoading(false);
       setHasError(false);
+      setIsUSBConnected(false);
       return;
     }
 
@@ -46,36 +59,31 @@ export const useNetworkProvider = () => {
     const getNetworkStatus = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("/api/get_network_details");
-        if (response.data?.success && isSubscribed) {
+        const response = await get<NetworkDetailsResponse>("get_network_details");
+        if (response?.success && isSubscribed) {
+          setHasInitialReading(true);
           console.debug(
-            `Success! SSID: ${response.data.SSID}, IP Address: ${response.data.ip_address}`
+            `Success! SSID: ${response.SSID}, IP Address: ${response.ip_address}`
           );
-          setSsid(response.data.SSID);
-          setIpAddresses(response.data.ip_address.split(",").map((ip: string) => ip.trim()));
+          setSsid(response.SSID);
+          setIpAddresses(response.ip_address.split(",").map((ip: string) => ip.trim()));
+          setIsUSBConnected(response.is_usb_connected);
           setHasError(false);
         } else if (isSubscribed) {
-          console.debug("Network data success flag is false or missing", response.data);
+          console.debug("Network data success flag is false or missing", response);
           setSsid("");
           setIpAddresses([]);
+          setIsUSBConnected(false);
           setHasError(true);
         }
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error("Axios error fetching network status:", {
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            data: error.response?.data,
-            message: error.message,
-          });
-        } else {
-          console.error("Unknown error fetching network status:", error);
-        }
+        console.error("Error fetching network status:", error);
 
         if (isSubscribed) {
           console.debug("Setting network error state due to exception");
           setSsid("");
           setIpAddresses([]);
+          setIsUSBConnected(false);
           setHasError(true);
         }
       } finally {
@@ -87,7 +95,9 @@ export const useNetworkProvider = () => {
     };
 
     console.debug("Initializing network monitoring");
-    getNetworkStatus();
+    if (!hasInitialReading) {
+      getNetworkStatus();
+    }
     const networkInterval = setInterval(getNetworkStatus, NETWORK_INTERVAL_MS);
     console.debug(`Network monitoring interval set: ${NETWORK_INTERVAL_MS}ms`);
 
@@ -96,12 +106,13 @@ export const useNetworkProvider = () => {
       isSubscribed = false;
       clearInterval(networkInterval);
     };
-  }, [isAuthenticated]); // Add isAuthenticated as a dependency
+  }, [isAuthenticated, get, hasInitialReading]); // Add get as a dependency
 
   const networkContextValue: NetworkState = {
     ssid,
     ipAddresses,
     isLoading,
+    isUSBConnected,
     hasError,
   };
 
