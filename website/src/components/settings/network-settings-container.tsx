@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -26,19 +25,14 @@ export const NetworkSettingsContainer = () => {
   });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchNetworkSettingsData = async () => {
-      const data = await ApiHelper.get<NetworkResponse>("get_network_details");
-      if (data?.success) {
-        setNetworkData({
-          SSID: data.SSID,
-          ip_address: data.ip_address,
-          is_usb_connected: data.is_usb_connected,
-        });
-      }
-    };
-    fetchNetworkSettingsData();
-  }, []);
+  // Helper function to get display value for network data
+  const getDisplayValue = (value: string | undefined, defaultValue = "Unknown") => {
+    return !value || value === defaultValue || hasError ? (
+      <StatusIndicator type="warning">Unknown</StatusIndicator>
+    ) : (
+      value
+    );
+  };
 
   return (
     <Container
@@ -61,21 +55,11 @@ export const NetworkSettingsContainer = () => {
         items={[
           {
             label: "Wi-Fi Network SSID",
-            value:
-              networkData.SSID === "Unknown" ? (
-                <StatusIndicator type="warning">Unknown</StatusIndicator>
-              ) : (
-                networkData.SSID
-              ),
+            value: getDisplayValue(ssid),
           },
           {
             label: "Vehicle IP Address",
-            value:
-              networkData.ip_address === "Unknown" ? (
-                <StatusIndicator type="warning">Unknown</StatusIndicator>
-              ) : (
-                networkData.ip_address
-              ),
+            value: getDisplayValue(ipAddresses.join(", ")),
           },
           {
             label: "USB connection",

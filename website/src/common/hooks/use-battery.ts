@@ -18,8 +18,6 @@ interface BatteryState {
   hasInitialReading: boolean;
   batteryWarningDismissed: boolean;
   batteryErrorDismissed: boolean;
-  setBatteryWarningDismissed: (dismissed: boolean) => void;
-  setBatteryErrorDismissed: (dismissed: boolean) => void;
   // Add battery flashbar items
   batteryFlashbarItems: FlashbarProps.MessageDefinition[];
 }
@@ -39,25 +37,29 @@ export const useBatteryProvider = () => {
   const { isAuthenticated } = useAuth();
   const { get: apiGet } = useApi();
 
-  // Use a single state object that matches BatteryState interface
-  const [batteryState, setBatteryState] = useState<BatteryState>({
+  // Separate state for battery data (without functions)
+  const [batteryState, setBatteryState] = useState({
     batteryLevel: 0,
     batteryError: false,
     hasInitialReading: false,
     batteryWarningDismissed: false,
     batteryErrorDismissed: false,
-    setBatteryWarningDismissed: (dismissed: boolean) => {
-      setBatteryState((prev) => ({ ...prev, batteryWarningDismissed: dismissed }));
-    },
-    setBatteryErrorDismissed: (dismissed: boolean) => {
-      setBatteryState((prev) => ({ ...prev, batteryErrorDismissed: dismissed }));
-    },
-    batteryFlashbarItems: [],
+    batteryFlashbarItems: [] as FlashbarProps.MessageDefinition[],
   });
+
+  // Setter functions outside of state to prevent recreation
+  const setBatteryWarningDismissed = (dismissed: boolean) => {
+    setBatteryState((prev) => ({ ...prev, batteryWarningDismissed: dismissed }));
+  };
+
+  const setBatteryErrorDismissed = (dismissed: boolean) => {
+    setBatteryState((prev) => ({ ...prev, batteryErrorDismissed: dismissed }));
+  };
 
   // Update battery notifications whenever relevant state changes
   useEffect(() => {
-    const hasBeenTenSeconds = Date.now() - pageLoadTime >= 10000;
+    const hasBeenTenSeconds = Date.now() - pageLoadTime >= BATTERY_INTERVAL_MS;
+
     const notifications: FlashbarProps.MessageDefinition[] = [];
 
     // Only show notifications if authenticated
@@ -76,7 +78,7 @@ export const useBatteryProvider = () => {
           dismissible: true,
           dismissLabel: "Dismiss message",
           id: "battery-error",
-          onDismiss: () => batteryState.setBatteryErrorDismissed(true),
+          onDismiss: () => setBatteryErrorDismissed(true),
         });
       }
 
@@ -93,7 +95,7 @@ export const useBatteryProvider = () => {
           dismissible: true,
           dismissLabel: "Dismiss message",
           id: "battery-warning",
-          onDismiss: () => batteryState.setBatteryWarningDismissed(true),
+          onDismiss: () => setBatteryWarningDismissed(true),
         });
       }
     }
@@ -107,7 +109,6 @@ export const useBatteryProvider = () => {
     batteryState.batteryErrorDismissed,
     pageLoadTime,
     isAuthenticated,
-    batteryState,
   ]);
 
   // Battery status management
@@ -178,7 +179,10 @@ export const useBatteryProvider = () => {
     };
 
     console.debug("Initializing battery monitoring");
-    updateBatteryStatus();
+
+    if (!batteryState.hasInitialReading) {
+      updateBatteryStatus();
+    }
     const batteryInterval = setInterval(updateBatteryStatus, BATTERY_INTERVAL_MS);
     console.debug(`Battery monitoring interval set: ${BATTERY_INTERVAL_MS}ms`);
 
@@ -188,7 +192,7 @@ export const useBatteryProvider = () => {
       isSubscribed = false;
       clearInterval(batteryInterval);
     };
-  }, [isAuthenticated, apiGet]); // Add isAuthenticated as a dependency
+  }, [isAuthenticated, apiGet, batteryState.hasInitialReading]); // Add isAuthenticated as a dependency
 
   return batteryState;
 };

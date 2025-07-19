@@ -18,6 +18,7 @@ export const SoftwareUpdatePage = () => {
   const [updateProgress, setUpdateProgress] = useState<number>(0);
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+  const SERVER_CHECK_DELAY_MS = 15000; // 15 seconds delay before checking server readiness
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -87,7 +88,7 @@ export const SoftwareUpdatePage = () => {
         };
 
         checkServerReady();
-      }, 15000); // Wait 15 seconds before starting checks
+      }, SERVER_CHECK_DELAY_MS); // Wait 15 seconds before starting checks
     };
 
     startUpdateMonitoring();
