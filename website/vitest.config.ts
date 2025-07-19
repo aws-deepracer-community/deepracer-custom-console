@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   test: {
+    onConsoleLog(log) {
+      if (log.includes("React Router Future Flag Warning")) return false;
+    },    
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
