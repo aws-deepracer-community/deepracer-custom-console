@@ -30,12 +30,15 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
+      reportsDirectory: "../coverage", // This will put coverage in workspace root
       exclude: [
         "node_modules/",
         "src/test/",
         "e2e/", // Exclude E2E from coverage
         "**/*.d.ts",
         "**/*.config.*",
+        "**/*.cjs",
+        "**/index.ts", // Exclude all index.ts files from coverage
         "dist/",
         "coverage/",
       ],
