@@ -30,6 +30,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
+      reportsDirectory: "../coverage", // This will put coverage in workspace root
       exclude: [
         "node_modules/",
         "src/test/",
