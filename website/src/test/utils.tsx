@@ -1,7 +1,7 @@
 import { ReactElement } from "react";
 import { render as rtlRender } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import { expect } from "vitest";
+import { expect, vi } from "vitest";
 import { BatteryContext } from "../common/hooks/use-battery";
 import { NetworkContext } from "../common/hooks/use-network";
 import { SupportedApisContext } from "../common/hooks/use-supported-apis";
@@ -55,7 +55,7 @@ const mockSupportedApisProvider = {
   hasError: false,
 };
 
-const mockModelsProvider = {
+export const mockModelsProvider = {
   modelOptions: [
     {
       label: "my-racing-model",
@@ -72,17 +72,17 @@ const mockModelsProvider = {
   },
   isModelLoaded: true,
   isModelLoading: false,
-  setSelectedModel: () => {},
-  loadModel: async () => true,
-  reloadModels: async () => {},
+  setSelectedModel: vi.fn(),
+  loadModel: vi.fn().mockResolvedValue(true),
+  reloadModels: vi.fn().mockResolvedValue(undefined),
   loadStatus: {
     loading: false,
     success: true,
     error: null,
   },
   modelFlashbarItems: [],
-  clearModelFlashbar: () => {},
-  checkModelLoadStatus: async () => true,
+  clearModelFlashbar: vi.fn(),
+  checkModelLoadStatus: vi.fn().mockResolvedValue(true),
 };
 
 const mockPreferencesProvider = {
@@ -116,7 +116,10 @@ export const render = (ui: ReactElement) => {
 };
 
 // Flexible render function that allows custom preferences
-export const renderWithCustomPreferences = (ui: ReactElement, customSettings: Partial<typeof mockPreferencesProvider.settings>) => {
+export const renderWithCustomPreferences = (
+  ui: ReactElement,
+  customSettings: Partial<typeof mockPreferencesProvider.settings>
+) => {
   const customPreferencesProvider = {
     ...mockPreferencesProvider,
     settings: {

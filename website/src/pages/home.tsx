@@ -455,7 +455,11 @@ const HomePage = () => {
                                 <Box float="right">
                                   <SpaceBetween direction="horizontal" size="xs">
                                     <Button onClick={handleCancel}>Cancel</Button>
-                                    <Button variant="primary" onClick={handleLoadModelClick}>
+                                    <Button 
+                                      variant="primary" 
+                                      onClick={handleLoadModelClick}
+                                      data-testid="load-model-button"
+                                    >
                                       Load Model
                                     </Button>
                                   </SpaceBetween>
@@ -491,6 +495,7 @@ const HomePage = () => {
                             value={throttle}
                             additionalInfo="All speeds are multiplied with the factor. If the car does not move, then gradually increase the factor."
                             label="Adjust speed factor"
+                            data-testid="speed-factor-progress-bar-auto"
                           />
                           <SpaceBetween size="l" direction="horizontal">
                             <Button
@@ -538,7 +543,7 @@ const HomePage = () => {
                                 <Button
                                   variant="normal"
                                   onClick={() => handleAutoThrottle(-5)}
-                                  data-testid="decrease-speed"
+                                  data-testid="decrease-speed-5x"
                                   disabled={!isModelLoaded}
                                 >
                                   <svg
@@ -565,7 +570,7 @@ const HomePage = () => {
                                 <Button
                                   variant="primary"
                                   onClick={() => handleAutoThrottle(5)}
-                                  data-testid="increase-speed"
+                                  data-testid="increase-speed-5x"
                                   disabled={!isModelLoaded}
                                 >
                                   <svg
@@ -623,6 +628,7 @@ const HomePage = () => {
                           value={throttle}
                           additionalInfo="All speeds are multiplied with the factor. If the car does not move, then gradually increase the factor."
                           label="Adjust speed factor"
+                          data-testid="speed-factor-progress-bar-manual"
                         />
                         <SpaceBetween size="l" direction="horizontal">
                           <Button
@@ -668,7 +674,7 @@ const HomePage = () => {
                               <Button
                                 variant="normal"
                                 onClick={() => handleManualThrottle(-5)}
-                                data-testid="decrease-speed"
+                                data-testid="decrease-speed-5x"
                               >
                                 <svg
                                   width="96"
@@ -694,7 +700,7 @@ const HomePage = () => {
                               <Button
                                 variant="primary"
                                 onClick={() => handleManualThrottle(5)}
-                                data-testid="increase-speed"
+                                data-testid="increase-speed-5x"
                               >
                                 <svg
                                   width="96"
