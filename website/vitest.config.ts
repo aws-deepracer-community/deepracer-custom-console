@@ -38,6 +38,7 @@ export default defineConfig({
         "**/*.d.ts",
         "**/*.config.*",
         "**/*.cjs",
+        "**/index.ts", // Exclude all index.ts files from coverage
         "dist/",
         "coverage/",
       ],
