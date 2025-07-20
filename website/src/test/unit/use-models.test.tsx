@@ -412,10 +412,10 @@ describe("useModelsProvider", () => {
       };
 
       // Mock the post to resolve after a delay to keep it in loading state
-      mockApiHelper.post.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(mockLoadResponse), 100))
+      mockApiHelper.post.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(mockLoadResponse), 100))
       );
-      
+
       const { result } = renderHook(() => useModelsProvider());
 
       // Start the loading process but don't await it

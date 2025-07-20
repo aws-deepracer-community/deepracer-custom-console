@@ -93,7 +93,7 @@ describe("useBatteryProvider", () => {
     vi.clearAllMocks();
     // Use real timers to avoid complications
     vi.useRealTimers();
-    
+
     // Reset mock data to defaults
     mockAuthData.isAuthenticated = true;
     mockApiData.get.mockReset();
@@ -102,11 +102,11 @@ describe("useBatteryProvider", () => {
     mockAuthData.logout.mockReset();
 
     // Mock window.location.hash
-    Object.defineProperty(window, 'location', {
+    Object.defineProperty(window, "location", {
       value: {
-        hash: '#/home'
+        hash: "#/home",
       },
-      writable: true
+      writable: true,
     });
   });
 
@@ -132,11 +132,11 @@ describe("useBatteryProvider", () => {
   describe("when on system-unavailable page", () => {
     it("should not fetch battery data", () => {
       // Mock window.location.hash to include system-unavailable
-      Object.defineProperty(window, 'location', {
+      Object.defineProperty(window, "location", {
         value: {
-          hash: '#/system-unavailable'
+          hash: "#/system-unavailable",
         },
-        writable: true
+        writable: true,
       });
 
       const { result } = renderHook(() => useBatteryProvider());
@@ -197,7 +197,9 @@ describe("useBatteryProvider", () => {
       // Should have error flashbar item
       expect(result.current.batteryFlashbarItems).toHaveLength(1);
       expect(result.current.batteryFlashbarItems[0].type).toBe("error");
-      expect(result.current.batteryFlashbarItems[0].content).toBe("Vehicle battery is not connected");
+      expect(result.current.batteryFlashbarItems[0].content).toBe(
+        "Vehicle battery is not connected"
+      );
     });
 
     it("should handle low battery warning (level <= 40%)", async () => {
@@ -307,6 +309,5 @@ describe("useBatteryProvider", () => {
       expect(result.current.hasInitialReading).toBe(false);
       expect(result.current.batteryFlashbarItems).toEqual([]);
     });
-
   });
 });
