@@ -61,10 +61,8 @@ export const useNetworkProvider = () => {
         setIsLoading(true);
         const response = await get<NetworkDetailsResponse>("get_network_details");
         if (response?.success && isSubscribed) {
-          setHasInitialReading(true);
-          console.debug(
-            `Success! SSID: ${response.SSID}, IP Address: ${response.ip_address}`
-          );
+          if (!hasInitialReading) setHasInitialReading(true);
+          console.debug(`Success! SSID: ${response.SSID}, IP Address: ${response.ip_address}`);
           setSsid(response.SSID);
           setIpAddresses(response.ip_address.split(",").map((ip: string) => ip.trim()));
           setIsUSBConnected(response.is_usb_connected);
@@ -106,7 +104,7 @@ export const useNetworkProvider = () => {
       isSubscribed = false;
       clearInterval(networkInterval);
     };
-  }, [isAuthenticated, get, hasInitialReading]); // Add get as a dependency
+  }, [isAuthenticated, get, hasInitialReading]);
 
   const networkContextValue: NetworkState = {
     ssid,

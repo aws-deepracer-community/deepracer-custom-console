@@ -132,14 +132,17 @@ export const useBatteryProvider = () => {
           if (batteryData.success) {
             setBatteryState((prev) => ({
               ...prev,
-              hasInitialReading: true,
+              ...(prev.hasInitialReading ? {} : { hasInitialReading: true }),
               batteryError: batteryData.battery_level === -1,
               batteryLevel:
                 batteryData.battery_level === -1 ? 0 : (batteryData.battery_level / 10) * 100,
               batteryWarningDismissed:
                 batteryData.battery_level === -1 ? false : prev.batteryWarningDismissed,
               // Only reset error dismissal if the error state is changing from false to true
-              batteryErrorDismissed: batteryData.battery_level === -1 && !prev.batteryError ? false : prev.batteryErrorDismissed,
+              batteryErrorDismissed:
+                batteryData.battery_level === -1 && !prev.batteryError
+                  ? false
+                  : prev.batteryErrorDismissed,
             }));
 
             if (batteryData.battery_level === -1) {
@@ -152,9 +155,10 @@ export const useBatteryProvider = () => {
               if (batteryData.battery_level <= 4) {
                 console.debug(`Low battery warning: ${batteryData.battery_level}/10`);
                 // Only reset warning dismissal if we're transitioning to low battery from non-low battery
-                setBatteryState((prev) => ({ 
-                  ...prev, 
-                  batteryWarningDismissed: prev.batteryLevel > 40 ? false : prev.batteryWarningDismissed 
+                setBatteryState((prev) => ({
+                  ...prev,
+                  batteryWarningDismissed:
+                    prev.batteryLevel > 40 ? false : prev.batteryWarningDismissed,
                 }));
               }
             }
