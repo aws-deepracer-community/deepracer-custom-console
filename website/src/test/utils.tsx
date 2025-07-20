@@ -115,6 +115,35 @@ export const render = (ui: ReactElement) => {
   );
 };
 
+// Flexible render function that allows custom preferences
+export const renderWithCustomPreferences = (ui: ReactElement, customSettings: Partial<typeof mockPreferencesProvider.settings>) => {
+  const customPreferencesProvider = {
+    ...mockPreferencesProvider,
+    settings: {
+      ...mockPreferencesProvider.settings,
+      ...customSettings,
+    },
+  };
+
+  return rtlRender(
+    <BrowserRouter>
+      <AuthContext.Provider value={mockAuthProvider}>
+        <ApiContext.Provider value={mockApiProvider}>
+          <SupportedApisContext.Provider value={mockSupportedApisProvider}>
+            <PreferencesContext.Provider value={customPreferencesProvider}>
+              <BatteryContext.Provider value={mockBatteryProvider}>
+                <NetworkContext.Provider value={mockNetworkProvider}>
+                  <ModelsContext.Provider value={mockModelsProvider}>{ui}</ModelsContext.Provider>
+                </NetworkContext.Provider>
+              </BatteryContext.Provider>
+            </PreferencesContext.Provider>
+          </SupportedApisContext.Provider>
+        </ApiContext.Provider>
+      </AuthContext.Provider>
+    </BrowserRouter>
+  );
+};
+
 // Reusable helper function for testing key-value pairs
 export const expectKeyValuePair = (
   kvPairsWrapper: KeyValuePairsWrapper,
