@@ -74,6 +74,7 @@ export default function RecalibrateSpeedPage() {
   const [originalStopped, setOriginalStopped] = useState(0);
 
   const lastUpdateTime = useRef<number>(0);
+  const actionRef = useRef(false);
 
   const [forwardDirectionSpeed, setForwardDirectionSpeed] = useState(10);
 
@@ -193,11 +194,17 @@ export default function RecalibrateSpeedPage() {
     setCalibration();
     window.location.hash = "#raise";
     setActiveAnchor("#raise");
-
-    return () => {
-      handleStop();
-    };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (!actionRef.current) {
+        console.log("Abort speed calibration. Resetting throttle to original zero value.");
+        adjustCalibratingWheelsThrottle(originalStopped);
+        handleStop();
+      }
+    };
+  }, [originalStopped]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -257,11 +264,24 @@ export default function RecalibrateSpeedPage() {
   };
 
   const handleCancel = async () => {
+    actionRef.current = true;
+    console.log("Cancel speed calibration. Resetting throttle to original zero value.");
     await adjustCalibratingWheelsThrottle(originalStopped);
     navigate("/calibration");
   };
 
   const handleDone = async () => {
+    actionRef.current = true;
+    console.log(
+      "Saved speed calibration. Max forward speed:",
+      forwardValue,
+      "Stopped value:",
+      stoppedValue,
+      "Max backward speed:",
+      backwardValue,
+      "Polarity:",
+      polarity
+    );
     await setCalibrationThrottle(stoppedValue, forwardValue, backwardValue, polarity);
     await adjustCalibratingWheelsThrottle(stoppedValue);
     navigate("/calibration");

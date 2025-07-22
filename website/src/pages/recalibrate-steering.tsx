@@ -71,6 +71,7 @@ export default function RecalibrateSteeringPage() {
   const [originalRight, setOriginalRight] = useState(0);
 
   const lastUpdateTime = useRef<number>(0);
+  const actionRef = useRef(false);
 
   const handleCenterSliderChange = ({ detail }: { detail: { value: number } }) => {
     const now = Date.now();
@@ -171,11 +172,19 @@ export default function RecalibrateSteeringPage() {
     setCalibration();
     window.location.hash = "#ground";
     setActiveAnchor("#ground");
-
-    return () => {
-      handleStop();
-    };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (!actionRef.current) {
+        console.log(
+          "Abort steering calibration. Resetting steering angle to original center value."
+        );
+        setSteeringAngle(originalCenter);
+        handleStop();
+      }
+    };
+  }, [originalCenter]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -235,14 +244,29 @@ export default function RecalibrateSteeringPage() {
   };
 
   const handleCancel = async () => {
+    actionRef.current = true;
     await setSteeringAngle(originalCenter);
     await handleStop();
+    console.log(
+      "Cancelled steering calibration. Resetting steering angle to original center value."
+    );
     navigate("/calibration");
   };
 
   const handleDone = async () => {
+    actionRef.current = true;
     await setSteeringAngle(centerValue);
     await setCalibrationAngle(centerValue, leftValue, rightValue, polarity);
+    console.log(
+      "Saved steering calibration. Left:",
+      leftValue,
+      "Center:",
+      centerValue,
+      "Right:",
+      rightValue
+    );
+
+    await handleStop();
     navigate("/calibration");
   };
 
