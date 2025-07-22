@@ -116,10 +116,7 @@ export const render = (ui: ReactElement) => {
 };
 
 // Flexible render function that allows custom preferences
-export const renderWithCustomPreferences = (
-  ui: ReactElement,
-  customSettings: Partial<typeof mockPreferencesProvider.settings>
-) => {
+export const renderWithCustomPreferences = (ui: ReactElement, customSettings: Partial<typeof mockPreferencesProvider.settings>) => {
   const customPreferencesProvider = {
     ...mockPreferencesProvider,
     settings: {
