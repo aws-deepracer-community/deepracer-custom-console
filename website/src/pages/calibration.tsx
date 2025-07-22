@@ -36,9 +36,9 @@ const getCalibrationThrottle = async () => {
 
 const SteeringContainer = () => {
   const [calibrationData, setCalibrationData] = useState({
-    mid: "Value",
-    max: "Value",
-    min: "Value",
+    mid: "-",
+    max: "-",
+    min: "-",
   });
   const navigate = useNavigate();
 
@@ -47,7 +47,11 @@ const SteeringContainer = () => {
       await setCalibration();
       const data = await getCalibrationAngle();
       if (data?.success) {
-        setCalibrationData({ mid: data.mid, max: data.max, min: data.min });
+        setCalibrationData({
+          mid: Math.abs(Number(data.mid)) > 100 ? "-" : data.mid,
+          max: Math.abs(Number(data.max)) > 100 ? "-" : data.max,
+          min: Math.abs(Number(data.min)) > 100 ? "-" : data.min,
+        });
       }
     };
     fetchCalibrationData();
@@ -66,8 +70,8 @@ const SteeringContainer = () => {
       <KeyValuePairs
         columns={3}
         items={[
-          { label: "Center", value: calibrationData.mid },
           { label: "Maximum left steering angle", value: calibrationData.max },
+          { label: "Center", value: calibrationData.mid },
           { label: "Maximum right steering angle", value: calibrationData.min },
         ]}
       />
@@ -77,10 +81,10 @@ const SteeringContainer = () => {
 
 const SpeedContainer = () => {
   const [calibrationData, setCalibrationData] = useState({
-    mid: "Value",
-    max: "Value",
-    min: "Value",
-    polarity: "Value",
+    mid: "-",
+    max: "-",
+    min: "-",
+    polarity: "-",
   });
   const navigate = useNavigate();
 
@@ -89,9 +93,9 @@ const SpeedContainer = () => {
       const data = await getCalibrationThrottle();
       if (data?.success) {
         setCalibrationData({
-          mid: data.mid,
-          max: data.max,
-          min: data.min,
+          mid: Math.abs(Number(data.mid)) > 100 ? "-" : data.mid,
+          max: Math.abs(Number(data.max)) > 100 ? "-" : data.max,
+          min: Math.abs(Number(data.min)) > 100 ? "-" : data.min,
           polarity: data.polarity,
         });
       }
@@ -110,11 +114,11 @@ const SpeedContainer = () => {
       <KeyValuePairs
         columns={3}
         items={[
-          { label: "Stopped", value: calibrationData.mid },
           {
             label: "Maximum forward speed",
             value: calibrationData.polarity === "-1" ? calibrationData.min : calibrationData.max,
           },
+          { label: "Stopped", value: calibrationData.mid },
           {
             label: "Maximum backward speed",
             value: calibrationData.polarity === "-1" ? calibrationData.max : calibrationData.min,
@@ -128,11 +132,6 @@ const SpeedContainer = () => {
 export default function CalibrationPage() {
   useEffect(() => {
     handleStop();
-
-    // Clean up calibration mode when unmounting
-    return () => {
-      handleStop();
-    };
   }, []);
 
   const description = (

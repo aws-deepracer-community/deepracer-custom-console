@@ -31,6 +31,10 @@ const handleStop = async () => {
   await ApiHelper.post<CalibrationResponse>("start_stop", { start_stop: "stop" });
 };
 
+const handleStart = async () => {
+  await ApiHelper.post<CalibrationResponse>("start_stop", { start_stop: "start" });
+};
+
 const setSteeringAngle = async (angle: number) => {
   await ApiHelper.post<AdjustWheelsResponse>("adjust_calibrating_wheels/angle", {
     pwm: angle,
@@ -163,17 +167,21 @@ export default function RecalibrateSteeringPage() {
       }
     };
 
-    handleStop();
     fetchCalibrationValues();
     setCalibration();
     window.location.hash = "#ground";
     setActiveAnchor("#ground");
+
+    return () => {
+      handleStop();
+    };
   }, []);
 
   useEffect(() => {
     const handleHashChange = () => {
       setActiveAnchor(window.location.hash);
       if (window.location.hash === "#center") {
+        handleStart();
         setSteeringAngle(centerValue);
       } else if (window.location.hash === "#left") {
         setLeftValue((prev) => -Math.abs(prev));

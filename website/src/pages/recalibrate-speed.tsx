@@ -31,6 +31,9 @@ interface AdjustWheelsResponse {
 const handleStop = async () => {
   await ApiHelper.post<CalibrationResponse>("start_stop", { start_stop: "stop" });
 };
+const handleStart = async () => {
+  await ApiHelper.post<CalibrationResponse>("start_stop", { start_stop: "start" });
+};
 
 const setCalibration = async () => {
   await ApiHelper.get<CalibrationResponse>("set_calibration_mode");
@@ -186,17 +189,21 @@ export default function RecalibrateSpeedPage() {
         setChecked(parseInt(calibrationData.polarity || "0", 10) === -1);
       }
     };
-    handleStop();
     fetchCalibrationValues();
     setCalibration();
     window.location.hash = "#raise";
     setActiveAnchor("#raise");
+
+    return () => {
+      handleStop();
+    };
   }, []);
 
   useEffect(() => {
     const handleHashChange = () => {
       setActiveAnchor(window.location.hash);
       if (window.location.hash === "#stopped") {
+        handleStart();
         adjustCalibratingWheelsThrottle(stoppedValue);
       } else if (window.location.hash === "#direction") {
         adjustCalibratingWheelsThrottle(forwardDirectionSpeed);
@@ -251,7 +258,6 @@ export default function RecalibrateSpeedPage() {
 
   const handleCancel = async () => {
     await adjustCalibratingWheelsThrottle(originalStopped);
-    await handleStop();
     navigate("/calibration");
   };
 
