@@ -5,10 +5,6 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   test: {
-    //    onConsoleLog(log) {
-    //      if (log.includes("React Router Future Flag Warning")) return false;
-    //      if (log.includes("useApi must be used within an ApiProvider")) return false;
-    //    },
     // Suppress stderr output from jsdom for expected test errors
     silent: true,
     reporters: ["default"],

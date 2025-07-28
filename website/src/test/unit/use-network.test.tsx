@@ -25,20 +25,7 @@ vi.mock("../../common/hooks/use-api", () => ({
   useApi: () => mockApiData,
 }));
 
-// Mock timer functions
-//vi.stubGlobal(
-//  "setInterval",
-//  vi.fn((fn, delay) => {
-//    return Number(setTimeout(fn, delay));
-//  })
-//);
-//
-//vi.stubGlobal(
-//  "clearInterval",
-//  vi.fn((id) => {
-//    clearTimeout(Number(id));
-//  })
-//);
+// (Removed commented-out code for mocking timer functions)
 
 // Types
 interface NetworkState {
