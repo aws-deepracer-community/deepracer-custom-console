@@ -182,6 +182,11 @@ describe("ModelsPage Integration", () => {
 
     const wrapper = createWrapper(document.body);
 
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
+
     // Find the upload button using Cloudscape wrapper
     const uploadButton = wrapper
       .findAllButtons()
@@ -198,6 +203,11 @@ describe("ModelsPage Integration", () => {
     render(<ModelsPage />);
 
     const wrapper = createWrapper(document.body);
+
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
 
     // Verify the file input exists and is ready for interaction
     const fileInput = document.querySelector('input[type="file"]');
@@ -275,9 +285,7 @@ describe("ModelsPage Integration", () => {
     expect(pageButtons).toHaveLength(2);
 
     // Navigate to page 2 and verify it has 5 items
-    const page2Button = pageButtons?.find(button => 
-      button.getElement().textContent === "2"
-    );
+    const page2Button = pageButtons?.find((button) => button.getElement().textContent === "2");
     expect(page2Button).toBeTruthy();
 
     await act(async () => {
@@ -317,7 +325,7 @@ describe("ModelsPage Integration", () => {
     await waitFor(() => {
       const rows = table?.findRows();
       expect(rows?.length).toBeGreaterThan(0);
-      
+
       // Check the table contains formatted date text
       const tableText = table?.getElement().textContent;
       expect(tableText).toMatch(/January \d{2}, 2023/); // Expected date format
@@ -374,6 +382,11 @@ describe("ModelsPage Integration", () => {
   it("should call useModels reloadModels after operations", async () => {
     render(<ModelsPage />);
 
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
+
     // The reloadModels function from utils.tsx should be available
     expect(mockModelsProvider.reloadModels).toBeDefined();
 
@@ -386,6 +399,11 @@ describe("ModelsPage Integration", () => {
 
     const wrapper = createWrapper(document.body);
 
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
+
     // Check for SpaceBetween layout
     const spaceBetween = wrapper.findSpaceBetween();
     expect(spaceBetween).toBeTruthy();
@@ -394,9 +412,17 @@ describe("ModelsPage Integration", () => {
     const table = wrapper.findTable();
     expect(table).toBeTruthy();
 
-    // Check for Header components
-    const headers = wrapper.findAllByClassName("awsui_content_vjswe_nyka2_153");
-    expect(headers.length).toBeGreaterThan(0);
+    // Check for Header components using more reliable selectors
+    const mainHeader = wrapper.findHeader();
+    expect(mainHeader).toBeTruthy();
+
+    // Check for table header specifically
+    const tableHeader = table?.findHeaderSlot();
+    expect(tableHeader).toBeTruthy();
+
+    // Check for pagination component
+    const pagination = wrapper.findPagination();
+    expect(pagination).toBeTruthy();
   });
 
   it("should display correct table column headers", async () => {
@@ -443,6 +469,11 @@ describe("ModelsPage Integration", () => {
     render(<ModelsPage />);
 
     const wrapper = createWrapper(document.body);
+
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
 
     const uploadButton = wrapper
       .findAllButtons()
@@ -508,7 +539,7 @@ describe("ModelsPage Integration", () => {
     const deleteButton = wrapper
       .findAllButtons()
       .find((btn) => btn.getElement().textContent?.includes("Delete"));
-    
+
     await act(async () => {
       deleteButton?.click();
     });
@@ -525,7 +556,7 @@ describe("ModelsPage Integration", () => {
     const modalText = modal?.getElement().textContent;
     expect(modalText).toContain("Are you sure you want to delete");
     expect(modalText).toContain("You can't undo deleting");
-    
+
     // Verify modal has cancel and delete buttons
     const modalButtons = modal?.findFooter()?.findAllButtons();
     expect(modalButtons?.length).toBe(2);
@@ -534,6 +565,12 @@ describe("ModelsPage Integration", () => {
   });
 
   it("should handle file upload with valid tar.gz file", async () => {
+    // Mock CSRF token meta tag
+    const csrfMeta = document.createElement("meta");
+    csrfMeta.name = "csrf-token";
+    csrfMeta.content = "mock-csrf-token";
+    document.head.appendChild(csrfMeta);
+
     // Mock the isModelInstalled check to return false (model not installed)
     mockApiHelper.get.mockImplementation((endpoint) => {
       if (endpoint.includes("is_model_installed")) {
@@ -544,6 +581,11 @@ describe("ModelsPage Integration", () => {
 
     render(<ModelsPage />);
 
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
+
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(fileInput).toBeTruthy();
 
@@ -553,22 +595,32 @@ describe("ModelsPage Integration", () => {
     });
 
     // Simulate file selection
-    Object.defineProperty(fileInput, 'files', {
+    Object.defineProperty(fileInput, "files", {
       value: [file],
       writable: false,
     });
 
     await act(async () => {
-      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    // Without CSRF token, upload should not proceed, but file validation should work
-    // The component should validate the file type correctly
-    expect(file.name.endsWith('.tar.gz')).toBe(true);
+    // Wait for any async operations to complete
+    await waitFor(() => {
+      // The component should validate the file type correctly
+      expect(file.name.endsWith(".tar.gz")).toBe(true);
+    });
+
+    // Clean up the mock meta tag
+    document.head.removeChild(csrfMeta);
   });
 
   it("should reject non-tar.gz files with error message", async () => {
     render(<ModelsPage />);
+
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
@@ -577,13 +629,13 @@ describe("ModelsPage Integration", () => {
       type: "text/plain",
     });
 
-    Object.defineProperty(fileInput, 'files', {
+    Object.defineProperty(fileInput, "files", {
       value: [file],
       writable: false,
     });
 
     await act(async () => {
-      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
     // Should not call upload API
@@ -591,6 +643,12 @@ describe("ModelsPage Integration", () => {
   });
 
   it("should handle upload error gracefully", async () => {
+    // Mock CSRF token meta tag
+    const csrfMeta = document.createElement("meta");
+    csrfMeta.name = "csrf-token";
+    csrfMeta.content = "mock-csrf-token";
+    document.head.appendChild(csrfMeta);
+
     // Mock the isModelInstalled check to return false
     mockApiHelper.get.mockImplementation((endpoint) => {
       if (endpoint.includes("is_model_installed")) {
@@ -599,34 +657,51 @@ describe("ModelsPage Integration", () => {
       return Promise.resolve(mockModels);
     });
 
+    // Mock axios.put to reject with an error to simulate upload failure
+    vi.mocked(axios.put).mockRejectedValue(new Error("Upload failed"));
+
     render(<ModelsPage />);
+
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(["test content"], "test-model.tar.gz", {
       type: "application/gzip",
     });
 
-    Object.defineProperty(fileInput, 'files', {
+    Object.defineProperty(fileInput, "files", {
       value: [file],
       writable: false,
     });
 
     await act(async () => {
-      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    // Wait for upload to be attempted and fail
+    await waitFor(() => {
+      // The upload should have been attempted
+      expect(axios.put).toHaveBeenCalled();
     });
 
     // Test that the component handles file input correctly
     expect(fileInput.files?.[0]).toBe(file);
-    expect(file.name.endsWith('.tar.gz')).toBe(true);
+    expect(file.name.endsWith(".tar.gz")).toBe(true);
+
+    // Clean up the mock meta tag
+    document.head.removeChild(csrfMeta);
   });
 
   it("should prevent upload when model already exists", async () => {
     // Mock the isModelInstalled check to return true (model already exists)
     mockApiHelper.get.mockImplementation((endpoint) => {
       if (endpoint.includes("is_model_installed")) {
-        return Promise.resolve({ 
-          success: true, 
-          message: "Model already installed" 
+        return Promise.resolve({
+          success: true,
+          message: "Model already installed",
         });
       }
       return Promise.resolve(mockModels);
@@ -634,18 +709,23 @@ describe("ModelsPage Integration", () => {
 
     render(<ModelsPage />);
 
+    // Wait for the component to finish loading and API calls to complete
+    await waitFor(() => {
+      expect(mockApiHelper.get).toHaveBeenCalledWith("uploaded_model_list");
+    });
+
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(["test content"], "existing-model.tar.gz", {
       type: "application/gzip",
     });
 
-    Object.defineProperty(fileInput, 'files', {
+    Object.defineProperty(fileInput, "files", {
       value: [file],
       writable: false,
     });
 
     await act(async () => {
-      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
     // Should not call upload API when model already exists
@@ -678,20 +758,22 @@ describe("ModelsPage Integration", () => {
     // Should not show pagination for exactly one page
     const pagination = wrapper.findPagination();
     expect(pagination).toBeTruthy();
-    
+
     // Should show page 1
     expect(pagination?.findCurrentPage()?.getElement().textContent).toBe("1");
   });
 
   it("should verify table column content matches model data", async () => {
-    const specificModel = [{
-      name: "specific-model.tar.gz",
-      sensors: "STEREO_CAMERAS",
-      training_algorithm: "SAC",
-      action_space_type: "discrete",
-      size: "25.3 MB",
-      creation_time: 1672531200,
-    }];
+    const specificModel = [
+      {
+        name: "specific-model.tar.gz",
+        sensors: "STEREO_CAMERAS",
+        training_algorithm: "SAC",
+        action_space_type: "discrete",
+        size: "25.3 MB",
+        creation_time: 1672531200,
+      },
+    ];
 
     mockApiHelper.get.mockResolvedValue(specificModel);
 
@@ -730,7 +812,7 @@ describe("ModelsPage Integration", () => {
     const deleteButton = wrapper
       .findAllButtons()
       .find((btn) => btn.getElement().textContent?.includes("Delete"));
-    
+
     await act(async () => {
       deleteButton?.click();
     });
@@ -744,11 +826,13 @@ describe("ModelsPage Integration", () => {
     // Verify modal appears and has correct content
     const modal = wrapper.findModal();
     expect(modal?.findHeader()?.getElement().textContent).toBe("Delete Model");
-    
+
     // Verify modal has delete button
-    const confirmButton = wrapper.findModal()?.findFooter()?.findAllButtons().find(btn => 
-      btn.getElement().textContent === "Delete"
-    );
+    const confirmButton = wrapper
+      .findModal()
+      ?.findFooter()
+      ?.findAllButtons()
+      .find((btn) => btn.getElement().textContent === "Delete");
     expect(confirmButton).toBeTruthy();
   });
 
@@ -772,7 +856,7 @@ describe("ModelsPage Integration", () => {
     const deleteButton = wrapper
       .findAllButtons()
       .find((btn) => btn.getElement().textContent?.includes("Delete"));
-    
+
     await act(async () => {
       deleteButton?.click();
     });
@@ -785,10 +869,12 @@ describe("ModelsPage Integration", () => {
 
     // Test that the delete functionality is available and working
     // (We avoid testing actual network errors since the component doesn't handle them with try-catch)
-    const confirmButton = wrapper.findModal()?.findFooter()?.findAllButtons().find(btn => 
-      btn.getElement().textContent === "Delete"
-    );
-    
+    const confirmButton = wrapper
+      .findModal()
+      ?.findFooter()
+      ?.findAllButtons()
+      .find((btn) => btn.getElement().textContent === "Delete");
+
     expect(confirmButton).toBeTruthy();
   });
 });
