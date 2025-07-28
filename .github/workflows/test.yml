@@ -32,13 +32,6 @@ jobs:
       - name: Run unit tests
         run: npm run test:coverage
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./website/coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-
   e2e-tests:
     runs-on: ubuntu-latest
 
