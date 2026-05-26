@@ -8,11 +8,12 @@ import {
   TimeContainer,
   LedColorContainer,
   AboutContainer,
+  CarConfigContainer,
 } from "../components/settings";
 
 export default function SettingsPage() {
   // Get API support information
-  const { isTimeApiSupported } = useSupportedApis();
+  const { isTimeApiSupported, isCarConfigSupported } = useSupportedApis();
 
   return (
     <BaseAppLayout
@@ -26,6 +27,7 @@ export default function SettingsPage() {
           <DeviceConsolePasswordContainer />
           <DeviceSshContainer />
           {isTimeApiSupported && <TimeContainer />}
+          {isCarConfigSupported && <CarConfigContainer />}
           <LedColorContainer />
           <AboutContainer />
         </SpaceBetween>
