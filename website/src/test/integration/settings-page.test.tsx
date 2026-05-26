@@ -33,6 +33,7 @@ vi.mock("../../components/settings", () => ({
   TimeContainer: () => <div data-testid="time-settings">Time Settings</div>,
   LedColorContainer: () => <div data-testid="led-color-settings">LED Color Settings</div>,
   AboutContainer: () => <div data-testid="about-settings">About Settings</div>,
+  CarConfigContainer: () => <div data-testid="car-config-settings">Car Config Settings</div>,
 }));
 
 describe("SettingsPage Integration", () => {
@@ -43,6 +44,7 @@ describe("SettingsPage Integration", () => {
   it("should render settings page with basic structure", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
+      isCarConfigSupported: true,
     });
 
     render(<SettingsPage />);
@@ -55,9 +57,10 @@ describe("SettingsPage Integration", () => {
     expect(screen.getByText("Adjust your DeepRacer car settings")).toBeInTheDocument();
   });
 
-  it("should render all settings containers when isTimeApiSupported is true", () => {
+  it("should render all settings containers when all APIs are supported", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
+      isCarConfigSupported: true,
     });
 
     render(<SettingsPage />);
@@ -67,6 +70,7 @@ describe("SettingsPage Integration", () => {
     expect(screen.getByTestId("console-password-settings")).toBeInTheDocument();
     expect(screen.getByTestId("ssh-settings")).toBeInTheDocument();
     expect(screen.getByTestId("time-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
     expect(screen.getByTestId("about-settings")).toBeInTheDocument();
   });
@@ -74,6 +78,7 @@ describe("SettingsPage Integration", () => {
   it("should not render TimeContainer when isTimeApiSupported is false", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: false,
+      isCarConfigSupported: true,
     });
 
     render(<SettingsPage />);
@@ -85,6 +90,27 @@ describe("SettingsPage Integration", () => {
     expect(screen.getByTestId("network-settings")).toBeInTheDocument();
     expect(screen.getByTestId("console-password-settings")).toBeInTheDocument();
     expect(screen.getByTestId("ssh-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("about-settings")).toBeInTheDocument();
+  });
+
+  it("should not render CarConfigContainer when isCarConfigSupported is false", () => {
+    mockUseSupportedApis.mockReturnValue({
+      isTimeApiSupported: true,
+      isCarConfigSupported: false,
+    });
+
+    render(<SettingsPage />);
+
+    // Verify CarConfigContainer is not rendered
+    expect(screen.queryByTestId("car-config-settings")).not.toBeInTheDocument();
+
+    // Verify other containers are still rendered
+    expect(screen.getByTestId("network-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("console-password-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("ssh-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("time-settings")).toBeInTheDocument();
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
     expect(screen.getByTestId("about-settings")).toBeInTheDocument();
   });
@@ -92,6 +118,7 @@ describe("SettingsPage Integration", () => {
   it("should have proper layout structure using Cloudscape components", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
+      isCarConfigSupported: true,
     });
 
     render(<SettingsPage />);
@@ -115,6 +142,7 @@ describe("SettingsPage Integration", () => {
   it("should call useSupportedApis hook correctly", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
+      isCarConfigSupported: true,
     });
 
     render(<SettingsPage />);
@@ -126,6 +154,7 @@ describe("SettingsPage Integration", () => {
   it("should be wrapped in BaseAppLayout component", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
+      isCarConfigSupported: true,
     });
 
     render(<SettingsPage />);
