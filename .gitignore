@@ -1,6 +1,10 @@
 website/dist/
 website/node_modules/
 website/package-lock.json
+# Playwright reports (now generated at root level)
+playwright-report/
+test-results/
+coverage/
 dist/
 *.zip
 *.deb
