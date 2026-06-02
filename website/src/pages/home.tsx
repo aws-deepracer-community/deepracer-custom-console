@@ -45,6 +45,7 @@ const HomePage = () => {
     lidar_status: "not_connected",
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [activeTabId, setActiveTabId] = useState("autonomous");
   const [throttle, setThrottle] = useState(30);
   const [isInferenceRunning, setIsInferenceRunning] = useState(false);
   const lastJoystickMoveTime = useRef<number>(0);
@@ -165,6 +166,7 @@ const HomePage = () => {
   };
 
   const handleTabChange = (selectedTab: string) => {
+    setActiveTabId(selectedTab);
     if (selectedTab === "autonomous") {
       setDriveMode("auto");
     } else if (selectedTab === "manual") {
@@ -412,6 +414,7 @@ const HomePage = () => {
               </ExpandableSection>
 
               <Tabs
+                activeTabId={activeTabId}
                 onChange={({ detail }) => handleTabChange(detail.activeTabId)}
                 tabs={[
                   {

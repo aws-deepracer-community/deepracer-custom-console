@@ -128,40 +128,16 @@ describe("HomePage Integration", () => {
   it("should toggle between autonomous and manual drive modes", async () => {
     render(<HomePage />);
 
-    let autonomousTab!: NonNullable<
-      ReturnType<
-        NonNullable<ReturnType<ReturnType<typeof createWrapper>["findTabs"]>>["findTabLinkById"]
-      >
-    >;
-    let manualTab!: NonNullable<
-      ReturnType<
-        NonNullable<ReturnType<ReturnType<typeof createWrapper>["findTabs"]>>["findTabLinkById"]
-      >
-    >;
-
-    // Wait for tabs to be available and store references
+    // Wait for tabs to be available and verify initial state
     await waitFor(
       () => {
         const wrapper = createWrapper(document.body);
-
-        // Should have tabs for different drive modes
         const tabs = wrapper.findTabs();
         expect(tabs).toBeTruthy();
-
-        const tabsElement = tabs?.getElement();
-        expect(tabsElement).toHaveTextContent(/autonomous/i);
-        expect(tabsElement).toHaveTextContent(/manual/i);
-
-        // Find and store tab references
-        const foundAutonomousTab = tabs?.findTabLinkById("autonomous");
-        const foundManualTab = tabs?.findTabLinkById("manual");
-
-        expect(foundAutonomousTab).toBeTruthy();
-        expect(foundManualTab).toBeTruthy();
-
-        autonomousTab = foundAutonomousTab!;
-        manualTab = foundManualTab!;
-
+        expect(tabs?.getElement()).toHaveTextContent(/autonomous/i);
+        expect(tabs?.getElement()).toHaveTextContent(/manual/i);
+        expect(tabs?.findTabLinkById("autonomous")).toBeTruthy();
+        expect(tabs?.findTabLinkById("manual")).toBeTruthy();
         // Initially should be on autonomous tab
         expect(wrapper.getElement()).toHaveTextContent("Choose a model to autonomously drive");
       },
@@ -171,13 +147,11 @@ describe("HomePage Integration", () => {
     // Clear previous API calls to focus on tab switching
     vi.clearAllMocks();
 
-    // Click manual tab and verify drive mode API call
-    manualTab.click();
+    // Click manual tab — re-find fresh to avoid stale reference
+    createWrapper(document.body).findTabs()?.findTabLinkById("manual")?.click();
 
     await waitFor(() => {
-      const wrapper = createWrapper(document.body);
-      // Should now show manual tab content
-      expect(wrapper.getElement()).toHaveTextContent(
+      expect(createWrapper(document.body).getElement()).toHaveTextContent(
         "Drive the vehicle manually using the joystick"
       );
     });
@@ -188,13 +162,13 @@ describe("HomePage Integration", () => {
     // Clear mocks again
     vi.clearAllMocks();
 
-    // Click back to autonomous tab
-    autonomousTab.click();
+    // Click back to autonomous tab — re-find fresh to avoid stale reference
+    createWrapper(document.body).findTabs()?.findTabLinkById("autonomous")?.click();
 
     await waitFor(() => {
-      const wrapper = createWrapper(document.body);
-      // Should show autonomous tab content again
-      expect(wrapper.getElement()).toHaveTextContent("Choose a model to autonomously drive");
+      expect(createWrapper(document.body).getElement()).toHaveTextContent(
+        "Choose a model to autonomously drive"
+      );
     });
 
     // Verify drive mode API call for autonomous
