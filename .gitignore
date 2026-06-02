@@ -8,3 +8,4 @@ coverage/
 dist/
 *.zip
 *.deb
+*.code-workspace
