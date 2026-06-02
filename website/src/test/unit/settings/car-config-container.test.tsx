@@ -211,9 +211,8 @@ describe("CarConfigContainer", () => {
 
       await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
 
-      // camera mode "AUTO" should be normalised to "auto"
-      const cameraAuto = container.querySelector('input[type="radio"][value="auto"]:checked');
-      // We just verify the component renders without crashing
+      // camera mode "AUTO" should be normalised to "auto" — just verify the component renders
+      expect(container.querySelector('input[type="radio"][value="auto"]:checked')).toBeTruthy();
       expect(wrapper.findContainer()).toBeTruthy();
     });
   });
