@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Box,
   Button,
   Container,
-  FormField,
   Header,
   SpaceBetween,
   Tiles,
@@ -278,78 +278,81 @@ export const CarConfigContainer = () => {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <Container
-      header={
-        <Header
-          actions={
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button onClick={fetchConfig} disabled={isLoading || isSaving}>
-                Refresh
-              </Button>
-              <Button
-                variant="primary"
-                loading={isSaving}
-                disabled={!isDirty || isLoading}
-                onClick={handleSave}
-              >
-                Save
-              </Button>
-            </SpaceBetween>
-          }
-          description="Settings applied on the next DeepRacer service restart."
-        >
-          Vehicle Configuration
-        </Header>
-      }
-    >
-      <SpaceBetween direction="vertical" size="l">
-        {saveSuccess && (
-          <Alert type="warning">
-            Configuration saved. Restart the DeepRacer service for changes to take effect.
-          </Alert>
-        )}
-        {saveError && (
-          <Alert type="error" dismissible onDismiss={() => setSaveError(null)}>
-            {saveError}
-          </Alert>
-        )}
+    <SpaceBetween size="l">
+      {saveSuccess && (
+        <Alert type="warning">
+          Configuration saved. Restart the DeepRacer service for changes to take effect.
+        </Alert>
+      )}
+      {saveError && (
+        <Alert type="error" dismissible onDismiss={() => setSaveError(null)}>
+          {saveError}
+        </Alert>
+      )}
 
-        {/* ── Logging ─────────────────────────────────────────────────────── */}
-        <FormField
-          label="Logging Mode"
-          description="Controls when driving logs are recorded to a ROS bag."
-        >
-          <Tiles
-            value={draft?.logging.mode ?? null}
-            items={LOGGING_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
-            onChange={({ detail }) => updateLogging(detail.value)}
-          />
-        </FormField>
+      <Container
+        header={
+          <Header variant="h2" description="Controls when driving logs are recorded to a ROS bag.">
+            Logging Mode
+          </Header>
+        }
+      >
+        <Tiles
+          value={draft?.logging.mode ?? null}
+          items={LOGGING_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
+          onChange={({ detail }) => updateLogging(detail.value)}
+        />
+      </Container>
 
-        {/* ── Camera ──────────────────────────────────────────────────────── */}
-        <FormField
-          label="Camera Mode"
-          description="Controls which camera driver is used to capture the video feed."
-        >
-          <Tiles
-            value={draft?.camera.mode ?? null}
-            items={CAMERA_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
-            onChange={({ detail }) => updateCamera(detail.value)}
-          />
-        </FormField>
+      <Container
+        header={
+          <Header
+            variant="h2"
+            description="Controls which camera driver is used to capture the video feed."
+          >
+            Camera Mode
+          </Header>
+        }
+      >
+        <Tiles
+          value={draft?.camera.mode ?? null}
+          items={CAMERA_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
+          onChange={({ detail }) => updateCamera(detail.value)}
+        />
+      </Container>
 
-        {/* ── Inference ───────────────────────────────────────────────────── */}
-        <FormField
-          label="Inference Engine"
-          description="Selects the hardware component that runs the neural network model during autonomous driving."
-        >
-          <Tiles
-            value={currentInferenceTileValue}
-            items={inferenceTiles.map((t) => ({ ...t, disabled: isLoading }))}
-            onChange={({ detail }) => updateInference(detail.value)}
-          />
-        </FormField>
-      </SpaceBetween>
-    </Container>
+      <Container
+        header={
+          <Header
+            variant="h2"
+            description="Selects the hardware component that runs the neural network model during autonomous driving."
+          >
+            Inference Engine
+          </Header>
+        }
+      >
+        <Tiles
+          value={currentInferenceTileValue}
+          items={inferenceTiles.map((t) => ({ ...t, disabled: isLoading }))}
+          onChange={({ detail }) => updateInference(detail.value)}
+        />
+      </Container>
+
+      <Box float="right">
+        <SpaceBetween direction="horizontal" size="xs">
+          <Button onClick={fetchConfig} disabled={isLoading || isSaving}>
+            Refresh
+          </Button>
+          <Button
+            variant="primary"
+            loading={isSaving}
+            disabled={!isDirty || isLoading}
+            onClick={handleSave}
+          >
+            Save
+          </Button>
+        </SpaceBetween>
+      </Box>
+    </SpaceBetween>
   );
 };

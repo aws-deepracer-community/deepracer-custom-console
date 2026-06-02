@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  screen,
-  render,
-} from "../utils";
+import { screen, render, act } from "../utils";
 import createWrapper from "@cloudscape-design/components/test-utils/dom";
 import SettingsPage from "../../pages/settings";
 
@@ -28,7 +25,9 @@ vi.mock("../../components/base-app-layout", () => ({
 // Mock all settings containers to avoid testing their internal logic
 vi.mock("../../components/settings", () => ({
   NetworkSettingsContainer: () => <div data-testid="network-settings">Network Settings</div>,
-  DeviceConsolePasswordContainer: () => <div data-testid="console-password-settings">Console Password Settings</div>,
+  DeviceConsolePasswordContainer: () => (
+    <div data-testid="console-password-settings">Console Password Settings</div>
+  ),
   DeviceSshContainer: () => <div data-testid="ssh-settings">SSH Settings</div>,
   TimeContainer: () => <div data-testid="time-settings">Time Settings</div>,
   LedColorContainer: () => <div data-testid="led-color-settings">LED Color Settings</div>,
@@ -51,7 +50,7 @@ describe("SettingsPage Integration", () => {
 
     // Verify the mocked BaseAppLayout is rendered
     expect(screen.getByTestId("base-app-layout")).toBeInTheDocument();
-    
+
     // Verify main header and description
     expect(screen.getByText("Settings")).toBeInTheDocument();
     expect(screen.getByText("Adjust your DeepRacer car settings")).toBeInTheDocument();
@@ -65,14 +64,21 @@ describe("SettingsPage Integration", () => {
 
     render(<SettingsPage />);
 
-    // Verify all containers are rendered
+    // About + System tab (default active) containers are immediately visible
+    expect(screen.getByTestId("about-settings")).toBeInTheDocument();
     expect(screen.getByTestId("network-settings")).toBeInTheDocument();
     expect(screen.getByTestId("console-password-settings")).toBeInTheDocument();
     expect(screen.getByTestId("ssh-settings")).toBeInTheDocument();
     expect(screen.getByTestId("time-settings")).toBeInTheDocument();
-    expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
+
+    // Switch to Car Configuration tab to see those containers
+    const wrapper = createWrapper(document.body);
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("car-config")?.click();
+    });
+
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
-    expect(screen.getByTestId("about-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
   });
 
   it("should not render TimeContainer when isTimeApiSupported is false", () => {
@@ -83,16 +89,23 @@ describe("SettingsPage Integration", () => {
 
     render(<SettingsPage />);
 
-    // Verify TimeContainer is not rendered
+    // TimeContainer is absent from the System tab
     expect(screen.queryByTestId("time-settings")).not.toBeInTheDocument();
-    
-    // Verify other containers are still rendered
+
+    // Other System tab + About containers are present
+    expect(screen.getByTestId("about-settings")).toBeInTheDocument();
     expect(screen.getByTestId("network-settings")).toBeInTheDocument();
     expect(screen.getByTestId("console-password-settings")).toBeInTheDocument();
     expect(screen.getByTestId("ssh-settings")).toBeInTheDocument();
-    expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
+
+    // Switch to Car Configuration tab
+    const wrapper = createWrapper(document.body);
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("car-config")?.click();
+    });
+
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
-    expect(screen.getByTestId("about-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
   });
 
   it("should not render CarConfigContainer when isCarConfigSupported is false", () => {
@@ -103,16 +116,22 @@ describe("SettingsPage Integration", () => {
 
     render(<SettingsPage />);
 
-    // Verify CarConfigContainer is not rendered
-    expect(screen.queryByTestId("car-config-settings")).not.toBeInTheDocument();
-
-    // Verify other containers are still rendered
+    // System tab + About containers are present
+    expect(screen.getByTestId("about-settings")).toBeInTheDocument();
     expect(screen.getByTestId("network-settings")).toBeInTheDocument();
     expect(screen.getByTestId("console-password-settings")).toBeInTheDocument();
     expect(screen.getByTestId("ssh-settings")).toBeInTheDocument();
     expect(screen.getByTestId("time-settings")).toBeInTheDocument();
+
+    // Switch to Car Configuration tab
+    const wrapper = createWrapper(document.body);
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("car-config")?.click();
+    });
+
+    // LED is present but CarConfig is absent
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
-    expect(screen.getByTestId("about-settings")).toBeInTheDocument();
+    expect(screen.queryByTestId("car-config-settings")).not.toBeInTheDocument();
   });
 
   it("should have proper layout structure using Cloudscape components", () => {
@@ -124,7 +143,7 @@ describe("SettingsPage Integration", () => {
     render(<SettingsPage />);
 
     const wrapper = createWrapper(document.body);
-    
+
     // Check for SpaceBetween layout
     const spaceBetween = wrapper.findSpaceBetween();
     expect(spaceBetween).toBeTruthy();
@@ -132,7 +151,7 @@ describe("SettingsPage Integration", () => {
     // Check for TextContent
     const textContent = wrapper.findTextContent();
     expect(textContent).toBeTruthy();
-    
+
     // Check for Header component
     const header = wrapper.findHeader();
     expect(header).toBeTruthy();

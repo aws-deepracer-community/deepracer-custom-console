@@ -61,22 +61,21 @@ describe("CarConfigContainer", () => {
   // ── Rendering ──────────────────────────────────────────────────────────────
 
   describe("Component Rendering", () => {
-    it("renders the container with the correct header and description", async () => {
+    it("renders three containers with section headers", async () => {
       mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
 
       const { container } = await act(async () => render(<CarConfigContainer />));
       const wrapper = createWrapper(container);
 
-      const containerEl = wrapper.findContainer();
-      expect(containerEl).toBeTruthy();
-
-      const header = containerEl?.findHeader();
-      expect(header?.getElement()).toHaveTextContent("Vehicle Configuration");
-      expect(header?.getElement()).toHaveTextContent(
-        "Settings applied on the next DeepRacer service restart."
-      );
-
       await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      const containers = wrapper.findAllContainers();
+      expect(containers.length).toBe(3);
+
+      const headerTexts = containers.map((c) => c.findHeader()?.getElement().textContent ?? "");
+      expect(headerTexts.some((t) => t.includes("Logging Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Camera Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Inference Engine"))).toBe(true);
     });
 
     it("renders Refresh and Save buttons in the header", async () => {
@@ -91,7 +90,7 @@ describe("CarConfigContainer", () => {
       expect(findButton(wrapper, "Save")).toBeTruthy();
     });
 
-    it("renders FormFields for Logging Mode, Camera Mode, and Inference Engine", async () => {
+    it("renders sections for Logging Mode, Camera Mode, and Inference Engine", async () => {
       mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
 
       const { container } = await act(async () => render(<CarConfigContainer />));
@@ -99,11 +98,12 @@ describe("CarConfigContainer", () => {
 
       await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
 
-      const formFields = wrapper.findAllFormFields();
-      const labels = formFields.map((f) => f.findLabel()?.getElement().textContent);
-      expect(labels).toContain("Logging Mode");
-      expect(labels).toContain("Camera Mode");
-      expect(labels).toContain("Inference Engine");
+      // Each section is now a Container with a header (no longer FormFields)
+      const containers = wrapper.findAllContainers();
+      const headerTexts = containers.map((c) => c.findHeader()?.getElement().textContent ?? "");
+      expect(headerTexts.some((t) => t.includes("Logging Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Camera Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Inference Engine"))).toBe(true);
     });
 
     it("Save button is disabled when config is unchanged (not dirty)", async () => {

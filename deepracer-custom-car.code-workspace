@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "../deepracer-custom-car"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"memory": "cpp"
+		}
+	}
+}
