@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Badge,
   Box,
   Button,
   Container,
@@ -25,6 +26,9 @@ interface CarConfig {
     engine: string;
     device: string;
   };
+  steering: {
+    mode: string;
+  };
 }
 
 interface Capabilities {
@@ -33,12 +37,13 @@ interface Capabilities {
   logging_providers: string[];
   inference_engines: string[];
   inference_devices: Record<string, string[]>;
+  steering_modes: string[];
 }
 
 interface CarConfigResponse {
   success: boolean;
   config: CarConfig;
-  capabilities: Capabilities;
+  capabilities?: Capabilities;
   reason?: string;
 }
 
@@ -55,6 +60,24 @@ const LOGGING_MODE_TILES: TilesProps.TilesDefinition[] = [
   { value: "Never", label: "Never", description: "Logs are not collected" },
   { value: "USBOnly", label: "USB only", description: "Logs saved to a connected USB drive only" },
   { value: "Always", label: "Always", description: "Logs saved regardless of USB drive presence" },
+];
+
+const STEERING_MODE_TILES: TilesProps.TilesDefinition[] = [
+  {
+    value: "servo",
+    label: "Servo",
+    description: "Standard DeepRacer servo and ESC drivetrain",
+  },
+  {
+    value: "diffdrive",
+    label: (
+      <SpaceBetween direction="horizontal" size="xs">
+        <span>Differential Drive</span>
+        <Badge color="blue">Beta</Badge>
+      </SpaceBetween>
+    ),
+    description: "Direct motor control via the diff-drive package",
+  },
 ];
 
 const CAMERA_MODE_TILES: TilesProps.TilesDefinition[] = [
@@ -189,9 +212,17 @@ export const CarConfigContainer = () => {
           engine: normEngine,
           device: matchCI(cfg.inference.device, devices, "auto"),
         },
+        steering: {
+          ...cfg.steering,
+          mode: matchCI(
+            cfg.steering?.mode,
+            STEERING_MODE_TILES.map((t) => t.value),
+            "servo"
+          ),
+        },
       };
       setConfig(withDefaults);
-      setCapabilities(caps);
+      setCapabilities(caps ?? null);
       setDraft(withDefaults);
     }
     setIsLoading(false);
@@ -208,8 +239,7 @@ export const CarConfigContainer = () => {
     setSaveSuccess(false);
     setSaveError(null);
 
-    const payload = { ...draft, logging: { ...draft.logging, provider: "sqlite3" } };
-    const response = await ApiHelper.post<CarConfigResponse>("car_config", payload);
+    const response = await ApiHelper.post<CarConfigResponse>("car_config", draft);
     if (response?.success) {
       const cfg = response.config;
       const caps = capabilities;
@@ -239,6 +269,14 @@ export const CarConfigContainer = () => {
           engine: normEngine,
           device: matchCI(cfg.inference.device, devices, "auto"),
         },
+        steering: {
+          ...cfg.steering,
+          mode: matchCI(
+            cfg.steering?.mode,
+            STEERING_MODE_TILES.map((t) => t.value),
+            "servo"
+          ),
+        },
       };
       setConfig(withDefaults);
       setDraft(withDefaults);
@@ -258,6 +296,10 @@ export const CarConfigContainer = () => {
 
   const updateCamera = (value: string) => {
     setDraft((prev) => prev && { ...prev, camera: { ...prev.camera, mode: value } });
+  };
+
+  const updateSteering = (value: string) => {
+    setDraft((prev) => prev && { ...prev, steering: { mode: value } });
   };
 
   // ── Derived tile data ────────────────────────────────────────────────────────
@@ -335,6 +377,23 @@ export const CarConfigContainer = () => {
           value={currentInferenceTileValue}
           items={inferenceTiles.map((t) => ({ ...t, disabled: isLoading }))}
           onChange={({ detail }) => updateInference(detail.value)}
+        />
+      </Container>
+
+      <Container
+        header={
+          <Header
+            variant="h2"
+            description="Selects the drivetrain type. Change this only if you have modified the car hardware."
+          >
+            Steering Mode
+          </Header>
+        }
+      >
+        <Tiles
+          value={draft?.steering.mode ?? null}
+          items={STEERING_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
+          onChange={({ detail }) => updateSteering(detail.value)}
         />
       </Container>
 
