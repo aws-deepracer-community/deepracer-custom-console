@@ -17,9 +17,10 @@
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
-    "@cloudscape-design/components": "^3.0.878",
-    "@cloudscape-design/design-tokens": "^3.0.35",
-    "@cloudscape-design/global-styles": "^1.0.34",
+    "@cloudscape-design/component-toolkit": "^1.0.0-beta.161",
+    "@cloudscape-design/components": "^3.0.1300",
+    "@cloudscape-design/design-tokens": "^3.0.89",
+    "@cloudscape-design/global-styles": "^1.0.59",
     "axios": "^1.7.9",
     "react": "^18.2.0",
     "react-color": "^2.19.3",

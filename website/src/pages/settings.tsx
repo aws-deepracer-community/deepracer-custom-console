@@ -1,6 +1,6 @@
 import { useSupportedApis } from "../common/hooks/use-supported-apis";
 import BaseAppLayout from "../components/base-app-layout";
-import { TextContent, Header, SpaceBetween } from "@cloudscape-design/components";
+import { TextContent, Header, SpaceBetween, Tabs } from "@cloudscape-design/components";
 import {
   NetworkSettingsContainer,
   DeviceConsolePasswordContainer,
@@ -8,11 +8,11 @@ import {
   TimeContainer,
   LedColorContainer,
   AboutContainer,
+  CarConfigContainer,
 } from "../components/settings";
 
 export default function SettingsPage() {
-  // Get API support information
-  const { isTimeApiSupported } = useSupportedApis();
+  const { isTimeApiSupported, isCarConfigSupported } = useSupportedApis();
 
   return (
     <BaseAppLayout
@@ -22,12 +22,33 @@ export default function SettingsPage() {
             <Header variant="h1">Settings</Header>
             <p>Adjust your DeepRacer car settings</p>
           </TextContent>
-          <NetworkSettingsContainer />
-          <DeviceConsolePasswordContainer />
-          <DeviceSshContainer />
-          {isTimeApiSupported && <TimeContainer />}
-          <LedColorContainer />
           <AboutContainer />
+          <Tabs
+            tabs={[
+              {
+                label: "System Settings",
+                id: "system",
+                content: (
+                  <SpaceBetween size="l">
+                    <NetworkSettingsContainer />
+                    <DeviceConsolePasswordContainer />
+                    <DeviceSshContainer />
+                    {isTimeApiSupported && <TimeContainer />}
+                  </SpaceBetween>
+                ),
+              },
+              {
+                label: "Car Settings",
+                id: "car-config",
+                content: (
+                  <SpaceBetween size="l">
+                    <LedColorContainer />
+                    {isCarConfigSupported && <CarConfigContainer />}
+                  </SpaceBetween>
+                ),
+              },
+            ]}
+          />
         </SpaceBetween>
       }
     />

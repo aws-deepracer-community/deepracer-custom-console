@@ -36,6 +36,7 @@ interface SupportedApisState {
   isEmergencyStopSupported: boolean;
   isDeviceStatusSupported: boolean;
   isTimeApiSupported: boolean;
+  isCarConfigSupported: boolean;
   isLoading: boolean;
   hasError: boolean;
 }
@@ -70,6 +71,7 @@ describe("useSupportedApis", () => {
       isEmergencyStopSupported: true,
       isDeviceStatusSupported: true,
       isTimeApiSupported: false,
+      isCarConfigSupported: false,
       isLoading: false,
       hasError: false,
     };
