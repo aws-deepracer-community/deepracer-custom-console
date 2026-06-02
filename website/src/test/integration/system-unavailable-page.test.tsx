@@ -48,7 +48,7 @@ describe("SystemUnavailablePage Integration", () => {
     // Check for AWS logo
     const logo = screen.getByAltText("AWS Logo");
     expect(logo).toBeInTheDocument();
-    expect(logo).toHaveAttribute("src", "./static/AWS_logo_RGB.svg");
+    expect(logo.getAttribute("src")).toMatch(/^data:image\/svg\+xml;base64,/);
     expect(logo).toHaveAttribute("width", "100");
 
     // Check for main heading
