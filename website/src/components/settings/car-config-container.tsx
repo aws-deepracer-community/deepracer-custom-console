@@ -57,9 +57,9 @@ function matchCI(value: string | null | undefined, options: string[], fallback: 
 }
 
 const LOGGING_MODE_TILES: TilesProps.TilesDefinition[] = [
-  { value: "Never", label: "Never", description: "Logs are not collected" },
-  { value: "USBOnly", label: "USB only", description: "Logs saved to a connected USB drive only" },
   { value: "Always", label: "Always", description: "Logs saved regardless of USB drive presence" },
+  { value: "USBOnly", label: "USB only", description: "Logs saved to a connected USB drive only" },
+  { value: "Never", label: "Never", description: "Logs are not collected" },
 ];
 
 const LOGGING_PROVIDER_TILES: TilesProps.TilesDefinition[] = [
@@ -380,7 +380,7 @@ export const CarConfigContainer = () => {
           {(capabilities?.logging_providers?.length ?? 0) > 1 && (
             <div>
               <Header variant="h3" description="Storage format used when writing ROS bag files.">
-                Provider
+                Storage Provider
               </Header>
               <Tiles
                 value={draft?.logging.provider ?? null}
