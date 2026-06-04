@@ -26,12 +26,14 @@ const mockCapabilities = {
     TFLITE: ["CPU"],
     OV: ["CPU", "GPU", "MYRIAD"],
   },
+  steering_modes: ["servo", "diffdrive"],
 };
 
 const mockConfig = {
   logging: { mode: "Never", provider: "sqlite3" },
   camera: { mode: "auto" },
   inference: { engine: "auto", device: "auto" },
+  steering: { mode: "servo" },
 };
 
 const mockCarConfigResponse = {
@@ -61,7 +63,7 @@ describe("CarConfigContainer", () => {
   // ── Rendering ──────────────────────────────────────────────────────────────
 
   describe("Component Rendering", () => {
-    it("renders three containers with section headers", async () => {
+    it("renders four containers with section headers", async () => {
       mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
 
       const { container } = await act(async () => render(<CarConfigContainer />));
@@ -70,12 +72,13 @@ describe("CarConfigContainer", () => {
       await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
 
       const containers = wrapper.findAllContainers();
-      expect(containers.length).toBe(3);
+      expect(containers.length).toBe(4);
 
       const headerTexts = containers.map((c) => c.findHeader()?.getElement().textContent ?? "");
-      expect(headerTexts.some((t) => t.includes("Logging Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Logging"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Camera Mode"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Inference Engine"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Steering Mode"))).toBe(true);
     });
 
     it("renders Refresh and Save buttons in the header", async () => {
@@ -90,7 +93,7 @@ describe("CarConfigContainer", () => {
       expect(findButton(wrapper, "Save")).toBeTruthy();
     });
 
-    it("renders sections for Logging Mode, Camera Mode, and Inference Engine", async () => {
+    it("renders sections for Logging Mode, Camera Mode, Inference Engine, and Steering Mode", async () => {
       mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
 
       const { container } = await act(async () => render(<CarConfigContainer />));
@@ -101,9 +104,10 @@ describe("CarConfigContainer", () => {
       // Each section is now a Container with a header (no longer FormFields)
       const containers = wrapper.findAllContainers();
       const headerTexts = containers.map((c) => c.findHeader()?.getElement().textContent ?? "");
-      expect(headerTexts.some((t) => t.includes("Logging Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Logging"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Camera Mode"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Inference Engine"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Steering Mode"))).toBe(true);
     });
 
     it("Save button is disabled when config is unchanged (not dirty)", async () => {
@@ -142,6 +146,56 @@ describe("CarConfigContainer", () => {
       expect(screen.getAllByRole("radio", { name: /Auto/ }).length).toBeGreaterThanOrEqual(2);
       expect(screen.getByRole("radio", { name: /Legacy \(V4L2\)/ })).toBeInTheDocument();
       expect(screen.getByRole("radio", { name: /Modern \(libcamera\)/ })).toBeInTheDocument();
+    });
+
+    it("displays all steering mode tile options", async () => {
+      mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
+
+      await act(async () => render(<CarConfigContainer />));
+
+      await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      expect(screen.getByRole("radio", { name: /Servo/ })).toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: /Differential Drive/ })).toBeInTheDocument();
+    });
+
+    it("hides the logging Provider sub-section when only one provider is available", async () => {
+      mockApiHelper.get.mockResolvedValue(mockCarConfigResponse); // logging_providers: ["sqlite3"]
+
+      await act(async () => render(<CarConfigContainer />));
+      await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      expect(screen.queryByRole("radio", { name: /SQLite3/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole("radio", { name: /MCAP/ })).not.toBeInTheDocument();
+    });
+
+    it("shows the logging Provider sub-section when multiple providers are available", async () => {
+      mockApiHelper.get.mockResolvedValue({
+        ...mockCarConfigResponse,
+        capabilities: { ...mockCapabilities, logging_providers: ["sqlite3", "mcap"] },
+      });
+
+      await act(async () => render(<CarConfigContainer />));
+      await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      expect(screen.getByRole("radio", { name: /SQLite3/ })).toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: /MCAP/ })).toBeInTheDocument();
+    });
+
+    it("hides the Steering Mode container when only one steering mode is available", async () => {
+      mockApiHelper.get.mockResolvedValue({
+        ...mockCarConfigResponse,
+        capabilities: { ...mockCapabilities, steering_modes: ["servo"] },
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+      await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      const headerTexts = wrapper
+        .findAllContainers()
+        .map((c) => c.findHeader()?.getElement().textContent ?? "");
+      expect(headerTexts.some((t) => t.includes("Steering Mode"))).toBe(false);
     });
 
     it("builds inference tiles including multi-device OV options from capabilities", async () => {
@@ -270,6 +324,39 @@ describe("CarConfigContainer", () => {
 
       expect(findButton(wrapper, "Save")?.getElement()).not.toBeDisabled();
     });
+    it("enables Save button after changing the logging provider", async () => {
+      mockApiHelper.get.mockResolvedValue({
+        ...mockCarConfigResponse,
+        capabilities: { ...mockCapabilities, logging_providers: ["sqlite3", "mcap"] },
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole("radio", { name: /MCAP/ }));
+      });
+
+      expect(findButton(wrapper, "Save")?.getElement()).not.toBeDisabled();
+    });
+
+    it("enables Save button after changing the steering mode", async () => {
+      mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      // Current is "servo" → switch to "diffdrive"
+      await act(async () => {
+        fireEvent.click(screen.getByRole("radio", { name: /Differential Drive/ }));
+      });
+
+      expect(findButton(wrapper, "Save")?.getElement()).not.toBeDisabled();
+    });
   });
 
   // ── Save ───────────────────────────────────────────────────────────────────
@@ -280,7 +367,6 @@ describe("CarConfigContainer", () => {
       mockApiHelper.post.mockResolvedValue({
         success: true,
         config: { ...mockConfig, logging: { mode: "Always", provider: "sqlite3" } },
-        capabilities: mockCapabilities,
       });
 
       const { container } = await act(async () => render(<CarConfigContainer />));
@@ -308,12 +394,14 @@ describe("CarConfigContainer", () => {
       });
     });
 
-    it("always sends provider: sqlite3 in the save payload", async () => {
-      mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
+    it("sends the updated logging provider in the save payload", async () => {
+      mockApiHelper.get.mockResolvedValue({
+        ...mockCarConfigResponse,
+        capabilities: { ...mockCapabilities, logging_providers: ["sqlite3", "mcap"] },
+      });
       mockApiHelper.post.mockResolvedValue({
         success: true,
-        config: mockConfig,
-        capabilities: mockCapabilities,
+        config: { ...mockConfig, logging: { mode: "Never", provider: "mcap" } },
       });
 
       const { container } = await act(async () => render(<CarConfigContainer />));
@@ -322,7 +410,7 @@ describe("CarConfigContainer", () => {
       await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
 
       await act(async () => {
-        fireEvent.click(screen.getByRole("radio", { name: /Always/ }));
+        fireEvent.click(screen.getByRole("radio", { name: /MCAP/ }));
       });
 
       await act(async () => {
@@ -333,7 +421,37 @@ describe("CarConfigContainer", () => {
         expect(mockApiHelper.post).toHaveBeenCalledWith(
           "car_config",
           expect.objectContaining({
-            logging: expect.objectContaining({ provider: "sqlite3" }),
+            logging: expect.objectContaining({ provider: "mcap" }),
+          })
+        );
+      });
+    });
+
+    it("sends the steering mode in the save payload", async () => {
+      mockApiHelper.get.mockResolvedValue(mockCarConfigResponse);
+      mockApiHelper.post.mockResolvedValue({
+        success: true,
+        config: { ...mockConfig, steering: { mode: "diffdrive" } },
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      await waitFor(() => expect(mockApiHelper.get).toHaveBeenCalledWith("car_config"));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole("radio", { name: /Differential Drive/ }));
+      });
+
+      await act(async () => {
+        findButton(wrapper, "Save")?.click();
+      });
+
+      await waitFor(() => {
+        expect(mockApiHelper.post).toHaveBeenCalledWith(
+          "car_config",
+          expect.objectContaining({
+            steering: { mode: "diffdrive" },
           })
         );
       });
@@ -344,7 +462,6 @@ describe("CarConfigContainer", () => {
       mockApiHelper.post.mockResolvedValue({
         success: true,
         config: { ...mockConfig, logging: { mode: "Always", provider: "sqlite3" } },
-        capabilities: mockCapabilities,
       });
 
       const { container } = await act(async () => render(<CarConfigContainer />));
@@ -376,7 +493,6 @@ describe("CarConfigContainer", () => {
       mockApiHelper.post.mockResolvedValue({
         success: true,
         config: savedConfig,
-        capabilities: mockCapabilities,
       });
 
       const { container } = await act(async () => render(<CarConfigContainer />));

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Badge,
   Box,
   Button,
   Container,
@@ -25,6 +26,9 @@ interface CarConfig {
     engine: string;
     device: string;
   };
+  steering: {
+    mode: string;
+  };
 }
 
 interface Capabilities {
@@ -33,12 +37,13 @@ interface Capabilities {
   logging_providers: string[];
   inference_engines: string[];
   inference_devices: Record<string, string[]>;
+  steering_modes: string[];
 }
 
 interface CarConfigResponse {
   success: boolean;
   config: CarConfig;
-  capabilities: Capabilities;
+  capabilities?: Capabilities;
   reason?: string;
 }
 
@@ -52,9 +57,32 @@ function matchCI(value: string | null | undefined, options: string[], fallback: 
 }
 
 const LOGGING_MODE_TILES: TilesProps.TilesDefinition[] = [
-  { value: "Never", label: "Never", description: "Logs are not collected" },
-  { value: "USBOnly", label: "USB only", description: "Logs saved to a connected USB drive only" },
   { value: "Always", label: "Always", description: "Logs saved regardless of USB drive presence" },
+  { value: "USBOnly", label: "USB only", description: "Logs saved to a connected USB drive only" },
+  { value: "Never", label: "Never", description: "Logs are not collected" },
+];
+
+const LOGGING_PROVIDER_TILES: TilesProps.TilesDefinition[] = [
+  { value: "sqlite3", label: "SQLite3", description: "Lightweight single-file database, compatible with all ROS distros" },
+  { value: "mcap", label: "MCAP", description: "Modern container format for ROS 2 Humble and later" },
+];
+
+const STEERING_MODE_TILES: TilesProps.TilesDefinition[] = [
+  {
+    value: "servo",
+    label: "Servo",
+    description: "Standard DeepRacer servo and ESC drivetrain",
+  },
+  {
+    value: "diffdrive",
+    label: (
+      <SpaceBetween direction="horizontal" size="xs">
+        <span>Differential Drive</span>
+        <Badge color="blue">Beta</Badge>
+      </SpaceBetween>
+    ),
+    description: "Direct motor control via the diff-drive package",
+  },
 ];
 
 const CAMERA_MODE_TILES: TilesProps.TilesDefinition[] = [
@@ -168,14 +196,6 @@ export const CarConfigContainer = () => {
       const devices = ["auto", ...(caps?.inference_devices[normEngine] ?? [])];
       const withDefaults: CarConfig = {
         ...cfg,
-        logging: {
-          ...cfg.logging,
-          mode: matchCI(
-            cfg.logging.mode,
-            LOGGING_MODE_TILES.map((t) => t.value),
-            "Never"
-          ),
-        },
         camera: {
           ...cfg.camera,
           mode: matchCI(
@@ -189,9 +209,30 @@ export const CarConfigContainer = () => {
           engine: normEngine,
           device: matchCI(cfg.inference.device, devices, "auto"),
         },
+        steering: {
+          ...cfg.steering,
+          mode: matchCI(
+            cfg.steering?.mode,
+            STEERING_MODE_TILES.map((t) => t.value),
+            "servo"
+          ),
+        },
+        logging: {
+          ...cfg.logging,
+          mode: matchCI(
+            cfg.logging.mode,
+            LOGGING_MODE_TILES.map((t) => t.value),
+            "Never"
+          ),
+          provider: matchCI(
+            cfg.logging.provider,
+            LOGGING_PROVIDER_TILES.map((t) => t.value),
+            "sqlite3"
+          ),
+        },
       };
       setConfig(withDefaults);
-      setCapabilities(caps);
+      setCapabilities(caps ?? null);
       setDraft(withDefaults);
     }
     setIsLoading(false);
@@ -208,8 +249,7 @@ export const CarConfigContainer = () => {
     setSaveSuccess(false);
     setSaveError(null);
 
-    const payload = { ...draft, logging: { ...draft.logging, provider: "sqlite3" } };
-    const response = await ApiHelper.post<CarConfigResponse>("car_config", payload);
+    const response = await ApiHelper.post<CarConfigResponse>("car_config", draft);
     if (response?.success) {
       const cfg = response.config;
       const caps = capabilities;
@@ -218,14 +258,6 @@ export const CarConfigContainer = () => {
       const devices = ["auto", ...(caps?.inference_devices[normEngine] ?? [])];
       const withDefaults: CarConfig = {
         ...cfg,
-        logging: {
-          ...cfg.logging,
-          mode: matchCI(
-            cfg.logging.mode,
-            LOGGING_MODE_TILES.map((t) => t.value),
-            "Never"
-          ),
-        },
         camera: {
           ...cfg.camera,
           mode: matchCI(
@@ -238,6 +270,27 @@ export const CarConfigContainer = () => {
           ...cfg.inference,
           engine: normEngine,
           device: matchCI(cfg.inference.device, devices, "auto"),
+        },
+        steering: {
+          ...cfg.steering,
+          mode: matchCI(
+            cfg.steering?.mode,
+            STEERING_MODE_TILES.map((t) => t.value),
+            "servo"
+          ),
+        },
+        logging: {
+          ...cfg.logging,
+          mode: matchCI(
+            cfg.logging.mode,
+            LOGGING_MODE_TILES.map((t) => t.value),
+            "Never"
+          ),
+          provider: matchCI(
+            cfg.logging.provider,
+            LOGGING_PROVIDER_TILES.map((t) => t.value),
+            "sqlite3"
+          ),
         },
       };
       setConfig(withDefaults);
@@ -256,8 +309,16 @@ export const CarConfigContainer = () => {
     setDraft((prev) => prev && { ...prev, logging: { ...prev.logging, mode: value } });
   };
 
+  const updateLoggingProvider = (value: string) => {
+    setDraft((prev) => prev && { ...prev, logging: { ...prev.logging, provider: value } });
+  };
+
   const updateCamera = (value: string) => {
     setDraft((prev) => prev && { ...prev, camera: { ...prev.camera, mode: value } });
+  };
+
+  const updateSteering = (value: string) => {
+    setDraft((prev) => prev && { ...prev, steering: { mode: value } });
   };
 
   // ── Derived tile data ────────────────────────────────────────────────────────
@@ -266,6 +327,14 @@ export const CarConfigContainer = () => {
     draft?.inference.engine ?? "auto",
     draft?.inference.device ?? "auto",
     inferenceTiles
+  );
+
+  const cameraTiles = CAMERA_MODE_TILES.filter(
+    (t) => t.value === "auto" || capabilities?.camera_modes?.includes(t.value)
+  );
+
+  const steeringTiles = STEERING_MODE_TILES.filter((t) =>
+    capabilities?.steering_modes?.includes(t.value)
   );
 
   const updateInference = (tileValue: string) => {
@@ -292,51 +361,95 @@ export const CarConfigContainer = () => {
 
       <Container
         header={
-          <Header variant="h2" description="Controls when driving logs are recorded to a ROS bag.">
-            Logging Mode
+          <Header variant="h2">
+            Logging
           </Header>
         }
       >
-        <Tiles
-          value={draft?.logging.mode ?? null}
-          items={LOGGING_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
-          onChange={({ detail }) => updateLogging(detail.value)}
-        />
+        <SpaceBetween size="l">
+          <div>
+            <Header variant="h3" description="Controls when driving logs are recorded to a ROS bag.">
+              Mode
+            </Header>
+            <Tiles
+              value={draft?.logging.mode ?? null}
+              items={LOGGING_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
+              onChange={({ detail }) => updateLogging(detail.value)}
+            />
+          </div>
+          {(capabilities?.logging_providers?.length ?? 0) > 1 && (
+            <div>
+              <Header variant="h3" description="Storage format used when writing ROS bag files.">
+                Storage Provider
+              </Header>
+              <Tiles
+                value={draft?.logging.provider ?? null}
+                items={LOGGING_PROVIDER_TILES.filter((t) =>
+                  capabilities?.logging_providers?.includes(t.value)
+                ).map((t) => ({ ...t, disabled: isLoading }))}
+                onChange={({ detail }) => updateLoggingProvider(detail.value)}
+              />
+            </div>
+          )}
+        </SpaceBetween>
       </Container>
 
-      <Container
-        header={
-          <Header
-            variant="h2"
-            description="Controls which camera driver is used to capture the video feed."
-          >
-            Camera Mode
-          </Header>
-        }
-      >
-        <Tiles
-          value={draft?.camera.mode ?? null}
-          items={CAMERA_MODE_TILES.map((t) => ({ ...t, disabled: isLoading }))}
-          onChange={({ detail }) => updateCamera(detail.value)}
-        />
-      </Container>
+      {cameraTiles.length >= 3 && (
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Controls which camera driver is used to capture the video feed."
+            >
+              Camera Mode
+            </Header>
+          }
+        >
+          <Tiles
+            value={draft?.camera.mode ?? null}
+            items={cameraTiles.map((t) => ({ ...t, disabled: isLoading }))}
+            onChange={({ detail }) => updateCamera(detail.value)}
+          />
+        </Container>
+      )}
 
-      <Container
-        header={
-          <Header
-            variant="h2"
-            description="Selects the hardware component that runs the neural network model during autonomous driving."
-          >
-            Inference Engine
-          </Header>
-        }
-      >
-        <Tiles
-          value={currentInferenceTileValue}
-          items={inferenceTiles.map((t) => ({ ...t, disabled: isLoading }))}
-          onChange={({ detail }) => updateInference(detail.value)}
-        />
-      </Container>
+      {inferenceTiles.length >= 3 && (
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Selects the hardware component that runs the neural network model during autonomous driving."
+            >
+              Inference Engine
+            </Header>
+          }
+        >
+          <Tiles
+            value={currentInferenceTileValue}
+            items={inferenceTiles.map((t) => ({ ...t, disabled: isLoading }))}
+            onChange={({ detail }) => updateInference(detail.value)}
+          />
+        </Container>
+      )}
+
+      {steeringTiles.length >= 2 && (
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Selects the drivetrain type. Change this only if you have modified the car hardware."
+            >
+              Steering Mode
+            </Header>
+          }
+        >
+          <Tiles
+            value={draft?.steering.mode ?? null}
+            items={steeringTiles.map((t) => ({ ...t, disabled: isLoading }))}
+            onChange={({ detail }) => updateSteering(detail.value)}
+          />
+        </Container>
+      )}
 
       <Box float="right">
         <SpaceBetween direction="horizontal" size="xs">
