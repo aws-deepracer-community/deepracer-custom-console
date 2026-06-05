@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  screen,
-  render,
-  act,
-} from "../utils";
+import { screen, render } from "../utils";
 import createWrapper from "@cloudscape-design/components/test-utils/dom";
 import SystemUnavailablePage from "../../pages/system-unavailable";
 import { ApiHelper } from "../../common/helpers/api-helper";
@@ -28,17 +24,59 @@ vi.mock("../../common/helpers/api-helper", () => ({
 describe("SystemUnavailablePage Integration", () => {
   const mockApiHelperGet = vi.mocked(ApiHelper.get);
 
+  // Spy on setInterval/clearInterval so we can trigger polls manually
+  // without any fake-timer infrastructure that conflicts with React 18.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let activeCallback: (() => Promise<void>) | null = null;
+  let activeIntervalId: number = 0;
+  let idCounter = 1000;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let setIntervalSpy: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let clearIntervalSpy: any;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
     mockNavigate.mockClear();
     mockApiHelperGet.mockClear();
+    activeCallback = null;
+    idCounter = 1000;
+
+    setIntervalSpy = vi
+      .spyOn(globalThis, "setInterval")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .mockImplementation((callback: any) => {
+        const id = idCounter++;
+        activeCallback = callback as () => Promise<void>;
+        activeIntervalId = id;
+        return id as unknown as ReturnType<typeof setInterval>;
+      });
+
+    clearIntervalSpy = vi
+      .spyOn(globalThis, "clearInterval")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .mockImplementation((id: any) => {
+        if ((id as number) === activeIntervalId) {
+          activeCallback = null;
+        }
+      });
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
-    vi.useRealTimers();
+    setIntervalSpy.mockRestore();
+    clearIntervalSpy.mockRestore();
+    activeCallback = null;
   });
+
+  /**
+   * Trigger one poll cycle and wait for the async callback to settle.
+   * Is a no-op if the interval has been cleared (component unmounted).
+   */
+  const triggerPoll = async () => {
+    if (activeCallback) {
+      await activeCallback();
+    }
+  };
 
   it("should render system unavailable message with all required elements and layout", async () => {
     mockApiHelperGet.mockRejectedValue(new Error("Server unavailable"));
@@ -52,30 +90,24 @@ describe("SystemUnavailablePage Integration", () => {
     expect(logo).toHaveAttribute("width", "100");
 
     // Check for main heading
-    expect(screen.getByText("The DeepRacer system is currently unavailable")).toBeInTheDocument();
+    expect(
+      screen.getByText("The DeepRacer system is currently unavailable")
+    ).toBeInTheDocument();
 
     // Check for instruction text
-    expect(screen.getByText(/If the problem persists try rebooting your DeepRacer car/)).toBeInTheDocument();
-    expect(screen.getByText(/If rebooting doesn't fix the problem consider flashing your car/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/If the problem persists try rebooting your DeepRacer car/)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/If rebooting doesn't fix the problem consider flashing your car/)
+    ).toBeInTheDocument();
 
     // Check layout structure
     const wrapper = createWrapper(document.body);
-    
-    // Check for Box with padding
-    const outerBox = wrapper.findBox();
-    expect(outerBox).toBeTruthy();
-
-    // Check for Grid
-    const grid = wrapper.findGrid();
-    expect(grid).toBeTruthy();
-
-    // Check for Container
-    const container = wrapper.findContainer();
-    expect(container).toBeTruthy();
-
-    // Check for SpaceBetween layout
-    const spaceBetween = wrapper.findSpaceBetween();
-    expect(spaceBetween).toBeTruthy();
+    expect(wrapper.findBox()).toBeTruthy();
+    expect(wrapper.findGrid()).toBeTruthy();
+    expect(wrapper.findContainer()).toBeTruthy();
+    expect(wrapper.findSpaceBetween()).toBeTruthy();
   });
 
   it("should start polling server on component mount", async () => {
@@ -83,12 +115,9 @@ describe("SystemUnavailablePage Integration", () => {
 
     render(<SystemUnavailablePage />);
 
-    // Wait for initial effect to run
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
+    await triggerPoll();
 
-    // Should call server_ready endpoint initially
+    // Should call server_ready endpoint at first poll
     expect(mockApiHelperGet).toHaveBeenCalledWith("server_ready");
     expect(mockApiHelperGet).toHaveBeenCalledTimes(1);
   });
@@ -98,32 +127,12 @@ describe("SystemUnavailablePage Integration", () => {
 
     render(<SystemUnavailablePage />);
 
-    // Wait for initial mount and render
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
-    
-    // Clear calls after initial setup
-    mockApiHelperGet.mockClear();
-
-    // Advance time by 5 seconds - should trigger polling
-    await act(async () => {
-      vi.advanceTimersByTime(5000);
-      await vi.runOnlyPendingTimersAsync();
-    });
-    
-    // Should have made at least one polling call
+    await triggerPoll();
     expect(mockApiHelperGet).toHaveBeenCalledWith("server_ready");
     const firstPollCallCount = mockApiHelperGet.mock.calls.length;
     expect(firstPollCallCount).toBeGreaterThan(0);
-    
-    // Advance time by another 5 seconds
-    await act(async () => {
-      vi.advanceTimersByTime(5000);
-      await vi.runOnlyPendingTimersAsync();
-    });
-    
-    // Should have made more calls
+
+    await triggerPoll();
     expect(mockApiHelperGet.mock.calls.length).toBeGreaterThan(firstPollCallCount);
   });
 
@@ -132,9 +141,7 @@ describe("SystemUnavailablePage Integration", () => {
 
     render(<SystemUnavailablePage />);
 
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
+    await triggerPoll();
 
     expect(mockApiHelperGet).toHaveBeenCalledWith("server_ready");
     expect(mockNavigate).toHaveBeenCalledWith("/home", { replace: true });
@@ -145,9 +152,7 @@ describe("SystemUnavailablePage Integration", () => {
 
     render(<SystemUnavailablePage />);
 
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
+    await triggerPoll();
 
     expect(mockApiHelperGet).toHaveBeenCalledWith("server_ready");
     expect(mockNavigate).not.toHaveBeenCalled();
@@ -168,9 +173,7 @@ describe("SystemUnavailablePage Integration", () => {
 
       const { unmount } = render(<SystemUnavailablePage />);
 
-      await act(async () => {
-        await vi.runOnlyPendingTimersAsync();
-      });
+      await triggerPoll();
 
       expect(mockApiHelperGet).toHaveBeenCalledWith("server_ready");
       expect(mockNavigate).not.toHaveBeenCalled();
@@ -184,98 +187,66 @@ describe("SystemUnavailablePage Integration", () => {
 
     const { unmount } = render(<SystemUnavailablePage />);
 
-    // Initial call
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
-    
+    await triggerPoll();
     const callsBeforeUnmount = mockApiHelperGet.mock.calls.length;
 
-    // Unmount component
+    // Unmount clears the interval — subsequent triggerPoll calls are no-ops
     unmount();
 
-    // Advance time - should not make more API calls after unmount
-    await act(async () => {
-      vi.advanceTimersByTime(10000);
-      await vi.runOnlyPendingTimersAsync();
-    });
+    await triggerPoll();
+    await triggerPoll();
 
-    // Should not have made additional calls after unmount
     expect(mockApiHelperGet).toHaveBeenCalledTimes(callsBeforeUnmount);
   });
 
   it("should handle server becoming available after failures", async () => {
-    // First call fails, second succeeds
     mockApiHelperGet
       .mockRejectedValueOnce(new Error("Server down"))
       .mockResolvedValueOnce({ status: "ready" });
 
     render(<SystemUnavailablePage />);
 
-    // Initial call fails
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
+    await triggerPoll();
     expect(mockNavigate).not.toHaveBeenCalled();
 
-    // Second call after 5 seconds succeeds
-    await act(async () => {
-      vi.advanceTimersByTime(5000);
-      await vi.runOnlyPendingTimersAsync();
-    });
-
+    await triggerPoll();
     expect(mockNavigate).toHaveBeenCalledWith("/home", { replace: true });
   });
 
   it("should handle mixed response scenarios correctly", async () => {
-    // Scenario: null response (should continue), then success
     mockApiHelperGet
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({ status: "ready" });
 
     render(<SystemUnavailablePage />);
 
-    // First call returns null
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
+    await triggerPoll();
     expect(mockNavigate).not.toHaveBeenCalled();
 
-    // Second call succeeds
-    await act(async () => {
-      vi.advanceTimersByTime(5000);
-      await vi.runOnlyPendingTimersAsync();
-    });
-
+    await triggerPoll();
     expect(mockNavigate).toHaveBeenCalledWith("/home", { replace: true });
   });
 
   it("should handle rapid mount/unmount without errors", async () => {
     mockApiHelperGet.mockRejectedValue(new Error("Server unavailable"));
 
-    // Mount and immediately unmount
+    // Mount and immediately unmount — interval cleared immediately
     const { unmount: unmount1 } = render(<SystemUnavailablePage />);
     unmount1();
 
-    // Mount again
+    // Second mount re-registers the interval
     const { unmount: unmount2 } = render(<SystemUnavailablePage />);
-    
-    await act(async () => {
-      await vi.runOnlyPendingTimersAsync();
-    });
 
-    // Should have made at least one call from the second mount
+    await triggerPoll();
     expect(mockApiHelperGet).toHaveBeenCalledWith("server_ready");
 
     unmount2();
 
-    // Should not continue polling after final unmount
     const callsBeforeFinalUnmount = mockApiHelperGet.mock.calls.length;
-    
-    await act(async () => {
-      vi.advanceTimersByTime(10000);
-      await vi.runOnlyPendingTimersAsync();
-    });
+
+    // Polling should be stopped — triggerPoll is now a no-op
+    await triggerPoll();
+    await triggerPoll();
 
     expect(mockApiHelperGet).toHaveBeenCalledTimes(callsBeforeFinalUnmount);
   });
