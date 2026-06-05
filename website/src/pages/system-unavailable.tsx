@@ -13,7 +13,7 @@ export function SystemUnavailablePage() {
         if (response) {
           navigate("/home", { replace: true });
         }
-      } catch (error) {
+      } catch {
         // System still unavailable, continue polling
       }
     };
