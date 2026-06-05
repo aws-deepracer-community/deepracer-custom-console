@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { ReactNode } from "react";
+import { renderHook, act, render, screen } from "@testing-library/react";
+import React, { ReactNode } from "react";
 import {
   usePreferences,
   usePreferencesProvider,
@@ -29,6 +29,28 @@ interface PreferencesContextType {
   setEnableDeviceStatus: (value: boolean) => void;
 }
 
+class TestErrorBoundary extends React.Component<
+  { children: ReactNode },
+  { errorMessage: string | null }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { errorMessage: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { errorMessage: error.message };
+  }
+
+  render() {
+    if (this.state.errorMessage) {
+      return <div data-testid="hook-error">{this.state.errorMessage}</div>;
+    }
+
+    return this.props.children;
+  }
+}
+
 // Test wrapper component for PreferencesContext
 const createWrapper = (preferencesValue: PreferencesContextType) => {
   return ({ children }: { children: ReactNode }) => (
@@ -49,9 +71,34 @@ describe("usePreferences", () => {
   });
 
   it("should throw error when used outside of PreferencesProvider", () => {
-    expect(() => {
-      renderHook(() => usePreferences());
-    }).toThrow("usePreferences must be used within a PreferencesProvider");
+    const onWindowError = (event: Event) => {
+      const errorEvent = event as ErrorEvent;
+      const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+      if (message.includes("usePreferences must be used within a PreferencesProvider")) {
+        errorEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+
+    const HookConsumer = () => {
+      usePreferences();
+      return null;
+    };
+
+    try {
+      render(
+        <TestErrorBoundary>
+          <HookConsumer />
+        </TestErrorBoundary>
+      );
+
+      expect(screen.getByTestId("hook-error")).toHaveTextContent(
+        "usePreferences must be used within a PreferencesProvider"
+      );
+    } finally {
+      window.removeEventListener("error", onWindowError);
+    }
   });
 
   it("should return context value when used within PreferencesProvider", () => {

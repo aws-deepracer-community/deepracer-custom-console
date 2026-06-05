@@ -59,10 +59,23 @@ describe("useBattery", () => {
   });
 
   it("should throw error when used outside of BatteryProvider", () => {
-    // Expect the hook to throw an error when used outside of BatteryProvider
-    expect(() => {
-      renderHook(() => useBattery());
-    }).toThrow("useBattery must be used within a BatteryProvider");
+    const onWindowError = (event: Event) => {
+      const errorEvent = event as ErrorEvent;
+      const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+      if (message.includes("useBattery must be used within a BatteryProvider")) {
+        errorEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+
+    try {
+      expect(() => {
+        renderHook(() => useBattery());
+      }).toThrow("useBattery must be used within a BatteryProvider");
+    } finally {
+      window.removeEventListener("error", onWindowError);
+    }
   });
 
   it("should return context value when used within BatteryProvider", () => {

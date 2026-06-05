@@ -2,6 +2,27 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ContextProvider, ApiProvider, AuthProvider } from "../../components/context-provider";
 
+const expectRenderToThrowWithoutJSDOMNoise = (
+  expectedMessage: string,
+  renderFn: () => void
+) => {
+  const onWindowError = (event: Event) => {
+    const errorEvent = event as ErrorEvent;
+    const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+    if (message.includes(expectedMessage)) {
+      errorEvent.preventDefault();
+    }
+  };
+
+  window.addEventListener("error", onWindowError);
+
+  try {
+    expect(renderFn).toThrow(expectedMessage);
+  } finally {
+    window.removeEventListener("error", onWindowError);
+  }
+};
+
 // Mock all the custom hooks and contexts
 const mockUseBatteryProvider = vi.fn();
 const mockUseNetworkProvider = vi.fn();
@@ -227,13 +248,13 @@ describe("Context Providers", () => {
         throw new Error("Battery hook error");
       });
 
-      expect(() => {
+      expectRenderToThrowWithoutJSDOMNoise("Battery hook error", () => {
         render(
           <ContextProvider>
             <div>Test</div>
           </ContextProvider>
         );
-      }).toThrow("Battery hook error");
+      });
     });
 
     it("should update when provider values change", () => {
@@ -397,13 +418,13 @@ describe("Context Providers", () => {
         throw new Error("API provider error");
       });
 
-      expect(() => {
+      expectRenderToThrowWithoutJSDOMNoise("API provider error", () => {
         render(
           <ApiProvider>
             <div>Test</div>
           </ApiProvider>
         );
-      }).toThrow("API provider error");
+      });
     });
   });
 
@@ -486,13 +507,13 @@ describe("Context Providers", () => {
         throw new Error("Auth provider error");
       });
 
-      expect(() => {
+      expectRenderToThrowWithoutJSDOMNoise("Auth provider error", () => {
         render(
           <AuthProvider>
             <div>Test</div>
           </AuthProvider>
         );
-      }).toThrow("Auth provider error");
+      });
     });
   });
 
