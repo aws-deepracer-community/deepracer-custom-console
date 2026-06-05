@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Container,
-  FormField,
   Header,
   SpaceBetween,
   Tiles,
@@ -171,6 +170,7 @@ export const CarConfigContainer = () => {
       camera: {
         ...cfg.camera,
         mode: matchCI(cfg.camera.mode, CAMERA_MODE_TILES.map((t) => t.value), "auto"),
+        orientation: cfg.camera.orientation === 180 ? 180 : 0,
         enable_gray_overlay: cfg.camera.enable_gray_overlay ?? false,
       },
       inference: {
@@ -228,7 +228,23 @@ export const CarConfigContainer = () => {
   };
 
   const updateCamera = (value: string) => {
-    setDraft((prev) => prev && { ...prev, camera: { ...prev.camera, mode: value } });
+    setDraft((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        camera: {
+          ...prev.camera,
+          mode: value,
+          orientation: value === "modern" ? (prev.camera.orientation === 180 ? 180 : 0) : 0,
+        },
+      };
+    });
+  };
+
+  const updateCameraOrientation = (checked: boolean) => {
+    setDraft((prev) =>
+      prev && { ...prev, camera: { ...prev.camera, orientation: checked ? 180 : 0 } }
+    );
   };
 
   const updateGrayOverlay = (checked: boolean) => {
@@ -250,6 +266,9 @@ export const CarConfigContainer = () => {
   const cameraTiles = CAMERA_MODE_TILES.filter(
     (t) => t.value === "auto" || capabilities?.camera_modes?.includes(t.value)
   );
+  const isCameraOrientationSupported = capabilities?.camera_orientations?.includes(180) === true;
+  const showCameraOrientationControl =
+    draft?.camera.mode === "modern" && isCameraOrientationSupported;
 
   const steeringTiles = STEERING_MODE_TILES.filter((t) =>
     capabilities?.steering_modes?.includes(t.value)
@@ -337,10 +356,10 @@ export const CarConfigContainer = () => {
               </div>
             )}
             {capabilities?.gray_overlay && (
-              <FormField
-                label="Gray overlay"
-                description="Apply a gray fade over the top of the camera image to reduce background influence during inference."
-              >
+              <div>
+                <Header variant="h3" description="Apply a gray fade over the top of the camera image to reduce background influence during inference.">
+                  Gray overlay
+                </Header>
                 <Toggle
                   checked={draft?.camera.enable_gray_overlay ?? false}
                   disabled={isLoading}
@@ -348,7 +367,21 @@ export const CarConfigContainer = () => {
                 >
                   {draft?.camera.enable_gray_overlay ? "Enabled" : "Disabled"}
                 </Toggle>
-              </FormField>
+              </div>
+            )}
+            {showCameraOrientationControl && (
+              <div>
+                <Header variant="h3" description="Rotate camera feed by 180 degrees (libcamera only).">
+                  Camera rotation
+                </Header>
+                <Toggle
+                  checked={(draft?.camera.orientation ?? 0) === 180}
+                  disabled={isLoading}
+                  onChange={({ detail }) => updateCameraOrientation(detail.checked)}
+                >
+                  {(draft?.camera.orientation ?? 0) === 180 ? "180 deg" : "0 deg"}
+                </Toggle>
+              </div>
             )}
           </SpaceBetween>
         </Container>

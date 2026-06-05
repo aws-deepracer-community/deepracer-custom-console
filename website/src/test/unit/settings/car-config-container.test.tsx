@@ -29,6 +29,7 @@ const mockApiHelper = vi.mocked(ApiHelper);
 
 const mockCapabilities = {
   camera_modes: ["auto", "legacy", "modern"],
+  camera_orientations: [0, 180],
   logging_modes: ["Never", "USBOnly", "Always"],
   logging_providers: ["sqlite3"],
   inference_engines: ["TFLITE", "OV"],
@@ -41,7 +42,7 @@ const mockCapabilities = {
 
 const mockConfig = {
   logging: { mode: "Never", provider: "sqlite3" },
-  camera: { mode: "auto" },
+  camera: { mode: "auto", orientation: 0 },
   inference: { engine: "auto", device: "auto" },
   steering: { mode: "servo" },
 };
@@ -183,6 +184,45 @@ describe("CarConfigContainer", () => {
       expect(screen.getByRole("radio", { name: /OpenVINO.*CPU/i })).toBeInTheDocument();
       expect(screen.getByRole("radio", { name: /OpenVINO.*GPU/i })).toBeInTheDocument();
       expect(screen.getByRole("radio", { name: /Myriad X/i })).toBeInTheDocument();
+    });
+
+    it("hides camera rotation control when camera mode is auto", async () => {
+      await act(async () => render(<CarConfigContainer />));
+
+      expect(screen.queryByText("Camera rotation")).not.toBeInTheDocument();
+    });
+
+    it("shows camera rotation control when camera mode is modern", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: {
+          ...mockConfig,
+          camera: { mode: "modern", orientation: 0 },
+        },
+      });
+
+      await act(async () => render(<CarConfigContainer />));
+
+      expect(screen.getByText("Camera rotation")).toBeInTheDocument();
+      expect(screen.getByRole("checkbox", { name: /0 deg/ })).toBeInTheDocument();
+    });
+
+    it("hides camera rotation control when capability is not available", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: {
+          ...mockConfig,
+          camera: { mode: "modern", orientation: 0 },
+        },
+        capabilities: {
+          ...mockCapabilities,
+          camera_orientations: [],
+        },
+      });
+
+      await act(async () => render(<CarConfigContainer />));
+
+      expect(screen.queryByText("Camera rotation")).not.toBeInTheDocument();
     });
   });
 
@@ -379,6 +419,74 @@ describe("CarConfigContainer", () => {
           "car_config",
           expect.objectContaining({
             steering: { mode: "diffdrive" },
+          })
+        );
+      });
+    });
+
+    it("sends camera.orientation 180 when camera rotation is enabled", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: {
+          ...mockConfig,
+          camera: { mode: "modern", orientation: 0 },
+        },
+      });
+      mockApiHelper.post.mockResolvedValue({
+        success: true,
+        config: { ...mockConfig, camera: { mode: "modern", orientation: 180 } },
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole("checkbox", { name: /0 deg/ }));
+      });
+
+      await act(async () => {
+        findButton(wrapper, "Save")?.click();
+      });
+
+      await waitFor(() => {
+        expect(mockApiHelper.post).toHaveBeenCalledWith(
+          "car_config",
+          expect.objectContaining({
+            camera: expect.objectContaining({ orientation: 180 }),
+          })
+        );
+      });
+    });
+
+    it("resets camera.orientation to 0 when switching away from modern mode", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: {
+          ...mockConfig,
+          camera: { mode: "modern", orientation: 180 },
+        },
+      });
+      mockApiHelper.post.mockResolvedValue({
+        success: true,
+        config: { ...mockConfig, camera: { mode: "legacy", orientation: 0 } },
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole("radio", { name: /Legacy/ }));
+      });
+
+      await act(async () => {
+        findButton(wrapper, "Save")?.click();
+      });
+
+      await waitFor(() => {
+        expect(mockApiHelper.post).toHaveBeenCalledWith(
+          "car_config",
+          expect.objectContaining({
+            camera: expect.objectContaining({ mode: "legacy", orientation: 0 }),
           })
         );
       });
