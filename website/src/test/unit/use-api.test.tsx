@@ -43,10 +43,23 @@ describe("useApi", () => {
   });
 
   it("should throw error when used outside of ApiProvider", () => {
-    // Expect the hook to throw an error when used outside of ApiProvider
-    expect(() => {
-      renderHook(() => useApi());
-    }).toThrow("useApi must be used within an ApiProvider");
+    const onWindowError = (event: Event) => {
+      const errorEvent = event as ErrorEvent;
+      const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+      if (message.includes("useApi must be used within an ApiProvider")) {
+        errorEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+
+    try {
+      expect(() => {
+        renderHook(() => useApi());
+      }).toThrow("useApi must be used within an ApiProvider");
+    } finally {
+      window.removeEventListener("error", onWindowError);
+    }
   });
 
   it("should return context value when used within ApiProvider", () => {
