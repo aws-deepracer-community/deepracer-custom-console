@@ -23,6 +23,7 @@ import { usePreferences } from "../common/hooks/use-preferences";
 import { useModels } from "../common/hooks/use-models";
 import { useAuth } from "../common/hooks/use-authentication";
 import { useSupportedApis } from "../common/hooks/use-supported-apis";
+import { useCarConfig } from "../common/hooks/use-car-config";
 
 // Add interfaces for API responses
 interface SensorStatusResponse {
@@ -69,7 +70,8 @@ const HomePage = () => {
   const { isAuthenticated } = useAuth();
 
   // Split panel
-  const { isDeviceStatusSupported, isGrayOverlaySupported } = useSupportedApis();
+  const { isDeviceStatusSupported } = useSupportedApis();
+  const { isGrayOverlayEnabled } = useCarConfig();
   const [isSplitPanelOpen, setIsSplitPanelOpen] = useState(false);
   const [splitPanelSize, setSplitPanelSize] = useState(220);
 
@@ -302,13 +304,13 @@ const HomePage = () => {
   let cameraFeedSrc;
   switch (cameraFeedType) {
     case "stereo":
-      cameraFeedSrc = isGrayOverlaySupported ? OVERLAY_FEED : CAMERA_FEED;
+      cameraFeedSrc = isGrayOverlayEnabled ? OVERLAY_FEED : CAMERA_FEED;
       break;
     case "lidar":
       cameraFeedSrc = OVERLAY_FEED;
       break;
     default:
-      cameraFeedSrc = isGrayOverlaySupported ? OVERLAY_FEED : CAMERA_FEED;
+      cameraFeedSrc = isGrayOverlayEnabled ? OVERLAY_FEED : CAMERA_FEED;
   }
   const cameraImgRef = useRef<HTMLImageElement | null>(null);
 

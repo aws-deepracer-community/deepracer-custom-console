@@ -113,7 +113,6 @@ describe("GlobalHeader", () => {
     isDeviceStatusSupported,
     isTimeApiSupported: false,
     isCarConfigSupported: false,
-    isGrayOverlaySupported: false,
     isLoading: false,
     hasError: false,
   });

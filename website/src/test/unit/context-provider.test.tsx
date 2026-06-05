@@ -6,6 +6,7 @@ import { ContextProvider, ApiProvider, AuthProvider } from "../../components/con
 const mockUseBatteryProvider = vi.fn();
 const mockUseNetworkProvider = vi.fn();
 const mockUseSupportedApisProvider = vi.fn();
+const mockUseCarConfigProvider = vi.fn();
 const mockUseModelsProvider = vi.fn();
 const mockUsePreferencesProvider = vi.fn();
 const mockUseApiProvider = vi.fn();
@@ -35,9 +36,21 @@ vi.mock("../../common/hooks/use-network", () => ({
 
 vi.mock("../../common/hooks/use-supported-apis", () => ({
   useSupportedApisProvider: () => mockUseSupportedApisProvider(),
+  useSupportedApis: () => ({ isCarConfigSupported: false }),
   SupportedApisContext: {
     Provider: ({ children, value }: { children: React.ReactNode; value: unknown }) => (
       <div data-testid="supported-apis-context" data-value={JSON.stringify(value)}>
+        {children}
+      </div>
+    ),
+  },
+}));
+
+vi.mock("../../common/hooks/use-car-config", () => ({
+  useCarConfigProvider: () => mockUseCarConfigProvider(),
+  CarConfigContext: {
+    Provider: ({ children, value }: { children: React.ReactNode; value: unknown }) => (
+      <div data-testid="car-config-context" data-value={JSON.stringify(value)}>
         {children}
       </div>
     ),
@@ -79,6 +92,7 @@ vi.mock("../../common/hooks/use-api", () => ({
 
 vi.mock("../../common/hooks/use-authentication", () => ({
   useAuthProvider: () => mockUseAuthProvider(),
+  useAuth: () => ({ isAuthenticated: true, login: vi.fn(), logout: vi.fn() }),
   AuthContext: {
     Provider: ({ children, value }: { children: React.ReactNode; value: unknown }) => (
       <div data-testid="auth-context" data-value={JSON.stringify(value)}>
@@ -91,6 +105,14 @@ vi.mock("../../common/hooks/use-authentication", () => ({
 describe("Context Providers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseCarConfigProvider.mockReturnValue({
+      config: null,
+      capabilities: null,
+      isGrayOverlaySupported: false,
+      isGrayOverlayEnabled: false,
+      isLoading: false,
+      refresh: () => {},
+    });
   });
 
   describe("ContextProvider", () => {
@@ -131,6 +153,7 @@ describe("Context Providers", () => {
 
       // Check that all context providers are rendered
       expect(screen.getByTestId("supported-apis-context")).toBeInTheDocument();
+      expect(screen.getByTestId("car-config-context")).toBeInTheDocument();
       expect(screen.getByTestId("preferences-context")).toBeInTheDocument();
       expect(screen.getByTestId("battery-context")).toBeInTheDocument();
       expect(screen.getByTestId("network-context")).toBeInTheDocument();
@@ -148,6 +171,7 @@ describe("Context Providers", () => {
       expect(mockUseBatteryProvider).toHaveBeenCalled();
       expect(mockUseNetworkProvider).toHaveBeenCalled();
       expect(mockUseSupportedApisProvider).toHaveBeenCalled();
+      expect(mockUseCarConfigProvider).toHaveBeenCalled();
       expect(mockUseModelsProvider).toHaveBeenCalled();
       expect(mockUsePreferencesProvider).toHaveBeenCalled();
     });
