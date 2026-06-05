@@ -12,6 +12,7 @@ export interface CarConfig {
   };
   camera: {
     mode: string;
+    orientation?: number;
     enable_gray_overlay?: boolean;
   };
   inference: {
@@ -25,6 +26,7 @@ export interface CarConfig {
 
 export interface Capabilities {
   camera_modes: string[];
+  camera_orientations?: number[];
   logging_modes: string[];
   logging_providers: string[];
   inference_engines: string[];

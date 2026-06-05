@@ -26,14 +26,11 @@ describe("SystemUnavailablePage Integration", () => {
 
   // Spy on setInterval/clearInterval so we can trigger polls manually
   // without any fake-timer infrastructure that conflicts with React 18.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let activeCallback: (() => Promise<void>) | null = null;
   let activeIntervalId: number = 0;
   let idCounter = 1000;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let setIntervalSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let clearIntervalSpy: any;
+  let setIntervalSpy: ReturnType<typeof vi.spyOn>;
+  let clearIntervalSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,8 +41,7 @@ describe("SystemUnavailablePage Integration", () => {
 
     setIntervalSpy = vi
       .spyOn(globalThis, "setInterval")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .mockImplementation((callback: any) => {
+      .mockImplementation((callback: Parameters<typeof setInterval>[0]) => {
         const id = idCounter++;
         activeCallback = callback as () => Promise<void>;
         activeIntervalId = id;
@@ -54,8 +50,7 @@ describe("SystemUnavailablePage Integration", () => {
 
     clearIntervalSpy = vi
       .spyOn(globalThis, "clearInterval")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .mockImplementation((id: any) => {
+      .mockImplementation((id: Parameters<typeof clearInterval>[0]) => {
         if ((id as number) === activeIntervalId) {
           activeCallback = null;
         }
