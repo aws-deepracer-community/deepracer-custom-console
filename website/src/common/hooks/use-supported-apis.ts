@@ -59,7 +59,8 @@ export const useSupportedApisProvider = () => {
           setIsEmergencyStopSupported(response.apis_supported.includes("/api/emergency_stop"));
           setIsDeviceStatusSupported(response.apis_supported.includes("/api/get_device_status"));
           setIsTimeApiSupported(response.apis_supported.includes("/api/get_time"));
-          setIsCarConfigSupported(response.apis_supported.includes("/api/car_config"));
+          const carConfigSupported = response.apis_supported.includes("/api/car_config");
+          setIsCarConfigSupported(carConfigSupported);
           setHasError(false);
         } else if (isSubscribed) {
           setSupportedApis([]);

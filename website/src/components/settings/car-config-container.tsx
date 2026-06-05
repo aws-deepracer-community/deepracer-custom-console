@@ -5,47 +5,18 @@ import {
   Box,
   Button,
   Container,
+  FormField,
   Header,
   SpaceBetween,
   Tiles,
   TilesProps,
+  Toggle,
 } from "@cloudscape-design/components";
 import { ApiHelper } from "../../common/helpers/api-helper";
+import { useCarConfig, CarConfig, Capabilities, CarConfigResponse } from "../../common/hooks/use-car-config";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-interface CarConfig {
-  logging: {
-    mode: string;
-    provider: string;
-  };
-  camera: {
-    mode: string;
-  };
-  inference: {
-    engine: string;
-    device: string;
-  };
-  steering: {
-    mode: string;
-  };
-}
-
-interface Capabilities {
-  camera_modes: string[];
-  logging_modes: string[];
-  logging_providers: string[];
-  inference_engines: string[];
-  inference_devices: Record<string, string[]>;
-  steering_modes: string[];
-}
-
-interface CarConfigResponse {
-  success: boolean;
-  config: CarConfig;
-  capabilities?: Capabilities;
-  reason?: string;
-}
+// CarConfig, Capabilities, CarConfigResponse are imported from use-car-config
 
 // ── Tile definitions ─────────────────────────────────────────────────────────
 
@@ -176,71 +147,51 @@ function inferenceToTileValue(engine: string, device: string, tiles: InferenceTi
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export const CarConfigContainer = () => {
-  const [config, setConfig] = useState<CarConfig | null>(null);
-  const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
+  const { config: contextConfig, capabilities, isLoading, refresh } = useCarConfig();
   const [draft, setDraft] = useState<CarConfig | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [savedConfig, setSavedConfig] = useState<CarConfig | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // ── Fetch current config ────────────────────────────────────────────────────
-  const fetchConfig = async () => {
-    setIsLoading(true);
-    const data = await ApiHelper.get<CarConfigResponse>("car_config");
-    if (data?.success) {
-      const cfg = data.config;
-      const caps = data.capabilities;
-      const engines = ["auto", ...(caps?.inference_engines ?? [])];
-      const normEngine = matchCI(cfg.inference.engine, engines, "auto");
-      const devices = ["auto", ...(caps?.inference_devices[normEngine] ?? [])];
-      const withDefaults: CarConfig = {
-        ...cfg,
-        camera: {
-          ...cfg.camera,
-          mode: matchCI(
-            cfg.camera.mode,
-            CAMERA_MODE_TILES.map((t) => t.value),
-            "auto"
-          ),
-        },
-        inference: {
-          ...cfg.inference,
-          engine: normEngine,
-          device: matchCI(cfg.inference.device, devices, "auto"),
-        },
-        steering: {
-          ...cfg.steering,
-          mode: matchCI(
-            cfg.steering?.mode,
-            STEERING_MODE_TILES.map((t) => t.value),
-            "servo"
-          ),
-        },
-        logging: {
-          ...cfg.logging,
-          mode: matchCI(
-            cfg.logging.mode,
-            LOGGING_MODE_TILES.map((t) => t.value),
-            "Never"
-          ),
-          provider: matchCI(
-            cfg.logging.provider,
-            LOGGING_PROVIDER_TILES.map((t) => t.value),
-            "sqlite3"
-          ),
-        },
-      };
-      setConfig(withDefaults);
-      setCapabilities(caps ?? null);
-      setDraft(withDefaults);
-    }
-    setIsLoading(false);
-  };
-
+  // Normalise the raw config from context whenever it changes (and reset draft if not dirty)
   useEffect(() => {
-    fetchConfig();
-  }, []);
+    if (!contextConfig) {
+      setDraft(null);
+      setSavedConfig(null);
+      return;
+    }
+    const cfg = contextConfig;
+    const caps = capabilities;
+    const engines = ["auto", ...(caps?.inference_engines ?? [])];
+    const normEngine = matchCI(cfg.inference.engine, engines, "auto");
+    const devices = ["auto", ...(caps?.inference_devices[normEngine] ?? [])];
+    const withDefaults: CarConfig = {
+      ...cfg,
+      camera: {
+        ...cfg.camera,
+        mode: matchCI(cfg.camera.mode, CAMERA_MODE_TILES.map((t) => t.value), "auto"),
+        enable_gray_overlay: cfg.camera.enable_gray_overlay ?? false,
+      },
+      inference: {
+        ...cfg.inference,
+        engine: normEngine,
+        device: matchCI(cfg.inference.device, devices, "auto"),
+      },
+      steering: {
+        ...cfg.steering,
+        mode: matchCI(cfg.steering?.mode, STEERING_MODE_TILES.map((t) => t.value), "servo"),
+      },
+      logging: {
+        ...cfg.logging,
+        mode: matchCI(cfg.logging.mode, LOGGING_MODE_TILES.map((t) => t.value), "Never"),
+        provider: matchCI(cfg.logging.provider, LOGGING_PROVIDER_TILES.map((t) => t.value), "sqlite3"),
+      },
+    };
+    setSavedConfig(withDefaults);
+    // Reset draft to the refreshed config (Refresh button behaviour)
+    setDraft(withDefaults);
+  }, [contextConfig, capabilities]);
 
   // ── Save ────────────────────────────────────────────────────────────────────
   const handleSave = async () => {
@@ -251,50 +202,8 @@ export const CarConfigContainer = () => {
 
     const response = await ApiHelper.post<CarConfigResponse>("car_config", draft);
     if (response?.success) {
-      const cfg = response.config;
-      const caps = capabilities;
-      const engines = ["auto", ...(caps?.inference_engines ?? [])];
-      const normEngine = matchCI(cfg.inference.engine, engines, "auto");
-      const devices = ["auto", ...(caps?.inference_devices[normEngine] ?? [])];
-      const withDefaults: CarConfig = {
-        ...cfg,
-        camera: {
-          ...cfg.camera,
-          mode: matchCI(
-            cfg.camera.mode,
-            CAMERA_MODE_TILES.map((t) => t.value),
-            "auto"
-          ),
-        },
-        inference: {
-          ...cfg.inference,
-          engine: normEngine,
-          device: matchCI(cfg.inference.device, devices, "auto"),
-        },
-        steering: {
-          ...cfg.steering,
-          mode: matchCI(
-            cfg.steering?.mode,
-            STEERING_MODE_TILES.map((t) => t.value),
-            "servo"
-          ),
-        },
-        logging: {
-          ...cfg.logging,
-          mode: matchCI(
-            cfg.logging.mode,
-            LOGGING_MODE_TILES.map((t) => t.value),
-            "Never"
-          ),
-          provider: matchCI(
-            cfg.logging.provider,
-            LOGGING_PROVIDER_TILES.map((t) => t.value),
-            "sqlite3"
-          ),
-        },
-      };
-      setConfig(withDefaults);
-      setDraft(withDefaults);
+      setSavedConfig(draft); // immediately mark as not dirty
+      refresh(); // also update global context
       setSaveSuccess(true);
     } else {
       setSaveError(response?.reason ?? "Failed to save configuration.");
@@ -302,8 +211,13 @@ export const CarConfigContainer = () => {
     setIsSaving(false);
   };
 
+  const handleRefresh = () => {
+    if (savedConfig) setDraft(savedConfig); // discard unsaved local changes immediately
+    refresh(); // trigger context re-fetch from server
+  };
+
   // ── Helpers ─────────────────────────────────────────────────────────────────
-  const isDirty = JSON.stringify(draft) !== JSON.stringify(config);
+  const isDirty = JSON.stringify(draft) !== JSON.stringify(savedConfig);
 
   const updateLogging = (value: string) => {
     setDraft((prev) => prev && { ...prev, logging: { ...prev.logging, mode: value } });
@@ -315,6 +229,10 @@ export const CarConfigContainer = () => {
 
   const updateCamera = (value: string) => {
     setDraft((prev) => prev && { ...prev, camera: { ...prev.camera, mode: value } });
+  };
+
+  const updateGrayOverlay = (checked: boolean) => {
+    setDraft((prev) => prev && { ...prev, camera: { ...prev.camera, enable_gray_overlay: checked } });
   };
 
   const updateSteering = (value: string) => {
@@ -394,22 +312,45 @@ export const CarConfigContainer = () => {
         </SpaceBetween>
       </Container>
 
-      {cameraTiles.length >= 3 && (
+      {(cameraTiles.length >= 3 || capabilities?.gray_overlay) && (
         <Container
           header={
             <Header
               variant="h2"
-              description="Controls which camera driver is used to capture the video feed."
+              description="Controls the camera that is used to capture the video feed."
             >
-              Camera Mode
+              Camera
             </Header>
           }
         >
-          <Tiles
-            value={draft?.camera.mode ?? null}
-            items={cameraTiles.map((t) => ({ ...t, disabled: isLoading }))}
-            onChange={({ detail }) => updateCamera(detail.value)}
-          />
+          <SpaceBetween size="l">
+            {cameraTiles.length >= 3 && (
+              <div>
+                <Header variant="h3" description="Controls which camera driver is used.">
+                  Mode
+                </Header>
+                <Tiles
+                  value={draft?.camera.mode ?? null}
+                  items={cameraTiles.map((t) => ({ ...t, disabled: isLoading }))}
+                  onChange={({ detail }) => updateCamera(detail.value)}
+                />
+              </div>
+            )}
+            {capabilities?.gray_overlay && (
+              <FormField
+                label="Gray overlay"
+                description="Apply a gray fade over the top of the camera image to reduce background influence during inference."
+              >
+                <Toggle
+                  checked={draft?.camera.enable_gray_overlay ?? false}
+                  disabled={isLoading}
+                  onChange={({ detail }) => updateGrayOverlay(detail.checked)}
+                >
+                  {draft?.camera.enable_gray_overlay ? "Enabled" : "Disabled"}
+                </Toggle>
+              </FormField>
+            )}
+          </SpaceBetween>
         </Container>
       )}
 
@@ -453,7 +394,7 @@ export const CarConfigContainer = () => {
 
       <Box float="right">
         <SpaceBetween direction="horizontal" size="xs">
-          <Button onClick={fetchConfig} disabled={isLoading || isSaving}>
+          <Button onClick={handleRefresh} disabled={isLoading || isSaving}>
             Refresh
           </Button>
           <Button
