@@ -8,6 +8,7 @@ interface SupportedApisState {
   isDeviceStatusSupported: boolean;
   isTimeApiSupported: boolean;
   isCarConfigSupported: boolean;
+  isGrayOverlaySupported: boolean;
   isLoading: boolean;
   hasError: boolean;
 }
@@ -28,6 +29,7 @@ export const useSupportedApisProvider = () => {
   const [isDeviceStatusSupported, setIsDeviceStatusSupported] = useState<boolean>(false);
   const [isTimeApiSupported, setIsTimeApiSupported] = useState<boolean>(false);
   const [isCarConfigSupported, setIsCarConfigSupported] = useState<boolean>(false);
+  const [isGrayOverlaySupported, setIsGrayOverlaySupported] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
   const { isAuthenticated } = useAuth();
@@ -41,6 +43,7 @@ export const useSupportedApisProvider = () => {
       setIsLoading(false);
       setIsTimeApiSupported(false);
       setIsCarConfigSupported(false);
+      setIsGrayOverlaySupported(false);
       setHasError(false);
       return;
     }
@@ -59,7 +62,14 @@ export const useSupportedApisProvider = () => {
           setIsEmergencyStopSupported(response.apis_supported.includes("/api/emergency_stop"));
           setIsDeviceStatusSupported(response.apis_supported.includes("/api/get_device_status"));
           setIsTimeApiSupported(response.apis_supported.includes("/api/get_time"));
-          setIsCarConfigSupported(response.apis_supported.includes("/api/car_config"));
+          const carConfigSupported = response.apis_supported.includes("/api/car_config");
+          setIsCarConfigSupported(carConfigSupported);
+          if (carConfigSupported) {
+            const cfg = await ApiHelper.get<{ success: boolean; capabilities?: { gray_overlay?: boolean } }>("car_config");
+            setIsGrayOverlaySupported(cfg?.success === true && cfg.capabilities?.gray_overlay === true);
+          } else {
+            setIsGrayOverlaySupported(false);
+          }
           setHasError(false);
         } else if (isSubscribed) {
           setSupportedApis([]);
@@ -67,6 +77,7 @@ export const useSupportedApisProvider = () => {
           setIsDeviceStatusSupported(false);
           setIsTimeApiSupported(false);
           setIsCarConfigSupported(false);
+          setIsGrayOverlaySupported(false);
           setHasError(true);
         }
       } catch (error) {
@@ -77,6 +88,7 @@ export const useSupportedApisProvider = () => {
           setIsDeviceStatusSupported(false);
           setIsTimeApiSupported(false);
           setIsCarConfigSupported(false);
+          setIsGrayOverlaySupported(false);
           setHasError(true);
         }
       } finally {
@@ -102,6 +114,7 @@ export const useSupportedApisProvider = () => {
     isDeviceStatusSupported,
     isTimeApiSupported,
     isCarConfigSupported,
+    isGrayOverlaySupported,
     isLoading,
     hasError,
   };

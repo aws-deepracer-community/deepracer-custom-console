@@ -76,7 +76,7 @@ describe("CarConfigContainer", () => {
 
       const headerTexts = containers.map((c) => c.findHeader()?.getElement().textContent ?? "");
       expect(headerTexts.some((t) => t.includes("Logging"))).toBe(true);
-      expect(headerTexts.some((t) => t.includes("Camera Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Camera"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Inference Engine"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Steering Mode"))).toBe(true);
     });
@@ -105,7 +105,7 @@ describe("CarConfigContainer", () => {
       const containers = wrapper.findAllContainers();
       const headerTexts = containers.map((c) => c.findHeader()?.getElement().textContent ?? "");
       expect(headerTexts.some((t) => t.includes("Logging"))).toBe(true);
-      expect(headerTexts.some((t) => t.includes("Camera Mode"))).toBe(true);
+      expect(headerTexts.some((t) => t.includes("Camera"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Inference Engine"))).toBe(true);
       expect(headerTexts.some((t) => t.includes("Steering Mode"))).toBe(true);
     });

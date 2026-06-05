@@ -5,10 +5,12 @@ import {
   Box,
   Button,
   Container,
+  FormField,
   Header,
   SpaceBetween,
   Tiles,
   TilesProps,
+  Toggle,
 } from "@cloudscape-design/components";
 import { ApiHelper } from "../../common/helpers/api-helper";
 
@@ -21,6 +23,7 @@ interface CarConfig {
   };
   camera: {
     mode: string;
+    enable_gray_overlay: boolean;
   };
   inference: {
     engine: string;
@@ -38,6 +41,7 @@ interface Capabilities {
   inference_engines: string[];
   inference_devices: Record<string, string[]>;
   steering_modes: string[];
+  gray_overlay?: boolean;
 }
 
 interface CarConfigResponse {
@@ -203,6 +207,7 @@ export const CarConfigContainer = () => {
             CAMERA_MODE_TILES.map((t) => t.value),
             "auto"
           ),
+          enable_gray_overlay: cfg.camera.enable_gray_overlay ?? false,
         },
         inference: {
           ...cfg.inference,
@@ -265,6 +270,7 @@ export const CarConfigContainer = () => {
             CAMERA_MODE_TILES.map((t) => t.value),
             "auto"
           ),
+          enable_gray_overlay: cfg.camera.enable_gray_overlay ?? false,
         },
         inference: {
           ...cfg.inference,
@@ -315,6 +321,10 @@ export const CarConfigContainer = () => {
 
   const updateCamera = (value: string) => {
     setDraft((prev) => prev && { ...prev, camera: { ...prev.camera, mode: value } });
+  };
+
+  const updateGrayOverlay = (checked: boolean) => {
+    setDraft((prev) => prev && { ...prev, camera: { ...prev.camera, enable_gray_overlay: checked } });
   };
 
   const updateSteering = (value: string) => {
@@ -394,22 +404,45 @@ export const CarConfigContainer = () => {
         </SpaceBetween>
       </Container>
 
-      {cameraTiles.length >= 3 && (
+      {(cameraTiles.length >= 3 || capabilities?.gray_overlay) && (
         <Container
           header={
             <Header
               variant="h2"
-              description="Controls which camera driver is used to capture the video feed."
+              description="Controls the camera that is used to capture the video feed."
             >
-              Camera Mode
+              Camera
             </Header>
           }
         >
-          <Tiles
-            value={draft?.camera.mode ?? null}
-            items={cameraTiles.map((t) => ({ ...t, disabled: isLoading }))}
-            onChange={({ detail }) => updateCamera(detail.value)}
-          />
+          <SpaceBetween size="l">
+            {cameraTiles.length >= 3 && (
+              <div>
+                <Header variant="h3" description="Controls which camera driver is used.">
+                  Mode
+                </Header>
+                <Tiles
+                  value={draft?.camera.mode ?? null}
+                  items={cameraTiles.map((t) => ({ ...t, disabled: isLoading }))}
+                  onChange={({ detail }) => updateCamera(detail.value)}
+                />
+              </div>
+            )}
+            {capabilities?.gray_overlay && (
+              <FormField
+                label="Gray overlay"
+                description="Apply a gray fade over the top of the camera image to reduce background influence during inference."
+              >
+                <Toggle
+                  checked={draft?.camera.enable_gray_overlay ?? false}
+                  disabled={isLoading}
+                  onChange={({ detail }) => updateGrayOverlay(detail.checked)}
+                >
+                  {draft?.camera.enable_gray_overlay ? "Enabled" : "Disabled"}
+                </Toggle>
+              </FormField>
+            )}
+          </SpaceBetween>
         </Container>
       )}
 

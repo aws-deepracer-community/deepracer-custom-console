@@ -69,7 +69,7 @@ const HomePage = () => {
   const { isAuthenticated } = useAuth();
 
   // Split panel
-  const { isDeviceStatusSupported } = useSupportedApis();
+  const { isDeviceStatusSupported, isGrayOverlaySupported } = useSupportedApis();
   const [isSplitPanelOpen, setIsSplitPanelOpen] = useState(false);
   const [splitPanelSize, setSplitPanelSize] = useState(220);
 
@@ -296,19 +296,19 @@ const HomePage = () => {
   const lidarStatusText =
     sensorStatus.lidar_status === "connected" ? "(Connected)" : "(Not Connected)";
 
+  const OVERLAY_FEED = "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&qos_profile=sensor_data";
+  const CAMERA_FEED = "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
+
   let cameraFeedSrc;
   switch (cameraFeedType) {
     case "stereo":
-      cameraFeedSrc =
-        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
+      cameraFeedSrc = isGrayOverlaySupported ? OVERLAY_FEED : CAMERA_FEED;
       break;
     case "lidar":
-      cameraFeedSrc =
-        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&qos_profile=sensor_data";
+      cameraFeedSrc = OVERLAY_FEED;
       break;
     default:
-      cameraFeedSrc =
-        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
+      cameraFeedSrc = isGrayOverlaySupported ? OVERLAY_FEED : CAMERA_FEED;
   }
   const cameraImgRef = useRef<HTMLImageElement | null>(null);
 
