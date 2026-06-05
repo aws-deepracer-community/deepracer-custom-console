@@ -156,7 +156,11 @@ export const CarConfigContainer = () => {
 
   // Normalise the raw config from context whenever it changes (and reset draft if not dirty)
   useEffect(() => {
-    if (!contextConfig) return;
+    if (!contextConfig) {
+      setDraft(null);
+      setSavedConfig(null);
+      return;
+    }
     const cfg = contextConfig;
     const caps = capabilities;
     const engines = ["auto", ...(caps?.inference_engines ?? [])];

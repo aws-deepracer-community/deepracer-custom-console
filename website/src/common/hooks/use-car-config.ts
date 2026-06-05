@@ -56,7 +56,7 @@ export const CarConfigContext = createContext<CarConfigState | null>(null);
 export const useCarConfig = () => {
   const context = useContext(CarConfigContext);
   if (!context) {
-    throw new Error("useCarConfig must be used within a CarConfigProvider");
+    throw new Error("useCarConfig must be used within CarConfigContext.Provider");
   }
   return context;
 };
