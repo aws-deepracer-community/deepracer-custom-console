@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   Box,
   SplitPanel,
@@ -8,6 +8,7 @@ import {
   Grid,
 } from "@cloudscape-design/components";
 import { ApiHelper } from "../common/helpers/api-helper";
+import { useSupportedApis } from "../common/hooks/use-supported-apis";
 
 interface DeviceStatusProps {
   isInferenceRunning: boolean;
@@ -41,6 +42,7 @@ interface DeviceStatusResponse {
 }
 
 const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatusProps) => {
+  const { isEventsSupported } = useSupportedApis();
   // Define comparison types
   type ComparisonOperator = "gt" | "lt" | "gte" | "lte" | "eq";
 
@@ -425,6 +427,52 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
 
     return () => clearInterval(intervalId);
   }, []); // Remove updatesSinceInferenceStarted from dependency array
+
+  // Auto-dismiss timer ref for the IMU safety stop notification.
+  const imuDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Listen for IMU safety stop events via Server-Sent Events.
+  useEffect(() => {
+    if (!isEventsSupported) return;
+    const es = new EventSource("/api/events");
+
+    const dismissImuNotification = () =>
+      setNotifications((p) => p.filter((n) => n.id !== "imu-safety-stop"));
+
+    es.addEventListener("imu_stop", (e: MessageEvent) => {
+      const reason = JSON.parse(e.data) as string;
+      const label = reason === "crash" ? "Crash detected" : "Vehicle lifted";
+
+      // Reset the auto-dismiss timer on every new event.
+      if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+      imuDismissTimer.current = setTimeout(dismissImuNotification, 5000);
+
+      // Upsert the notification (replace if already showing so label stays current).
+      setNotifications((prev) => [
+        ...prev.filter((n) => n.id !== "imu-safety-stop"),
+        {
+          id: "imu-safety-stop",
+          type: "warning",
+          header: `IMU safety stop \u2014 ${label}`,
+          content: "The vehicle was automatically stopped by the IMU safety system.",
+          dismissible: true,
+          onDismiss: () => {
+            if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+            dismissImuNotification();
+          },
+        },
+      ]);
+    });
+
+    es.onerror = () => {
+      // EventSource will auto-reconnect on error; no action needed.
+    };
+
+    return () => {
+      es.close();
+      if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+    };
+  }, [isEventsSupported, setNotifications]);
 
   return (
     <SplitPanel header={"Car Health"} hidePreferencesButton={true} closeBehavior="collapse">

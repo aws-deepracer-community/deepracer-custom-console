@@ -53,6 +53,7 @@ const mockSupportedApisProvider = {
   isDeviceStatusSupported: true,
   isTimeApiSupported: true,
   isCarConfigSupported: false,
+  isEventsSupported: false,
   isLoading: false,
   hasError: false,
 };
