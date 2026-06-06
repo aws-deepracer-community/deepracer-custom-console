@@ -22,6 +22,11 @@ export interface CarConfig {
   steering: {
     mode: string;
   };
+  imu: {
+    enabled: boolean;
+    crash_threshold_g: number;
+    pickup_threshold_g: number;
+  };
 }
 
 export interface Capabilities {
@@ -33,6 +38,9 @@ export interface Capabilities {
   inference_devices: Record<string, string[]>;
   steering_modes: string[];
   gray_overlay?: boolean;
+  imu?: boolean;
+  imu_crash_thresholds?: number[];
+  imu_pickup_thresholds?: number[];
 }
 
 export interface CarConfigResponse {

@@ -70,14 +70,61 @@ const HomePage = () => {
   const { isAuthenticated } = useAuth();
 
   // Split panel
-  const { isDeviceStatusSupported } = useSupportedApis();
-  const { isGrayOverlayEnabled } = useCarConfig();
+  const { isDeviceStatusSupported, isEventsSupported } = useSupportedApis();
+  const { isGrayOverlayEnabled, config } = useCarConfig();
   const [isSplitPanelOpen, setIsSplitPanelOpen] = useState(false);
   const [splitPanelSize, setSplitPanelSize] = useState(220);
 
   const [localFlashMessages, setLocalFlashMessages] = useState<FlashbarProps.MessageDefinition[]>(
     []
   );
+
+  // Auto-dismiss timer ref for the IMU safety stop notification.
+  const imuDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Listen for IMU safety stop events via Server-Sent Events.
+  // Only active when IMU is enabled in config and the vehicle is running.
+  useEffect(() => {
+    if (!isEventsSupported || !config?.imu?.enabled || !isInferenceRunning) return;
+    const es = new EventSource("/api/events");
+
+    const dismissImuNotification = () =>
+      setLocalFlashMessages((p) => p.filter((n) => n.id !== "imu-safety-stop"));
+
+    es.addEventListener("imu_stop", (e: MessageEvent) => {
+      const reason = JSON.parse(e.data) as string;
+      const label = reason === "crash" ? "Crash detected" : "Vehicle lifted";
+
+      // Reset the auto-dismiss timer on every new event.
+      if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+      imuDismissTimer.current = setTimeout(dismissImuNotification, 5000);
+
+      // Upsert the notification so label stays current on repeat events.
+      setLocalFlashMessages((prev) => [
+        ...prev.filter((n) => n.id !== "imu-safety-stop"),
+        {
+          id: "imu-safety-stop",
+          type: "warning",
+          header: `IMU safety stop \u2014 ${label}`,
+          content: "The vehicle was automatically stopped by the IMU safety system.",
+          dismissible: true,
+          onDismiss: () => {
+            if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+            dismissImuNotification();
+          },
+        },
+      ]);
+    });
+
+    es.onerror = () => {
+      // EventSource will auto-reconnect on error; no action needed.
+    };
+
+    return () => {
+      es.close();
+      if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+    };
+  }, [isEventsSupported, config?.imu?.enabled, isInferenceRunning]);
 
   const SENSOR_STATUS_REFRESH_INTERVAL_MS = 15000; // 15 seconds
 

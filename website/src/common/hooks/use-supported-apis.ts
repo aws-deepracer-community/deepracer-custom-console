@@ -8,6 +8,7 @@ interface SupportedApisState {
   isDeviceStatusSupported: boolean;
   isTimeApiSupported: boolean;
   isCarConfigSupported: boolean;
+  isEventsSupported: boolean;
   isLoading: boolean;
   hasError: boolean;
 }
@@ -28,6 +29,7 @@ export const useSupportedApisProvider = () => {
   const [isDeviceStatusSupported, setIsDeviceStatusSupported] = useState<boolean>(false);
   const [isTimeApiSupported, setIsTimeApiSupported] = useState<boolean>(false);
   const [isCarConfigSupported, setIsCarConfigSupported] = useState<boolean>(false);
+  const [isEventsSupported, setIsEventsSupported] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
   const { isAuthenticated } = useAuth();
@@ -41,6 +43,7 @@ export const useSupportedApisProvider = () => {
       setIsLoading(false);
       setIsTimeApiSupported(false);
       setIsCarConfigSupported(false);
+      setIsEventsSupported(false);
       setHasError(false);
       return;
     }
@@ -59,8 +62,8 @@ export const useSupportedApisProvider = () => {
           setIsEmergencyStopSupported(response.apis_supported.includes("/api/emergency_stop"));
           setIsDeviceStatusSupported(response.apis_supported.includes("/api/get_device_status"));
           setIsTimeApiSupported(response.apis_supported.includes("/api/get_time"));
-          const carConfigSupported = response.apis_supported.includes("/api/car_config");
-          setIsCarConfigSupported(carConfigSupported);
+          setIsCarConfigSupported(response.apis_supported.includes("/api/car_config"));
+          setIsEventsSupported(response.apis_supported.includes("/api/events"));
           setHasError(false);
         } else if (isSubscribed) {
           setSupportedApis([]);
@@ -68,8 +71,9 @@ export const useSupportedApisProvider = () => {
           setIsDeviceStatusSupported(false);
           setIsTimeApiSupported(false);
           setIsCarConfigSupported(false);
+          setIsEventsSupported(false);
           setHasError(true);
-        }
+        } 
       } catch (error) {
         console.error("Error checking supported APIs:", error);
         if (isSubscribed) {
@@ -78,6 +82,7 @@ export const useSupportedApisProvider = () => {
           setIsDeviceStatusSupported(false);
           setIsTimeApiSupported(false);
           setIsCarConfigSupported(false);
+          setIsEventsSupported(false);
           setHasError(true);
         }
       } finally {
@@ -103,6 +108,7 @@ export const useSupportedApisProvider = () => {
     isDeviceStatusSupported,
     isTimeApiSupported,
     isCarConfigSupported,
+    isEventsSupported,
     isLoading,
     hasError,
   };

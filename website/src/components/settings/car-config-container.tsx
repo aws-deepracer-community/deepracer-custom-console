@@ -6,6 +6,7 @@ import {
   Button,
   Container,
   Header,
+  Slider,
   SpaceBetween,
   Tiles,
   TilesProps,
@@ -187,6 +188,11 @@ export const CarConfigContainer = () => {
         mode: matchCI(cfg.logging.mode, LOGGING_MODE_TILES.map((t) => t.value), "Never"),
         provider: matchCI(cfg.logging.provider, LOGGING_PROVIDER_TILES.map((t) => t.value), "sqlite3"),
       },
+      imu: {
+        enabled: cfg.imu?.enabled ?? false,
+        crash_threshold_g: cfg.imu?.crash_threshold_g ?? 0,
+        pickup_threshold_g: cfg.imu?.pickup_threshold_g ?? 0,
+      },
     };
     setSavedConfig(withDefaults);
     // Reset draft to the refreshed config (Refresh button behaviour)
@@ -253,6 +259,23 @@ export const CarConfigContainer = () => {
 
   const updateSteering = (value: string) => {
     setDraft((prev) => prev && { ...prev, steering: { mode: value } });
+  };
+
+  const updateImuEnabled = (checked: boolean) => {
+    setDraft((prev) => prev && { ...prev, imu: { ...prev.imu, enabled: checked } });
+  };
+
+  // Index-based sliders: index 0 = Disabled, index N = Nth threshold value.
+  // This eliminates any intermediate invalid positions.
+  const IMU_CRASH_STEPS = [0, 1.5, 2.0, 2.5, 3.0];
+  const IMU_PICKUP_STEPS = [0, 0.5, 0.75, 0.95];
+
+  const updateImuCrash = (index: number) => {
+    setDraft((prev) => prev && { ...prev, imu: { ...prev.imu, crash_threshold_g: IMU_CRASH_STEPS[index] ?? 0 } });
+  };
+
+  const updateImuPickup = (index: number) => {
+    setDraft((prev) => prev && { ...prev, imu: { ...prev.imu, pickup_threshold_g: IMU_PICKUP_STEPS[index] ?? 0 } });
   };
 
   // ── Derived tile data ────────────────────────────────────────────────────────
@@ -422,6 +445,68 @@ export const CarConfigContainer = () => {
             items={steeringTiles.map((t) => ({ ...t, disabled: isLoading }))}
             onChange={({ detail }) => updateSteering(detail.value)}
           />
+        </Container>
+      )}
+
+      {capabilities?.imu && (
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Configure the BMI160 IMU safety features. Changes take effect on next service restart."
+            >
+              IMU
+            </Header>
+          }
+        >
+          <SpaceBetween size="l">
+            <div>
+              <Header variant="h3" description="Enable the IMU node. Required for crash and pickup detection.">
+                Enable IMU
+              </Header>
+              <Toggle
+                checked={draft?.imu.enabled ?? false}
+                disabled={isLoading}
+                onChange={({ detail }) => updateImuEnabled(detail.checked)}
+              >
+                {draft?.imu.enabled ? "Enabled" : "Disabled"}
+              </Toggle>
+            </div>
+            {draft?.imu.enabled && (
+              <>
+                <div>
+                  <Header variant="h3" description="Stop the car when a high-G impact is detected. Set to Disabled to turn off.">
+                    Crash Detection
+                  </Header>
+                  <Slider
+                    value={IMU_CRASH_STEPS.indexOf(draft?.imu.crash_threshold_g ?? 0)}
+                    min={0}
+                    max={IMU_CRASH_STEPS.length - 1}
+                    step={1}
+                    referenceValues={IMU_CRASH_STEPS.map((_, i) => i)}
+                    disabled={isLoading}
+                    valueFormatter={(i) => i === 0 ? "Disabled" : `${IMU_CRASH_STEPS[i]} G`}
+                    onChange={({ detail }) => updateImuCrash(detail.value)}
+                  />
+                </div>
+                <div>
+                  <Header variant="h3" description="Stop the car when it is picked up or tipped over. Set to Disabled to turn off.">
+                    Pickup Detection
+                  </Header>
+                  <Slider
+                    value={IMU_PICKUP_STEPS.indexOf(draft?.imu.pickup_threshold_g ?? 0)}
+                    min={0}
+                    max={IMU_PICKUP_STEPS.length - 1}
+                    step={1}
+                    referenceValues={IMU_PICKUP_STEPS.map((_, i) => i)}
+                    disabled={isLoading}
+                    valueFormatter={(i) => i === 0 ? "Disabled" : `${IMU_PICKUP_STEPS[i]} G`}
+                    onChange={({ detail }) => updateImuPickup(detail.value)}
+                  />
+                </div>
+              </>
+            )}
+          </SpaceBetween>
         </Container>
       )}
 

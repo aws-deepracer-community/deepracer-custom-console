@@ -650,6 +650,139 @@ describe("CarConfigContainer", () => {
     });
   });
 
+  // ── IMU ────────────────────────────────────────────────────────────────────
+
+  describe("IMU section", () => {
+    const mockCapabilitiesWithImu = {
+      ...mockCapabilities,
+      imu: true,
+      imu_crash_thresholds: [0, 1.5, 2.0, 2.5, 3.0],
+      imu_pickup_thresholds: [0, 0.5, 0.75, 0.95],
+    };
+
+    const mockConfigWithImu = {
+      ...mockConfig,
+      imu: { enabled: false, crash_threshold_g: 0, pickup_threshold_g: 0 },
+    };
+
+    it("does not render the IMU container when capabilities.imu is false", async () => {
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      const headerTexts = wrapper
+        .findAllContainers()
+        .map((c) => c.findHeader()?.getElement().textContent ?? "");
+      expect(headerTexts.some((t) => t.includes("IMU"))).toBe(false);
+    });
+
+    it("renders the IMU container when capabilities.imu is true", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: mockConfigWithImu,
+        capabilities: mockCapabilitiesWithImu,
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      const headerTexts = wrapper
+        .findAllContainers()
+        .map((c) => c.findHeader()?.getElement().textContent ?? "");
+      expect(headerTexts.some((t) => t.includes("IMU"))).toBe(true);
+    });
+
+    it("shows Enable IMU toggle defaulting to off when config.imu.enabled is false", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: mockConfigWithImu,
+        capabilities: mockCapabilitiesWithImu,
+      });
+
+      await act(async () => render(<CarConfigContainer />));
+
+      expect(screen.getByText("Enable IMU")).toBeInTheDocument();
+      expect(screen.getByText("Disabled")).toBeInTheDocument();
+    });
+
+    it("hides crash and pickup sliders when IMU is disabled", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: mockConfigWithImu,
+        capabilities: mockCapabilitiesWithImu,
+      });
+
+      await act(async () => render(<CarConfigContainer />));
+
+      expect(screen.queryByText("Crash Detection")).not.toBeInTheDocument();
+      expect(screen.queryByText("Pickup Detection")).not.toBeInTheDocument();
+    });
+
+    it("shows crash and pickup sliders after toggling IMU on", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: mockConfigWithImu,
+        capabilities: mockCapabilitiesWithImu,
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      await act(async () => {
+        wrapper.findToggle()?.findNativeInput().click();
+      });
+
+      expect(screen.getByText("Crash Detection")).toBeInTheDocument();
+      expect(screen.getByText("Pickup Detection")).toBeInTheDocument();
+    });
+
+    it("enables Save after toggling IMU on", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: mockConfigWithImu,
+        capabilities: mockCapabilitiesWithImu,
+      });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      await act(async () => {
+        wrapper.findToggle()?.findNativeInput().click();
+      });
+
+      expect(findButton(wrapper, "Save")?.getElement()).not.toBeDisabled();
+    });
+
+    it("sends imu section in save payload when IMU is enabled", async () => {
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: mockConfigWithImu,
+        capabilities: mockCapabilitiesWithImu,
+      });
+      mockApiHelper.post.mockResolvedValue({ success: true, config: mockConfigWithImu });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      // Toggle IMU on
+      await act(async () => {
+        wrapper.findToggle()?.findNativeInput().click();
+      });
+
+      await act(async () => {
+        findButton(wrapper, "Save")?.click();
+      });
+
+      await waitFor(() => {
+        expect(mockApiHelper.post).toHaveBeenCalledWith(
+          "car_config",
+          expect.objectContaining({
+            imu: expect.objectContaining({ enabled: true }),
+          })
+        );
+      });
+    });
+  });
+
   // ── Refresh ────────────────────────────────────────────────────────────────
 
   describe("Refresh behaviour", () => {
