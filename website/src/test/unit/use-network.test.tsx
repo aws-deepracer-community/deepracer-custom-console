@@ -59,10 +59,23 @@ describe("useNetwork", () => {
   });
 
   it("should throw error when used outside of NetworkProvider", () => {
-    // Expect the hook to throw an error when used outside of NetworkProvider
-    expect(() => {
-      renderHook(() => useNetwork());
-    }).toThrow("useNetwork must be used within a NetworkProvider");
+    const onWindowError = (event: Event) => {
+      const errorEvent = event as ErrorEvent;
+      const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+      if (message.includes("useNetwork must be used within a NetworkProvider")) {
+        errorEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+
+    try {
+      expect(() => {
+        renderHook(() => useNetwork());
+      }).toThrow("useNetwork must be used within a NetworkProvider");
+    } finally {
+      window.removeEventListener("error", onWindowError);
+    }
   });
 
   it("should return context value when used within NetworkProvider", () => {
