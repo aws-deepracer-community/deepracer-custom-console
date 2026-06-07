@@ -781,6 +781,34 @@ describe("CarConfigContainer", () => {
         );
       });
     });
+
+    it("omits imu from save payload when capabilities.imu is absent (e.g. RPi)", async () => {
+      // capabilities without imu flag — the component still builds imu defaults in the draft
+      // but buildPayload() should strip the key before posting.
+      mockUseCarConfig.mockReturnValue({
+        ...defaultContextValue(),
+        config: mockConfigWithImu,
+        capabilities: mockCapabilities, // no imu flag
+      });
+      mockApiHelper.post.mockResolvedValue({ success: true, config: mockConfig });
+
+      const { container } = await act(async () => render(<CarConfigContainer />));
+      const wrapper = createWrapper(container);
+
+      // Make any change to dirty the form
+      await act(async () => {
+        fireEvent.click(screen.getByRole("radio", { name: /Always/ }));
+      });
+
+      await act(async () => {
+        findButton(wrapper, "Save")?.click();
+      });
+
+      await waitFor(() => expect(mockApiHelper.post).toHaveBeenCalled());
+
+      const postedPayload = mockApiHelper.post.mock.calls[0][1] as Record<string, unknown>;
+      expect(postedPayload).not.toHaveProperty("imu");
+    });
   });
 
   // ── Refresh ────────────────────────────────────────────────────────────────

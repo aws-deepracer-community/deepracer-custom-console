@@ -83,6 +83,24 @@ const INFERENCE_DEVICE_LABELS: Record<string, string> = {
   GPU: "GPU",
   MYRIAD: "Myriad X",
 };
+/**
+ * Maps optional top-level CarConfig keys to the Capabilities flag that gates them.
+ * Add entries here for any new optional sections; buildPayload() handles the rest.
+ */
+const OPTIONAL_SECTIONS: Partial<Record<keyof CarConfig, keyof Capabilities>> = {
+  imu: "imu",
+};
+
+/** Strip config keys whose corresponding capability is absent from this device. */
+function buildPayload(draft: CarConfig, caps: Capabilities | null): Partial<CarConfig> {
+  return Object.fromEntries(
+    Object.entries(draft).filter(([key]) => {
+      const capKey = OPTIONAL_SECTIONS[key as keyof CarConfig];
+      return capKey == null || !!caps?.[capKey];
+    })
+  ) as Partial<CarConfig>;
+}
+
 const INFERENCE_DESCRIPTIONS: Record<string, string> = {
   auto: "Automatically detected based on available hardware and software",
   TFLITE: "TensorFlow Lite on CPU — optimised for ARM-based devices",
@@ -206,7 +224,7 @@ export const CarConfigContainer = () => {
     setSaveSuccess(false);
     setSaveError(null);
 
-    const response = await ApiHelper.post<CarConfigResponse>("car_config", draft);
+    const response = await ApiHelper.post<CarConfigResponse>("car_config", buildPayload(draft, capabilities));
     if (response?.success) {
       setSavedConfig(draft); // immediately mark as not dirty
       refresh(); // also update global context
