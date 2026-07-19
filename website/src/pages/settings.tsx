@@ -9,6 +9,7 @@ import {
   LedColorContainer,
   AboutContainer,
   CarConfigContainer,
+  CameraSettingsContainer,
 } from "../components/settings";
 
 export default function SettingsPage() {
@@ -43,6 +44,7 @@ export default function SettingsPage() {
                 content: (
                   <SpaceBetween size="l">
                     <LedColorContainer />
+                    <CameraSettingsContainer />
                     {isCarConfigSupported && <CarConfigContainer />}
                   </SpaceBetween>
                 ),
