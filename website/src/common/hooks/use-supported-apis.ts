@@ -9,6 +9,7 @@ interface SupportedApisState {
   isTimeApiSupported: boolean;
   isCarConfigSupported: boolean;
   isEventsSupported: boolean;
+  isCameraApiSupported: boolean;
   isLoading: boolean;
   hasError: boolean;
 }
@@ -30,6 +31,7 @@ export const useSupportedApisProvider = () => {
   const [isTimeApiSupported, setIsTimeApiSupported] = useState<boolean>(false);
   const [isCarConfigSupported, setIsCarConfigSupported] = useState<boolean>(false);
   const [isEventsSupported, setIsEventsSupported] = useState<boolean>(false);
+  const [isCameraApiSupported, setIsCameraApiSupported] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
   const { isAuthenticated } = useAuth();
@@ -44,6 +46,7 @@ export const useSupportedApisProvider = () => {
       setIsTimeApiSupported(false);
       setIsCarConfigSupported(false);
       setIsEventsSupported(false);
+      setIsCameraApiSupported(false);
       setHasError(false);
       return;
     }
@@ -64,6 +67,9 @@ export const useSupportedApisProvider = () => {
           setIsTimeApiSupported(response.apis_supported.includes("/api/get_time"));
           setIsCarConfigSupported(response.apis_supported.includes("/api/car_config"));
           setIsEventsSupported(response.apis_supported.includes("/api/events"));
+          setIsCameraApiSupported(
+            response.apis_supported.some((api) => api.toLowerCase().startsWith("/api/camera"))
+          );
           setHasError(false);
         } else if (isSubscribed) {
           setSupportedApis([]);
@@ -72,8 +78,9 @@ export const useSupportedApisProvider = () => {
           setIsTimeApiSupported(false);
           setIsCarConfigSupported(false);
           setIsEventsSupported(false);
+          setIsCameraApiSupported(false);
           setHasError(true);
-        } 
+        }
       } catch (error) {
         console.error("Error checking supported APIs:", error);
         if (isSubscribed) {
@@ -83,6 +90,7 @@ export const useSupportedApisProvider = () => {
           setIsTimeApiSupported(false);
           setIsCarConfigSupported(false);
           setIsEventsSupported(false);
+          setIsCameraApiSupported(false);
           setHasError(true);
         }
       } finally {
@@ -109,6 +117,7 @@ export const useSupportedApisProvider = () => {
     isTimeApiSupported,
     isCarConfigSupported,
     isEventsSupported,
+    isCameraApiSupported,
     isLoading,
     hasError,
   };
