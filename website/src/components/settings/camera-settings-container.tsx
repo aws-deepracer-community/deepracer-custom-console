@@ -29,6 +29,7 @@ const PARAMETER_PRIORITY = [
   "Saturation",
   "Sharpness",
 ];
+const CAMERA_FEED = "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
 
 const NUMERIC_TYPES: CameraParameterType[] = ["integer", "double"];
 const ARRAY_TYPES: CameraParameterType[] = [
@@ -161,7 +162,7 @@ export const CameraSettingsContainer = () => {
       if (result.success) {
         setSaveSuccess(`${labelForParameter(parameter.name)} updated.`);
       } else {
-        setSaveError(result.message);
+        setSaveError(result.message ?? "Invalid camera parameter value.");
       }
     } catch (ex) {
       setSaveError(ex instanceof Error ? ex.message : "Invalid camera parameter value.");
@@ -248,6 +249,9 @@ export const CameraSettingsContainer = () => {
       }
     >
       <SpaceBetween size="m">
+        <Box textAlign="center" padding="s">
+          <img src={CAMERA_FEED} alt="Live camera preview" style={{ maxWidth: "100%" }} />
+        </Box>
         {error && <Alert type="error">{error}</Alert>}
         {saveSuccess && (
           <Alert type="success" dismissible onDismiss={() => setSaveSuccess(null)}>
