@@ -33,6 +33,7 @@ vi.mock("../../components/settings", () => ({
   LedColorContainer: () => <div data-testid="led-color-settings">LED Color Settings</div>,
   AboutContainer: () => <div data-testid="about-settings">About Settings</div>,
   CarConfigContainer: () => <div data-testid="car-config-settings">Car Config Settings</div>,
+  CameraSettingsContainer: () => <div data-testid="camera-settings">Camera Settings</div>,
 }));
 
 describe("SettingsPage Integration", () => {
@@ -44,6 +45,7 @@ describe("SettingsPage Integration", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
       isCarConfigSupported: true,
+      isCameraApiSupported: true,
     });
 
     render(<SettingsPage />);
@@ -56,10 +58,54 @@ describe("SettingsPage Integration", () => {
     expect(screen.getByText("Adjust your DeepRacer car settings")).toBeInTheDocument();
   });
 
+  it("should have proper layout structure using Cloudscape components", () => {
+    mockUseSupportedApis.mockReturnValue({
+      isTimeApiSupported: true,
+      isCarConfigSupported: true,
+      isCameraApiSupported: true,
+    });
+
+    const { container } = render(<SettingsPage />);
+    const wrapper = createWrapper(container);
+
+    expect(wrapper.findSpaceBetween()).toBeTruthy();
+    expect(wrapper.findTextContent()).toBeTruthy();
+
+    const header = wrapper.findHeader();
+    expect(header).toBeTruthy();
+    expect(header?.getElement()).toHaveTextContent("Settings");
+  });
+
+  it("should call useSupportedApis hook correctly", () => {
+    mockUseSupportedApis.mockReturnValue({
+      isTimeApiSupported: true,
+      isCarConfigSupported: true,
+      isCameraApiSupported: true,
+    });
+
+    render(<SettingsPage />);
+
+    expect(mockUseSupportedApis).toHaveBeenCalled();
+  });
+
+  it("should be wrapped in BaseAppLayout component", () => {
+    mockUseSupportedApis.mockReturnValue({
+      isTimeApiSupported: true,
+      isCarConfigSupported: true,
+      isCameraApiSupported: true,
+    });
+
+    render(<SettingsPage />);
+
+    expect(screen.getByTestId("base-app-layout")).toBeInTheDocument();
+    expect(screen.getByTestId("content")).toBeInTheDocument();
+  });
+
   it("should render all settings containers when all APIs are supported", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
       isCarConfigSupported: true,
+      isCameraApiSupported: true,
     });
 
     render(<SettingsPage />);
@@ -85,6 +131,7 @@ describe("SettingsPage Integration", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: false,
       isCarConfigSupported: true,
+      isCameraApiSupported: true,
     });
 
     render(<SettingsPage />);
@@ -112,18 +159,19 @@ describe("SettingsPage Integration", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
       isCarConfigSupported: false,
+      isCameraApiSupported: true,
     });
 
     render(<SettingsPage />);
 
-    // System tab + About containers are present
+    // About + System tab containers are present
     expect(screen.getByTestId("about-settings")).toBeInTheDocument();
     expect(screen.getByTestId("network-settings")).toBeInTheDocument();
     expect(screen.getByTestId("console-password-settings")).toBeInTheDocument();
     expect(screen.getByTestId("ssh-settings")).toBeInTheDocument();
     expect(screen.getByTestId("time-settings")).toBeInTheDocument();
 
-    // Switch to Car Configuration tab
+    // Switch to Car Configuration tab to check availability of car settings
     const wrapper = createWrapper(document.body);
     act(() => {
       wrapper.findTabs()?.findTabLinkById("car-config")?.click();
@@ -134,52 +182,38 @@ describe("SettingsPage Integration", () => {
     expect(screen.queryByTestId("car-config-settings")).not.toBeInTheDocument();
   });
 
-  it("should have proper layout structure using Cloudscape components", () => {
+  it("should not render CameraSettingsContainer when isCameraApiSupported is false", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
       isCarConfigSupported: true,
+      isCameraApiSupported: false,
     });
 
-    render(<SettingsPage />);
+    const { container } = render(<SettingsPage />);
 
-    const wrapper = createWrapper(document.body);
+    // Switch to Car Configuration tab where CameraSettingsContainer is expected
+    const wrapper = createWrapper(container);
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("car-config")?.click();
+    });
 
-    // Check for SpaceBetween layout
-    const spaceBetween = wrapper.findSpaceBetween();
-    expect(spaceBetween).toBeTruthy();
-
-    // Check for TextContent
-    const textContent = wrapper.findTextContent();
-    expect(textContent).toBeTruthy();
-
-    // Check for Header component
-    const header = wrapper.findHeader();
-    expect(header).toBeTruthy();
-    expect(header?.getElement()).toHaveTextContent("Settings");
+    expect(screen.queryByTestId("camera-settings")).not.toBeInTheDocument();
   });
 
-  it("should call useSupportedApis hook correctly", () => {
+  it("should render CameraSettingsContainer when isCameraApiSupported is true", () => {
     mockUseSupportedApis.mockReturnValue({
       isTimeApiSupported: true,
       isCarConfigSupported: true,
+      isCameraApiSupported: true,
     });
 
-    render(<SettingsPage />);
+    const { container } = render(<SettingsPage />);
 
-    // Verify the hook was called
-    expect(mockUseSupportedApis).toHaveBeenCalled();
-  });
-
-  it("should be wrapped in BaseAppLayout component", () => {
-    mockUseSupportedApis.mockReturnValue({
-      isTimeApiSupported: true,
-      isCarConfigSupported: true,
+    const wrapper = createWrapper(container);
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("car-config")?.click();
     });
 
-    render(<SettingsPage />);
-
-    // Check that BaseAppLayout mock is rendered
-    expect(screen.getByTestId("base-app-layout")).toBeInTheDocument();
-    expect(screen.getByTestId("content")).toBeInTheDocument();
+    expect(screen.getByTestId("camera-settings")).toBeInTheDocument();
   });
 });
