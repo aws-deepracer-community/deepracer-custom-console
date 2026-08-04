@@ -58,16 +58,20 @@ describe("CameraSettingsContainer", () => {
   });
 
   it("renders a live camera preview with the display MJPEG stream", () => {
-    render(<CameraSettingsContainer />);
+    const { container } = render(<CameraSettingsContainer />);
 
-    expect(screen.getByAltText("Live camera preview")).toHaveAttribute("src", CAMERA_FEED);
+    expect(container.querySelector("img[alt='Live camera preview']")).toHaveAttribute(
+      "src",
+      CAMERA_FEED
+    );
   });
 
   it("renders slider, toggle, and array controls from parameter metadata", () => {
-    render(<CameraSettingsContainer />);
+    const { container } = render(<CameraSettingsContainer />);
+    const wrapper = createWrapper(container);
 
-    expect(screen.getByRole("slider")).toBeInTheDocument();
-    expect(screen.getByRole("checkbox")).toBeInTheDocument();
+    expect(wrapper.findSlider()).toBeTruthy();
+    expect(wrapper.findToggle()).toBeTruthy();
     expect(screen.getByLabelText("Colour Gains value 1")).toHaveValue("1.5");
     expect(screen.getByLabelText("Colour Gains value 2")).toHaveValue("1.2");
   });
@@ -83,9 +87,11 @@ describe("CameraSettingsContainer", () => {
   it("shows an error returned by the camera hook", () => {
     mockUseCamera.mockReturnValue(cameraState({ parameters: [], error: "Camera is unavailable." }));
 
-    render(<CameraSettingsContainer />);
+    const { container } = render(<CameraSettingsContainer />);
+    const wrapper = createWrapper(container);
 
-    expect(screen.getByText("Camera is unavailable.")).toBeInTheDocument();
+    expect(wrapper.findAlert()).toBeTruthy();
+    expect(wrapper.findAlert()?.getElement()).toHaveTextContent("Camera is unavailable.");
   });
 
   it("applies boolean changes and shows save feedback", async () => {
@@ -96,7 +102,7 @@ describe("CameraSettingsContainer", () => {
     await waitFor(() => {
       expect(mockSetParameter).toHaveBeenCalledWith("AeEnable", true);
     });
-    expect(screen.getByText("AE Enable updated.")).toBeInTheDocument();
+    expect(screen.getByText("AE Enable updated.")).toBeTruthy();
   });
 
   it("shows the error returned when a parameter update is rejected", async () => {
@@ -105,7 +111,7 @@ describe("CameraSettingsContainer", () => {
 
     fireEvent.click(screen.getByRole("checkbox"));
 
-    expect(await screen.findByText("Camera rejected the change.")).toBeInTheDocument();
+    expect(await screen.findByText("Camera rejected the change.")).toBeTruthy();
   });
 
   it("falls back to a safe message when a rejected update has no message", async () => {
@@ -114,6 +120,28 @@ describe("CameraSettingsContainer", () => {
 
     fireEvent.click(screen.getByRole("checkbox"));
 
-    expect(await screen.findByText("Invalid camera parameter value.")).toBeInTheDocument();
+    expect(await screen.findByText("Invalid camera parameter value.")).toBeTruthy();
+  });
+
+  it("formats numeric range descriptions with the correct minimum and maximum values", () => {
+    mockUseCamera.mockReturnValue(
+      cameraState({
+        parameters: [
+          {
+            name: "AnalogueGain",
+            type: "double",
+            value: 1,
+            min: 0.5,
+            max: 1.51,
+            step: 0.01,
+            description: "Float scalar range {0.500000}..{1.510204} (default: {1.000000})",
+          },
+        ],
+      })
+    );
+
+    const { container } = render(<CameraSettingsContainer />);
+
+    expect(container.textContent).toContain("Range: 0.5 to 1.5 (default: 1.0)");
   });
 });

@@ -125,6 +125,12 @@ describe("SettingsPage Integration", () => {
 
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
     expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
+
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("camera")?.click();
+    });
+
+    expect(screen.getByTestId("camera-settings")).toBeInTheDocument();
   });
 
   it("should not render TimeContainer when isTimeApiSupported is false", () => {
@@ -153,6 +159,12 @@ describe("SettingsPage Integration", () => {
 
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
     expect(screen.getByTestId("car-config-settings")).toBeInTheDocument();
+
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("camera")?.click();
+    });
+
+    expect(screen.getByTestId("camera-settings")).toBeInTheDocument();
   });
 
   it("should not render CarConfigContainer when isCarConfigSupported is false", () => {
@@ -180,6 +192,12 @@ describe("SettingsPage Integration", () => {
     // LED is present but CarConfig is absent
     expect(screen.getByTestId("led-color-settings")).toBeInTheDocument();
     expect(screen.queryByTestId("car-config-settings")).not.toBeInTheDocument();
+
+    act(() => {
+      wrapper.findTabs()?.findTabLinkById("camera")?.click();
+    });
+
+    expect(screen.getByTestId("camera-settings")).toBeInTheDocument();
   });
 
   it("should not render CameraSettingsContainer when isCameraApiSupported is false", () => {
@@ -191,10 +209,10 @@ describe("SettingsPage Integration", () => {
 
     const { container } = render(<SettingsPage />);
 
-    // Switch to Car Configuration tab where CameraSettingsContainer is expected
+    // Switch to the Camera Settings tab where CameraSettingsContainer is expected
     const wrapper = createWrapper(container);
     act(() => {
-      wrapper.findTabs()?.findTabLinkById("car-config")?.click();
+      wrapper.findTabs()?.findTabLinkById("camera")?.click();
     });
 
     expect(screen.queryByTestId("camera-settings")).not.toBeInTheDocument();
@@ -211,7 +229,7 @@ describe("SettingsPage Integration", () => {
 
     const wrapper = createWrapper(container);
     act(() => {
-      wrapper.findTabs()?.findTabLinkById("car-config")?.click();
+      wrapper.findTabs()?.findTabLinkById("camera")?.click();
     });
 
     expect(screen.getByTestId("camera-settings")).toBeInTheDocument();

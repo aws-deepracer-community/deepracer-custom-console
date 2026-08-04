@@ -44,8 +44,16 @@ export default function SettingsPage() {
                 content: (
                   <SpaceBetween size="l">
                     <LedColorContainer />
-                    {isCameraApiSupported && <CameraSettingsContainer />}
                     {isCarConfigSupported && <CarConfigContainer />}
+                  </SpaceBetween>
+                ),
+              },
+              {
+                label: "Camera Settings",
+                id: "camera",
+                content: (
+                  <SpaceBetween size="l">
+                    {isCameraApiSupported && <CameraSettingsContainer />}
                   </SpaceBetween>
                 ),
               },
