@@ -267,13 +267,28 @@ describe("useAuthProvider", () => {
 
     it("should maintain function reference stability", () => {
       const { result, rerender } = renderHook(() => useAuthProvider());
+      const { login, logout } = result.current;
 
-      // Trigger a re-render
       rerender();
 
-      // Functions should still work correctly after re-render
-      expect(typeof result.current.login).toBe("function");
-      expect(typeof result.current.logout).toBe("function");
+      expect(result.current.login).toBe(login);
+      expect(result.current.logout).toBe(logout);
+
+      act(() => {
+        result.current.login();
+      });
+
+      expect(result.current.isAuthenticated).toBe(true);
+      expect(result.current.login).toBe(login);
+      expect(result.current.logout).toBe(logout);
+
+      act(() => {
+        result.current.logout();
+      });
+
+      expect(result.current.isAuthenticated).toBe(false);
+      expect(result.current.login).toBe(login);
+      expect(result.current.logout).toBe(logout);
     });
 
     it("should handle state changes independently", () => {

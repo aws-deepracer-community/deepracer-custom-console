@@ -26,7 +26,7 @@
     "react-color": "^2.19.3",
     "react-dom": "^18.2.0",
     "react-joystick-component": "^6.2.1",
-    "react-router-dom": "^6.22.0",
+    "react-router-dom": "^7.18.4",
     "sass": "^1.83.4"
   },
   "devDependencies": {
@@ -42,8 +42,8 @@
     "@eslint/js": "^9.28.0",
     "@uiw/react-color-circle": "^2.3.4",
     "@vitejs/plugin-react": "^4.3.2",
-    "@vitest/coverage-v8": "^4.1.0",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/ui": "^4.1.12",
     "autoprefixer": "^10.4.17",
     "eslint": "^9.28.0",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -55,7 +55,7 @@
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.33.1",
     "vite": "^6.4.2",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.12"
   },
   "overrides": {
     "react-virtual": {

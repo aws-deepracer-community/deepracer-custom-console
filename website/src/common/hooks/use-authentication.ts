@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 // Define the Authentication Context type
 interface AuthContextType {
@@ -35,18 +35,18 @@ export const useAuthProvider = () => {
     checkAuthStatus();
   }, []);
 
-  const login = () => {
+  const login = useCallback(() => {
     // Set the cookie with the token
     console.debug("useAuth: Logging in...");
     setIsAuthenticated(true);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     // Remove the auth cookie
     console.debug("useAuth: Logging out...");
     document.cookie = "deepracer_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     setIsAuthenticated(false);
-  };
+  }, []);
 
   return { isAuthenticated, login, logout };
 };

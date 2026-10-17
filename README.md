@@ -43,9 +43,11 @@ Note - some features also require the deepracer-custom-car code - https://github
 ### Development Environment Setup
 
 **On your development machine (can be the car or separate):**
+Use Node.js 22 LTS, matching the CI build and test jobs.
+
 1. Clone the repository: `git clone https://github.com/aws-deepracer-community/deepracer-custom-console`
 2. Navigate to the website directory: `cd deepracer-custom-console/website`
-3. Install project dependencies: `npm install`
+3. Install the locked project dependencies: `npm ci`
 4. Set environment variable for your car: `export CAR_IP=<your-car-ip-address>`
 5. Start the development server: `npm run dev`
    - The server will be available at http://localhost:3000
@@ -81,6 +83,17 @@ Note - some features also require the deepracer-custom-car code - https://github
 
 4. **Package Creation (Optional):**
    - Create your own Debian package with `./deepracer-build-pkg.sh`
+
+### Dependency Security Updates
+
+Run `npm audit` from `website` to check both application and development dependencies.
+Update affected packages within their supported version ranges first, and review major
+upgrades separately rather than using `npm audit fix --force`.
+
+After an update, run `npm ci`, `npm run lint`, `npm run build`,
+`npm run test:coverage -- --run`, and `npm run test:e2e -- --project=chromium`,
+then run `npm audit` again. Commit `website/package-lock.json` together with any
+`website/package.json` changes so local development and CI install the same versions.
 
 ## License
 
