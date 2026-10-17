@@ -10,13 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - name: Install Node
-        run: |
-          sudo apt install nodejs
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
 
       - name: Build website
         run: |
@@ -24,7 +25,7 @@ jobs:
           ZIPFILE=aws-deepracer-community-device-console-${GITREF//\//-}.zip
           pwd
           cd website
-          npm install
+          npm ci
           npm run build
           cd dist
           rm -f ../../$ZIPFILE && zip -r ../../$ZIPFILE .

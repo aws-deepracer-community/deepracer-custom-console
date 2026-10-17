@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useOnFollow } from "../../common/hooks/use-on-follow";
 
-// Mock useNavigate from react-router
+// Mock useNavigate from react-router-dom
 const mockNavigate = vi.fn();
-vi.mock("react-router", () => ({
+vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
