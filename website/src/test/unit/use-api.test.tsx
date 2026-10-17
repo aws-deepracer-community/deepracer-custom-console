@@ -5,8 +5,8 @@ import { useApi, useApiProvider, ApiContext } from "../../common/hooks/use-api";
 import { ReactNode } from "react";
 
 interface MockApi {
-  get: ReturnType<typeof vi.fn>;
-  post: ReturnType<typeof vi.fn>;
+  get: <T>(path: string) => Promise<T | null>;
+  post: <T>(path: string, data: unknown) => Promise<T | null>;
 }
 
 // Mock axios
@@ -43,16 +43,32 @@ describe("useApi", () => {
   });
 
   it("should throw error when used outside of ApiProvider", () => {
-    // Expect the hook to throw an error when used outside of ApiProvider
-    expect(() => {
-      renderHook(() => useApi());
-    }).toThrow("useApi must be used within an ApiProvider");
+    const onWindowError = (event: Event) => {
+      const errorEvent = event as ErrorEvent;
+      const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+      if (message.includes("useApi must be used within an ApiProvider")) {
+        errorEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+
+    try {
+      expect(() => {
+        renderHook(() => useApi());
+      }).toThrow("useApi must be used within an ApiProvider");
+    } finally {
+      window.removeEventListener("error", onWindowError);
+    }
   });
 
   it("should return context value when used within ApiProvider", () => {
+    const getSpy = vi.fn();
+    const postSpy = vi.fn();
+
     const mockApi = {
-      get: vi.fn(),
-      post: vi.fn(),
+      get: <T,>(path: string) => getSpy(path) as Promise<T | null>,
+      post: <T,>(path: string, data: unknown) => postSpy(path, data) as Promise<T | null>,
     };
 
     const wrapper = createWrapper(mockApi);

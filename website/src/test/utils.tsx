@@ -5,6 +5,7 @@ import { expect, vi } from "vitest";
 import { BatteryContext } from "../common/hooks/use-battery";
 import { NetworkContext } from "../common/hooks/use-network";
 import { SupportedApisContext } from "../common/hooks/use-supported-apis";
+import { CarConfigContext } from "../common/hooks/use-car-config";
 import { ModelsContext } from "../common/hooks/use-models";
 import { PreferencesContext } from "../common/hooks/use-preferences";
 import { ApiContext } from "../common/hooks/use-api";
@@ -51,8 +52,19 @@ const mockSupportedApisProvider = {
   isEmergencyStopSupported: true,
   isDeviceStatusSupported: true,
   isTimeApiSupported: true,
+  isCarConfigSupported: false,
+  isEventsSupported: false,
   isLoading: false,
   hasError: false,
+};
+
+const mockCarConfigProvider = {
+  config: null,
+  capabilities: null,
+  isGrayOverlaySupported: false,
+  isGrayOverlayEnabled: false,
+  isLoading: false,
+  refresh: () => {},
 };
 
 export const mockModelsProvider = {
@@ -101,13 +113,15 @@ export const render = (ui: ReactElement) => {
       <AuthContext.Provider value={mockAuthProvider}>
         <ApiContext.Provider value={mockApiProvider}>
           <SupportedApisContext.Provider value={mockSupportedApisProvider}>
-            <PreferencesContext.Provider value={mockPreferencesProvider}>
-              <BatteryContext.Provider value={mockBatteryProvider}>
-                <NetworkContext.Provider value={mockNetworkProvider}>
-                  <ModelsContext.Provider value={mockModelsProvider}>{ui}</ModelsContext.Provider>
-                </NetworkContext.Provider>
-              </BatteryContext.Provider>
-            </PreferencesContext.Provider>
+            <CarConfigContext.Provider value={mockCarConfigProvider}>
+              <PreferencesContext.Provider value={mockPreferencesProvider}>
+                <BatteryContext.Provider value={mockBatteryProvider}>
+                  <NetworkContext.Provider value={mockNetworkProvider}>
+                    <ModelsContext.Provider value={mockModelsProvider}>{ui}</ModelsContext.Provider>
+                  </NetworkContext.Provider>
+                </BatteryContext.Provider>
+              </PreferencesContext.Provider>
+            </CarConfigContext.Provider>
           </SupportedApisContext.Provider>
         </ApiContext.Provider>
       </AuthContext.Provider>
@@ -130,13 +144,15 @@ export const renderWithCustomPreferences = (ui: ReactElement, customSettings: Pa
       <AuthContext.Provider value={mockAuthProvider}>
         <ApiContext.Provider value={mockApiProvider}>
           <SupportedApisContext.Provider value={mockSupportedApisProvider}>
-            <PreferencesContext.Provider value={customPreferencesProvider}>
-              <BatteryContext.Provider value={mockBatteryProvider}>
-                <NetworkContext.Provider value={mockNetworkProvider}>
-                  <ModelsContext.Provider value={mockModelsProvider}>{ui}</ModelsContext.Provider>
-                </NetworkContext.Provider>
-              </BatteryContext.Provider>
-            </PreferencesContext.Provider>
+            <CarConfigContext.Provider value={mockCarConfigProvider}>
+              <PreferencesContext.Provider value={customPreferencesProvider}>
+                <BatteryContext.Provider value={mockBatteryProvider}>
+                  <NetworkContext.Provider value={mockNetworkProvider}>
+                    <ModelsContext.Provider value={mockModelsProvider}>{ui}</ModelsContext.Provider>
+                  </NetworkContext.Provider>
+                </BatteryContext.Provider>
+              </PreferencesContext.Provider>
+            </CarConfigContext.Provider>
           </SupportedApisContext.Provider>
         </ApiContext.Provider>
       </AuthContext.Provider>

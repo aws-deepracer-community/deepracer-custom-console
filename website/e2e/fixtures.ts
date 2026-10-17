@@ -27,7 +27,7 @@ async function setupCommonMocks(page: any) {
     });
   });
 
-  await page.route("**/api/supported_apis", async (route) => {
+  await page.route("**/api/supported_apis", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -163,7 +163,7 @@ async function setupCommonMocks(page: any) {
   });
 
   // Mock uploaded model list endpoint
-  await page.route("**/api/uploaded_model_list", async (route) => {
+  await page.route("**/api/uploaded_model_list", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -212,7 +212,7 @@ async function setupCommonMocks(page: any) {
   });
 
   // Mock network status endpoint
-  await page.route("**/api/get_network_details", async (route) => {
+  await page.route("**/api/get_network_details", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -226,7 +226,7 @@ async function setupCommonMocks(page: any) {
   });
 
   // Mock Drive Mode
-  await page.route("**/api/drive_mode", async (route) => {
+  await page.route("**/api/drive_mode", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -237,7 +237,7 @@ async function setupCommonMocks(page: any) {
   });
 
   // Mock Start/Stop Mode
-  await page.route("**/api/start_stop", async (route) => {
+  await page.route("**/api/start_stop", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -248,7 +248,7 @@ async function setupCommonMocks(page: any) {
   });
 
   // Calibration
-  await page.route("**/api/get_calibration/<cali_type>", async (route) => {
+  await page.route("**/api/get_calibration/<cali_type>", async (route: any) => {
     const caliType = route.request().url().split("/").slice(-1)[0];
 
     if (!["angle", "speed"].includes(caliType)) {
@@ -281,7 +281,7 @@ async function setupCommonMocks(page: any) {
     }
   });
 
-  await page.route("**/api/set_calibration_mode", async (route) => {
+  await page.route("**/api/set_calibration_mode", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -292,7 +292,7 @@ async function setupCommonMocks(page: any) {
   });
 
   // Load Model
-  await page.route("**/api/models/*/model", async (route) => {
+  await page.route("**/api/models/*/model", async (route: any) => {
     const modelName = route.request().url().split("/").slice(-2)[0];
     console.log("Load Model Request:", {
       modelName,
@@ -352,7 +352,7 @@ async function setupCommonMocks(page: any) {
 
 // Default test fixture with authentication cookie
 export const test = base.extend({
-  page: async ({ page }, use) => {
+  page: async ({ page }, applyFixture) => {
     // Set up authentication cookie for protected routes by default
     await page.context().addCookies([
       {
@@ -368,19 +368,19 @@ export const test = base.extend({
     // Mock common API endpoints for all tests
     await setupCommonMocks(page);
 
-    await use(page);
+    await applyFixture(page);
   },
 });
 
 // Special test fixture for authentication tests (no auth cookie)
 export const authTest = base.extend({
-  page: async ({ page }, use) => {
+  page: async ({ page }, applyFixture) => {
     // Do NOT set authentication cookie for auth tests
 
     // Mock common API endpoints for auth tests too
     await setupCommonMocks(page);
 
-    await use(page);
+    await applyFixture(page);
   },
 });
 

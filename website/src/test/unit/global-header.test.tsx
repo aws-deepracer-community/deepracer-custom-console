@@ -112,6 +112,8 @@ describe("GlobalHeader", () => {
     isEmergencyStopSupported: false,
     isDeviceStatusSupported,
     isTimeApiSupported: false,
+    isCarConfigSupported: false,
+    isEventsSupported: false,
     isLoading: false,
     hasError: false,
   });

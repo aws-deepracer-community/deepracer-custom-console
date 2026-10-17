@@ -36,6 +36,8 @@ interface SupportedApisState {
   isEmergencyStopSupported: boolean;
   isDeviceStatusSupported: boolean;
   isTimeApiSupported: boolean;
+  isCarConfigSupported: boolean;
+  isEventsSupported: boolean;
   isLoading: boolean;
   hasError: boolean;
 }
@@ -59,9 +61,23 @@ describe("useSupportedApis", () => {
   });
 
   it("should throw error when used outside of SupportedApisProvider", () => {
-    expect(() => {
-      renderHook(() => useSupportedApis());
-    }).toThrow("useSupportedApis must be used within a SupportedApisProvider");
+    const onWindowError = (event: Event) => {
+      const errorEvent = event as ErrorEvent;
+      const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+      if (message.includes("useSupportedApis must be used within a SupportedApisProvider")) {
+        errorEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+
+    try {
+      expect(() => {
+        renderHook(() => useSupportedApis());
+      }).toThrow("useSupportedApis must be used within a SupportedApisProvider");
+    } finally {
+      window.removeEventListener("error", onWindowError);
+    }
   });
 
   it("should return context value when used within SupportedApisProvider", () => {
@@ -70,6 +86,8 @@ describe("useSupportedApis", () => {
       isEmergencyStopSupported: true,
       isDeviceStatusSupported: true,
       isTimeApiSupported: false,
+      isCarConfigSupported: false,
+      isEventsSupported: false,
       isLoading: false,
       hasError: false,
     };

@@ -2,6 +2,7 @@ import React from "react";
 import { BatteryContext, useBatteryProvider } from "../common/hooks/use-battery";
 import { NetworkContext, useNetworkProvider } from "../common/hooks/use-network";
 import { SupportedApisContext, useSupportedApisProvider } from "../common/hooks/use-supported-apis";
+import { CarConfigContext, useCarConfigProvider } from "../common/hooks/use-car-config";
 import { ModelsContext, useModelsProvider } from "../common/hooks/use-models";
 import { AuthContext, useAuthProvider } from "../common/hooks/use-authentication";
 import { PreferencesContext, usePreferencesProvider } from "../common/hooks/use-preferences";
@@ -19,14 +20,24 @@ export const ContextProvider: React.FC<{
 
   return (
     <SupportedApisContext.Provider value={supportedApisContextValue}>
-      <PreferencesContext.Provider value={preferencesContextValue}>
-        <BatteryContext.Provider value={batteryContextValue}>
-          <NetworkContext.Provider value={networkContextValue}>
-            <ModelsContext.Provider value={modelsContextValue}>{children}</ModelsContext.Provider>
-          </NetworkContext.Provider>
-        </BatteryContext.Provider>
-      </PreferencesContext.Provider>
+      <CarConfigInnerProvider>
+        <PreferencesContext.Provider value={preferencesContextValue}>
+          <BatteryContext.Provider value={batteryContextValue}>
+            <NetworkContext.Provider value={networkContextValue}>
+              <ModelsContext.Provider value={modelsContextValue}>{children}</ModelsContext.Provider>
+            </NetworkContext.Provider>
+          </BatteryContext.Provider>
+        </PreferencesContext.Provider>
+      </CarConfigInnerProvider>
     </SupportedApisContext.Provider>
+  );
+};
+
+// Inner provider that can consume SupportedApisContext
+const CarConfigInnerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const carConfigContextValue = useCarConfigProvider();
+  return (
+    <CarConfigContext.Provider value={carConfigContextValue}>{children}</CarConfigContext.Provider>
   );
 };
 

@@ -23,6 +23,7 @@ import { usePreferences } from "../common/hooks/use-preferences";
 import { useModels } from "../common/hooks/use-models";
 import { useAuth } from "../common/hooks/use-authentication";
 import { useSupportedApis } from "../common/hooks/use-supported-apis";
+import { useCarConfig } from "../common/hooks/use-car-config";
 
 // Add interfaces for API responses
 interface SensorStatusResponse {
@@ -45,6 +46,7 @@ const HomePage = () => {
     lidar_status: "not_connected",
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [activeTabId, setActiveTabId] = useState("autonomous");
   const [throttle, setThrottle] = useState(30);
   const [isInferenceRunning, setIsInferenceRunning] = useState(false);
   const lastJoystickMoveTime = useRef<number>(0);
@@ -68,13 +70,61 @@ const HomePage = () => {
   const { isAuthenticated } = useAuth();
 
   // Split panel
-  const { isDeviceStatusSupported } = useSupportedApis();
+  const { isDeviceStatusSupported, isEventsSupported } = useSupportedApis();
+  const { isGrayOverlayEnabled, config } = useCarConfig();
   const [isSplitPanelOpen, setIsSplitPanelOpen] = useState(false);
   const [splitPanelSize, setSplitPanelSize] = useState(220);
 
   const [localFlashMessages, setLocalFlashMessages] = useState<FlashbarProps.MessageDefinition[]>(
     []
   );
+
+  // Auto-dismiss timer ref for the IMU safety stop notification.
+  const imuDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Listen for IMU safety stop events via Server-Sent Events.
+  // Only active when IMU is enabled in config and the vehicle is running.
+  useEffect(() => {
+    if (!isEventsSupported || !config?.imu?.enabled || !isInferenceRunning) return;
+    const es = new EventSource("/api/events");
+
+    const dismissImuNotification = () =>
+      setLocalFlashMessages((p) => p.filter((n) => n.id !== "imu-safety-stop"));
+
+    es.addEventListener("imu_stop", (e: MessageEvent) => {
+      const reason = JSON.parse(e.data) as string;
+      const label = reason === "crash" ? "Crash detected" : "Vehicle lifted";
+
+      // Reset the auto-dismiss timer on every new event.
+      if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+      imuDismissTimer.current = setTimeout(dismissImuNotification, 5000);
+
+      // Upsert the notification so label stays current on repeat events.
+      setLocalFlashMessages((prev) => [
+        ...prev.filter((n) => n.id !== "imu-safety-stop"),
+        {
+          id: "imu-safety-stop",
+          type: "warning",
+          header: `IMU safety stop \u2014 ${label}`,
+          content: "The vehicle was automatically stopped by the IMU safety system.",
+          dismissible: true,
+          onDismiss: () => {
+            if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+            dismissImuNotification();
+          },
+        },
+      ]);
+    });
+
+    es.onerror = () => {
+      // EventSource will auto-reconnect on error; no action needed.
+    };
+
+    return () => {
+      es.close();
+      if (imuDismissTimer.current) clearTimeout(imuDismissTimer.current);
+    };
+  }, [isEventsSupported, config?.imu?.enabled, isInferenceRunning]);
 
   const SENSOR_STATUS_REFRESH_INTERVAL_MS = 15000; // 15 seconds
 
@@ -165,6 +215,7 @@ const HomePage = () => {
   };
 
   const handleTabChange = (selectedTab: string) => {
+    setActiveTabId(selectedTab);
     if (selectedTab === "autonomous") {
       setDriveMode("auto");
     } else if (selectedTab === "manual") {
@@ -294,19 +345,19 @@ const HomePage = () => {
   const lidarStatusText =
     sensorStatus.lidar_status === "connected" ? "(Connected)" : "(Not Connected)";
 
+  const OVERLAY_FEED = "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&qos_profile=sensor_data";
+  const CAMERA_FEED = "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
+
   let cameraFeedSrc;
   switch (cameraFeedType) {
     case "stereo":
-      cameraFeedSrc =
-        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
+      cameraFeedSrc = isGrayOverlayEnabled ? OVERLAY_FEED : CAMERA_FEED;
       break;
     case "lidar":
-      cameraFeedSrc =
-        "route?topic=/sensor_fusion_pkg/overlay_msg&width=480&height=360&qos_profile=sensor_data";
+      cameraFeedSrc = OVERLAY_FEED;
       break;
     default:
-      cameraFeedSrc =
-        "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
+      cameraFeedSrc = isGrayOverlayEnabled ? OVERLAY_FEED : CAMERA_FEED;
   }
   const cameraImgRef = useRef<HTMLImageElement | null>(null);
 
@@ -412,6 +463,7 @@ const HomePage = () => {
               </ExpandableSection>
 
               <Tabs
+                activeTabId={activeTabId}
                 onChange={({ detail }) => handleTabChange(detail.activeTabId)}
                 tabs={[
                   {

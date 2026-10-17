@@ -4,7 +4,7 @@ import BaseAppLayout from "../components/base-app-layout";
 import Button from "@cloudscape-design/components/button";
 import { ApiHelper } from '../common/helpers/api-helper';
 
-interface LogsPageProps {}
+type LogsPageProps = Record<string, never>;
 
 interface LogsPageState {
   sysLogs: string;

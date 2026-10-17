@@ -80,7 +80,7 @@ export const SoftwareUpdatePage = () => {
               console.log("Server responded but not ready yet, continuing to check...");
               setTimeout(checkServerReady, 2000);
             }
-          } catch (err) {
+          } catch {
             // Server not ready yet, schedule next check
             console.log("Server not ready yet, continuing to check...");
             setTimeout(checkServerReady, 2000);

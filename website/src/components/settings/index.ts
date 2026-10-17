@@ -4,3 +4,4 @@ export { DeviceSshContainer } from "./device-ssh-container";
 export { TimeContainer } from "./time-container";
 export { LedColorContainer } from "./led-color-container";
 export { AboutContainer } from "./about-container";
+export { CarConfigContainer } from "./car-config-container";

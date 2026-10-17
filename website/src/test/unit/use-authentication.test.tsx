@@ -50,9 +50,23 @@ describe("useAuth", () => {
   });
 
   it("should throw error when used outside of AuthProvider", () => {
-    expect(() => {
-      renderHook(() => useAuth());
-    }).toThrow("useAuth must be used within an AuthProvider");
+    const onWindowError = (event: Event) => {
+      const errorEvent = event as ErrorEvent;
+      const message = errorEvent.error instanceof Error ? errorEvent.error.message : "";
+      if (message.includes("useAuth must be used within an AuthProvider")) {
+        errorEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+
+    try {
+      expect(() => {
+        renderHook(() => useAuth());
+      }).toThrow("useAuth must be used within an AuthProvider");
+    } finally {
+      window.removeEventListener("error", onWindowError);
+    }
   });
 
   it("should return context value when used within AuthProvider", () => {

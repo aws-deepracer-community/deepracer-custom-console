@@ -68,13 +68,13 @@ const DeviceStatusPanel = ({ isInferenceRunning, setNotifications }: DeviceStatu
       cpu: {
         usage: { warning: 90, error: 99, compare: "gt" as ComparisonOperator },
         temperature: { warning: 75, error: 90, compare: "gt" as ComparisonOperator },
-        frequency: { warning: 85, error: 75, compare: "lt" as ComparisonOperator }, // Note: For CPU frequency, higher is better
+        frequency: { warning: 80, error: 65, compare: "lt" as ComparisonOperator }, // Note: For CPU frequency, higher is better
       },
       memory: { warning: 85, error: 90, compare: "gt" as ComparisonOperator },
       disk: { warning: 90, error: 95, compare: "gt" as ComparisonOperator },
       performance: {
         latency_mean: { warning: 20.0, error: 30.0, compare: "gt" as ComparisonOperator },
-        latency_p95: { warning: 1.35, error: 1.75, compare: "gt" as ComparisonOperator },
+        latency_p95: { warning: 1.5, error: 2.0, compare: "gt" as ComparisonOperator },
         fps_mean: { warning: 1.05, error: 1.1, compare: "gt" as ComparisonOperator },
       },
     }),
