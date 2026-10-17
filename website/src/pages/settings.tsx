@@ -13,7 +13,7 @@ import {
 } from "../components/settings";
 
 export default function SettingsPage() {
-  const { isTimeApiSupported, isCarConfigSupported, isCameraApiSupported } = useSupportedApis();
+  const { isTimeApiSupported, isCarConfigSupported } = useSupportedApis();
 
   return (
     <BaseAppLayout
@@ -44,16 +44,8 @@ export default function SettingsPage() {
                 content: (
                   <SpaceBetween size="l">
                     <LedColorContainer />
+                    <CameraSettingsContainer />
                     {isCarConfigSupported && <CarConfigContainer />}
-                  </SpaceBetween>
-                ),
-              },
-              {
-                label: "Camera Settings",
-                id: "camera",
-                content: (
-                  <SpaceBetween size="l">
-                    {isCameraApiSupported && <CameraSettingsContainer />}
                   </SpaceBetween>
                 ),
               },

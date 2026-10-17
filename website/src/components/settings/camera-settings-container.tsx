@@ -5,6 +5,7 @@ import {
   Button,
   ColumnLayout,
   Container,
+  FormField,
   Header,
   Input,
   Slider,
@@ -28,8 +29,6 @@ const PARAMETER_PRIORITY = [
   "Saturation",
   "Sharpness",
 ];
-const CAMERA_FEED =
-  "route?topic=/camera_pkg/display_mjpeg&width=480&height=360&qos_profile=sensor_data";
 
 const NUMERIC_TYPES: CameraParameterType[] = ["integer", "double"];
 const ARRAY_TYPES: CameraParameterType[] = [
@@ -47,39 +46,7 @@ function labelForParameter(name: string) {
     .replace(/^Awb\b/, "AWB");
 }
 
-function formatNumericValue(value: string | number) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) {
-    return String(value);
-  }
-
-  return parsed.toFixed(1);
-}
-
-function formatParameterDescription(description?: string) {
-  if (!description) {
-    return "";
-  }
-
-  const trimmed = description.trim();
-  const rangeMatch = trimmed.match(
-    /^.*?\{([^}]+)\}\s*\.\.\s*\{([^}]+)\}\s*(?:\(default:\s*\{([^}]+)\}\))?\s*$/i
-  );
-  if (rangeMatch) {
-    const [, minValue, maxValue, defaultValue] = rangeMatch;
-    const rangeText = `Range: ${formatNumericValue(minValue)} to ${formatNumericValue(maxValue)}`;
-    if (defaultValue) {
-      return `${rangeText} (default: ${formatNumericValue(defaultValue)})`;
-    }
-    return rangeText;
-  }
-
-  return trimmed.replace(/\{([^}]+)\}/g, (_, value) => formatNumericValue(value));
-}
-
-function hasNumericRange(
-  parameter: CameraParameter
-): parameter is CameraParameter & { value: number; min: number; max: number } {
+function hasNumericRange(parameter: CameraParameter) {
   return (
     NUMERIC_TYPES.includes(parameter.type) &&
     typeof parameter.value === "number" &&
@@ -114,10 +81,7 @@ function parseNumber(value: string | number, integer: boolean) {
   return integer ? Math.trunc(parsed) : parsed;
 }
 
-function toParameterValue(
-  parameter: CameraParameter,
-  draftValue: DraftValue
-): CameraParameterValue {
+function toParameterValue(parameter: CameraParameter, draftValue: DraftValue): CameraParameterValue {
   if (parameter.type === "boolean") {
     return draftValue === true;
   }
@@ -160,17 +124,14 @@ export const CameraSettingsContainer = () => {
   const [savingParameter, setSavingParameter] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [activeParameterName, setActiveParameterName] = useState<string | null>(null);
 
   const sortedParameters = useMemo(() => {
     return [...parameters].sort((left, right) => {
       const leftIndex = PARAMETER_PRIORITY.indexOf(left.name);
       const rightIndex = PARAMETER_PRIORITY.indexOf(right.name);
       if (leftIndex !== -1 || rightIndex !== -1) {
-        return (
-          (leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex) -
-          (rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex)
-        );
+        return (leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex) -
+          (rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex);
       }
       return left.name.localeCompare(right.name);
     });
@@ -185,39 +146,26 @@ export const CameraSettingsContainer = () => {
   const updateDraft = (name: string, value: DraftValue) => {
     setSaveSuccess(null);
     setSaveError(null);
-    setActiveParameterName(name);
     setDraftValues((current) => ({ ...current, [name]: value }));
   };
 
-  const saveParameter = async (parameter: CameraParameter, draftOverride?: DraftValue) => {
+  const saveParameter = async (parameter: CameraParameter) => {
     setSavingParameter(parameter.name);
     setSaveSuccess(null);
     setSaveError(null);
     try {
-      const value = toParameterValue(parameter, draftOverride ?? draftValues[parameter.name]);
+      const value = toParameterValue(parameter, draftValues[parameter.name]);
       const result = await setParameter(parameter.name, value);
       if (result.success) {
         setSaveSuccess(`${labelForParameter(parameter.name)} updated.`);
       } else {
-        setSaveError(result.message ?? "Invalid camera parameter value.");
+        setSaveError(result.message);
       }
     } catch (ex) {
       setSaveError(ex instanceof Error ? ex.message : "Invalid camera parameter value.");
     }
     setSavingParameter(null);
   };
-
-  const activeParameter = useMemo(() => {
-    if (!activeParameterName) {
-      return null;
-    }
-
-    return sortedParameters.find((parameter) => parameter.name === activeParameterName) ?? null;
-  }, [activeParameterName, sortedParameters]);
-
-  const isActiveParameterDirty = activeParameter
-    ? isDirty(activeParameter, draftValues[activeParameter.name])
-    : false;
 
   const renderControl = (parameter: CameraParameter) => {
     const draftValue = draftValues[parameter.name] ?? toDraftValue(parameter);
@@ -228,7 +176,7 @@ export const CameraSettingsContainer = () => {
           disabled={savingParameter === parameter.name}
           onChange={({ detail }) => {
             updateDraft(parameter.name, detail.checked);
-            saveParameter(parameter, detail.checked);
+            saveParameter({ ...parameter, value: detail.checked });
           }}
         >
           {draftValue === true ? "Enabled" : "Disabled"}
@@ -237,13 +185,11 @@ export const CameraSettingsContainer = () => {
     }
 
     if (hasNumericRange(parameter)) {
-      const min = parameter.min;
-      const max = parameter.max;
       return (
         <Slider
           value={Number(draftValue)}
-          min={min}
-          max={max}
+          min={parameter.min}
+          max={parameter.max}
           step={parameter.step || (parameter.type === "integer" ? 1 : 0.1)}
           valueFormatter={(value) => String(value)}
           disabled={savingParameter === parameter.name}
@@ -290,25 +236,7 @@ export const CameraSettingsContainer = () => {
       header={
         <Header
           variant="h2"
-          actions={
-            <SpaceBetween size="xs" direction="horizontal">
-              <Button onClick={() => refresh()} loading={isLoading}>
-                Refresh
-              </Button>
-              <Button
-                variant="primary"
-                loading={savingParameter !== null}
-                disabled={!isActiveParameterDirty || savingParameter !== null}
-                onClick={() => {
-                  if (activeParameter) {
-                    void saveParameter(activeParameter);
-                  }
-                }}
-              >
-                Apply changes
-              </Button>
-            </SpaceBetween>
-          }
+          actions={<Button onClick={() => refresh()} loading={isLoading}>Refresh</Button>}
           description="Live libcamera controls exposed by the active camera node."
         >
           Camera Controls
@@ -316,9 +244,6 @@ export const CameraSettingsContainer = () => {
       }
     >
       <SpaceBetween size="m">
-        <Box textAlign="center" padding="s">
-          <img src={CAMERA_FEED} alt="Live camera preview" style={{ maxWidth: "100%" }} />
-        </Box>
         {error && <Alert type="error">{error}</Alert>}
         {saveSuccess && (
           <Alert type="success" dismissible onDismiss={() => setSaveSuccess(null)}>
@@ -340,18 +265,28 @@ export const CameraSettingsContainer = () => {
         ) : (
           <SpaceBetween size="l">
             {sortedParameters.map((parameter) => {
+              const dirty = isDirty(parameter, draftValues[parameter.name]);
               return (
-                <div key={parameter.name}>
-                  <Header
-                    variant="h3"
-                    description={formatParameterDescription(
-                      parameter.description || parameter.name
+                <FormField
+                  key={parameter.name}
+                  label={labelForParameter(parameter.name)}
+                  description={parameter.description || parameter.name}
+                >
+                  <SpaceBetween size="xs">
+                    {renderControl(parameter)}
+                    {parameter.type !== "boolean" && (
+                      <Box float="right">
+                        <Button
+                          loading={savingParameter === parameter.name}
+                          disabled={!dirty || savingParameter !== null}
+                          onClick={() => saveParameter(parameter)}
+                        >
+                          Apply
+                        </Button>
+                      </Box>
                     )}
-                  >
-                    {labelForParameter(parameter.name)}
-                  </Header>
-                  <SpaceBetween size="xs">{renderControl(parameter)}</SpaceBetween>
-                </div>
+                  </SpaceBetween>
+                </FormField>
               );
             })}
           </SpaceBetween>
