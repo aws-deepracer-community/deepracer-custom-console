@@ -24,7 +24,7 @@ jobs:
           ZIPFILE=aws-deepracer-community-device-console-${GITREF//\//-}.zip
           pwd
           cd website
-          npm install
+          npm ci
           npm run build
           cd dist
           rm -f ../../$ZIPFILE && zip -r ../../$ZIPFILE .
